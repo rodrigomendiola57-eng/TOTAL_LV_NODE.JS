@@ -1,0 +1,41 @@
+import type { Metadata } from "next";
+import { Cormorant_Garamond, Outfit } from "next/font/google";
+import "./globals.css";
+
+/** Tipografía primaria — títulos y encabezados de marca. */
+const cormorant = Cormorant_Garamond({
+  variable: "--font-cormorant",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+/** Tipografía de textos — redonda, delgada y minimalista. */
+const outfit = Outfit({
+  variable: "--font-outfit",
+  subsets: ["latin"],
+  weight: ["200", "300", "400"],
+  display: "swap",
+});
+
+export const metadata: Metadata = {
+  title: "Total Living | Estrategia Real detrás de cada Propiedad",
+  description:
+    "Total Living — marca inmobiliaria premium. Estrategia real detrás de cada propiedad.",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html
+      lang="es"
+      className={`${cormorant.variable} ${outfit.variable} h-full antialiased`}
+    >
+      <body className="min-h-full flex flex-col bg-[#1a1a18] text-tl-beige">
+        {children}
+      </body>
+    </html>
+  );
+}

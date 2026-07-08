@@ -1,0 +1,65 @@
+import type { Property, PropertyCreatePayload, PropertyFormValues } from "@/types/property";
+import { DEFAULT_MAP_CENTER } from "@/lib/data/property-options";
+
+export function propertyToFormValues(property: Property): PropertyFormValues {
+  return {
+    title: property.title,
+    property_type: property.property_type,
+    operation_type: property.operation_type,
+    price: property.price,
+    description: property.description ?? "",
+    address: property.address,
+    state: property.state,
+    city: property.city,
+    postal_code: property.postal_code,
+    zone: property.zone,
+    maps_link: property.maps_link ?? "",
+    latitude: String(property.latitude ?? DEFAULT_MAP_CENTER.latitude),
+    longitude: String(property.longitude ?? DEFAULT_MAP_CENTER.longitude),
+    bedrooms: String(property.bedrooms),
+    full_bathrooms: String(property.full_bathrooms),
+    half_bathrooms: String(property.half_bathrooms),
+    parking_spaces: String(property.parking_spaces),
+    build_area_m2: property.build_area_m2,
+    land_area_m2: property.land_area_m2,
+    levels: String(property.levels),
+    front_measure_m: property.front_measure_m ?? "",
+    depth_measure_m: property.depth_measure_m ?? "",
+    build_year: property.build_year ? String(property.build_year) : "",
+    environments: String(property.environments),
+    maintenance_fee: property.maintenance_fee ?? "",
+    is_featured: property.is_featured,
+  };
+}
+
+export function formValuesToPayload(values: PropertyFormValues): PropertyCreatePayload {
+  return {
+    title: values.title.trim(),
+    property_type: values.property_type,
+    operation_type: values.operation_type,
+    price: Number(values.price),
+    currency: "MXN",
+    description: values.description.trim(),
+    address: values.address.trim(),
+    state: values.state,
+    city: values.city,
+    postal_code: values.postal_code.trim(),
+    zone: values.zone,
+    maps_link: values.maps_link.trim(),
+    latitude: Number(values.latitude),
+    longitude: Number(values.longitude),
+    bedrooms: Number(values.bedrooms),
+    full_bathrooms: Number(values.full_bathrooms),
+    half_bathrooms: Number(values.half_bathrooms),
+    parking_spaces: Number(values.parking_spaces),
+    build_area_m2: Number(values.build_area_m2),
+    land_area_m2: Number(values.land_area_m2),
+    levels: Number(values.levels),
+    front_measure_m: values.front_measure_m ? Number(values.front_measure_m) : null,
+    depth_measure_m: values.depth_measure_m ? Number(values.depth_measure_m) : null,
+    build_year: values.build_year ? Number(values.build_year) : null,
+    environments: Number(values.environments),
+    maintenance_fee: values.maintenance_fee ? Number(values.maintenance_fee) : null,
+    is_featured: values.is_featured,
+  };
+}
