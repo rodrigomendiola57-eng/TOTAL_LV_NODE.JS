@@ -5,6 +5,7 @@ import {
   FormSection,
   formInputClass,
 } from "@/components/dashboard/form/FormField";
+import { AmenitiesSelector } from "@/components/dashboard/form/AmenitiesSelector";
 import { FeaturedToggle } from "@/components/dashboard/form/FeaturedToggle";
 import { FormStepIndicator } from "@/components/dashboard/form/FormStepIndicator";
 import { NumberStepper } from "@/components/dashboard/form/NumberStepper";
@@ -12,8 +13,10 @@ import { OperationTypeSelector } from "@/components/dashboard/form/OperationType
 import { PropertyTypeSelector } from "@/components/dashboard/form/PropertyTypeSelector";
 import { ZoneSelector } from "@/components/dashboard/form/ZoneSelector";
 import { PropertyPhotoManager } from "@/components/dashboard/PropertyPhotoManager";
-import { createProperty, updateProperty } from "@/lib/api";
+import { PropertyTechnicalSheetUpload } from "@/components/dashboard/PropertyTechnicalSheetUpload";
+import { createProperty, getAmenities, updateProperty } from "@/lib/api";
 import { getPropertyPhotos, syncPropertyPhotos } from "@/lib/api/property-photos";
+import { syncTechnicalSheet } from "@/lib/api/property-technical-sheet";
 import { getCitiesByState, MEXICO_STATES } from "@/lib/data/mexico-locations";
 import { DEFAULT_MAP_CENTER } from "@/lib/data/property-options";
 import {
@@ -29,7 +32,7 @@ import {
   type FormStepId,
 } from "@/lib/data/property-form-ux";
 import { cn } from "@/lib/utils";
-import type { Property, PropertyFormValues } from "@/types/property";
+import type { Amenity, Property, PropertyFormValues } from "@/types/property";
 import {
   createPhotoDraftFromApi,
   revokePhotoDraftUrls,
@@ -41,16 +44,18 @@ import {
   ArrowRight,
   Building2,
   CheckCircle2,
+  FileText,
   Image as ImageIcon,
   LayoutGrid,
   Loader2,
   MapPinned,
+  Sparkles,
   X,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type FieldErrors } from "react-hook-form";
 
 const DynamicLocationPicker = dynamic(
   () =>
@@ -93,15 +98,27 @@ const DEFAULT_VALUES: PropertyFormValues = {
   build_year: "",
   environments: "5",
   maintenance_fee: "",
+  amenities: [],
   is_featured: false,
 };
 
 const STEP_FIELDS: Record<FormStepId, (keyof PropertyFormValues)[]> = {
   basic: ["title", "price", "property_type", "operation_type"],
+  amenities: [],
   location: ["address", "state", "city", "postal_code", "zone", "latitude", "longitude"],
   features: [],
   media: [],
 };
+
+const FIELD_TO_STEP = Object.entries(STEP_FIELDS).reduce(
+  (acc, [step, fields]) => {
+    for (const field of fields) {
+      acc[field] = step as FormStepId;
+    }
+    return acc;
+  },
+  {} as Partial<Record<keyof PropertyFormValues, FormStepId>>,
+);
 
 interface PropertyFormProps {
   property?: Property;
@@ -124,6 +141,12 @@ export function PropertyForm({ property, onClose, onSuccess }: PropertyFormProps
   const [deletedPhotoIds, setDeletedPhotoIds] = useState<number[]>([]);
   const [photosError, setPhotosError] = useState<string | null>(null);
   const [isLoadingPhotos, setIsLoadingPhotos] = useState(false);
+  const [technicalSheetFile, setTechnicalSheetFile] = useState<File | null>(null);
+  const [technicalSheetRemoved, setTechnicalSheetRemoved] = useState(false);
+  const [technicalSheetError, setTechnicalSheetError] = useState<string | null>(null);
+  const [amenities, setAmenities] = useState<Amenity[]>([]);
+  const [isLoadingAmenities, setIsLoadingAmenities] = useState(true);
+  const [amenitiesError, setAmenitiesError] = useState<string | null>(null);
 
   const {
     register,
@@ -144,6 +167,7 @@ export function PropertyForm({ property, onClose, onSuccess }: PropertyFormProps
   const zone = watch("zone");
   const price = watch("price");
   const isFeatured = watch("is_featured");
+  const selectedAmenities = watch("amenities");
   const description = watch("description");
   const latitude = Number(watch("latitude"));
   const longitude = Number(watch("longitude"));
@@ -169,6 +193,32 @@ export function PropertyForm({ property, onClose, onSuccess }: PropertyFormProps
       lockPublish();
     }
   }
+
+  useEffect(() => {
+    let cancelled = false;
+    setIsLoadingAmenities(true);
+    setAmenitiesError(null);
+
+    getAmenities()
+      .then((items) => {
+        if (!cancelled) setAmenities(items);
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        setAmenitiesError(
+          error instanceof Error
+            ? error.message
+            : "No se pudieron cargar las amenidades.",
+        );
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoadingAmenities(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (!selectedState) {
@@ -259,6 +309,7 @@ export function PropertyForm({ property, onClose, onSuccess }: PropertyFormProps
     setSubmitError(null);
     setSubmitSuccess(false);
     setPhotosError(null);
+    setTechnicalSheetError(null);
 
     try {
       const payload = formValuesToPayload(values);
@@ -275,6 +326,14 @@ export function PropertyForm({ property, onClose, onSuccess }: PropertyFormProps
         await syncPropertyPhotos(propertyId, photos, deletedPhotoIds);
       }
 
+      if (technicalSheetFile || technicalSheetRemoved) {
+        await syncTechnicalSheet(
+          propertyId,
+          technicalSheetFile,
+          technicalSheetRemoved && !technicalSheetFile,
+        );
+      }
+
       setSubmitSuccess(true);
       router.refresh();
 
@@ -283,6 +342,8 @@ export function PropertyForm({ property, onClose, onSuccess }: PropertyFormProps
         reset(DEFAULT_VALUES);
         setPhotos([]);
         setDeletedPhotoIds([]);
+        setTechnicalSheetFile(null);
+        setTechnicalSheetRemoved(false);
         setCurrentStep("basic");
         setCompletedSteps([]);
         setSubmitSuccess(false);
@@ -295,9 +356,21 @@ export function PropertyForm({ property, onClose, onSuccess }: PropertyFormProps
     }
   }
 
+  function onInvalid(formErrors: FieldErrors<PropertyFormValues>) {
+    const firstField = Object.keys(formErrors)[0] as keyof PropertyFormValues | undefined;
+    if (firstField && FIELD_TO_STEP[firstField]) {
+      setCurrentStep(FIELD_TO_STEP[firstField] as FormStepId);
+    }
+    setSubmitError("Revisa los campos obligatorios antes de guardar.");
+  }
+
   async function handlePublishClick() {
-    if (currentStep !== "media" || isPublishLocked()) return;
-    await handleSubmit(onSubmit)();
+    if (currentStep !== "media") return;
+    if (isPublishLocked()) {
+      setSubmitError("Espera un momento e intenta guardar de nuevo.");
+      return;
+    }
+    await handleSubmit(onSubmit, onInvalid)();
   }
 
   const mapLatitude = Number.isFinite(latitude) ? latitude : DEFAULT_MAP_CENTER.latitude;
@@ -329,6 +402,11 @@ export function PropertyForm({ property, onClose, onSuccess }: PropertyFormProps
             <h2 className="mt-1 font-cormorant text-3xl font-light text-tl-beige sm:text-4xl">
               {isEditing ? "Editar Propiedad" : "Nueva Propiedad"}
             </h2>
+            {property?.easybroker_id ? (
+              <p className="mt-2 font-mono text-xs tracking-[0.06em] text-tl-gold">
+                ID EasyBroker: {property.easybroker_id}
+              </p>
+            ) : null}
           </div>
           {onClose ? (
             <button
@@ -442,6 +520,26 @@ export function PropertyForm({ property, onClose, onSuccess }: PropertyFormProps
                     className={cn(formInputClass, "resize-y leading-relaxed")}
                   />
                 </FormField>
+              </FormSection>
+            ) : null}
+
+            {currentStep === "amenities" ? (
+              <FormSection
+                title="Amenidades y características"
+                description="Selecciona las amenidades del desarrollo y de la propiedad. Se mostrarán en la ficha pública."
+                icon={<Sparkles className="h-5 w-5" strokeWidth={1.5} />}
+              >
+                <div className="sm:col-span-2 xl:col-span-3">
+                  <AmenitiesSelector
+                    amenities={amenities}
+                    selected={selectedAmenities}
+                    onChange={(ids) =>
+                      setValue("amenities", ids, { shouldDirty: true })
+                    }
+                    isLoading={isLoadingAmenities}
+                    error={amenitiesError}
+                  />
+                </div>
               </FormSection>
             ) : null}
 
@@ -669,7 +767,9 @@ export function PropertyForm({ property, onClose, onSuccess }: PropertyFormProps
 
                 <FeaturedToggle
                   checked={isFeatured}
-                  onChange={(checked) => setValue("is_featured", checked)}
+                  onChange={(checked) =>
+                    setValue("is_featured", checked, { shouldDirty: true })
+                  }
                 />
               </FormSection>
             ) : null}
@@ -699,6 +799,34 @@ export function PropertyForm({ property, onClose, onSuccess }: PropertyFormProps
                     />
                   </div>
                 )}
+              </FormSection>
+            ) : null}
+
+            {currentStep === "media" ? (
+              <FormSection
+                title="Ficha técnica"
+                description="Sube el PDF con especificaciones detalladas. Los visitantes podrán descargarlo desde la página de la propiedad."
+                icon={<FileText className="h-5 w-5" strokeWidth={1.5} />}
+              >
+                <div className="sm:col-span-2 xl:col-span-3">
+                  <PropertyTechnicalSheetUpload
+                    existingUrl={property?.technical_sheet_url}
+                    existingFilename={
+                      property?.technical_sheet_url
+                        ? `ficha-tecnica-${property.id}.pdf`
+                        : null
+                    }
+                    pendingFile={technicalSheetFile}
+                    markedForRemoval={technicalSheetRemoved}
+                    onFileSelect={(file) => {
+                      setTechnicalSheetFile(file);
+                      if (file) setTechnicalSheetRemoved(false);
+                    }}
+                    onMarkForRemoval={() => setTechnicalSheetRemoved(true)}
+                    onUndoRemoval={() => setTechnicalSheetRemoved(false)}
+                    error={technicalSheetError}
+                  />
+                </div>
               </FormSection>
             ) : null}
           </motion.div>

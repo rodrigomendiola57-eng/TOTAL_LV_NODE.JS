@@ -1,24 +1,53 @@
-import { getAllProperties } from "@/lib/api";
+import { getPropertyStats } from "@/lib/api";
+import { listDevelopmentsApi } from "@/lib/api/developments";
+import { getApiBaseUrl } from "@/lib/api-base-url";
 import { Building2, MessagesSquare, Star, TrendingUp } from "lucide-react";
 import Link from "next/link";
 
+export const revalidate = 20;
+
+async function getActiveLeadCount(): Promise<number> {
+  try {
+    const response = await fetch(`${getApiBaseUrl()}/leads/`, {
+      next: { revalidate: 20 },
+      headers: { Accept: "application/json" },
+    });
+    if (!response.ok) return 0;
+    const leads = (await response.json()) as Array<{ status: string }>;
+    return Array.isArray(leads)
+      ? leads.filter((lead) => lead.status !== "Cerrado").length
+      : 0;
+  } catch {
+    return 0;
+  }
+}
+
+async function getDevelopmentsCount(): Promise<number> {
+  try {
+    const rows = await listDevelopmentsApi();
+    return rows.length;
+  } catch {
+    return 0;
+  }
+}
+
 export default async function DashboardHomePage() {
-  const properties = await getAllProperties();
-  const featuredCount = properties.filter((p) => p.is_featured).length;
-  const developmentsCount = properties.filter(
-    (p) => p.property_type === "Condominio" || p.property_type === "Casa en condominio",
-  ).length;
+  const [propertyStats, activeLeads, developmentsCount] = await Promise.all([
+    getPropertyStats(),
+    getActiveLeadCount(),
+    getDevelopmentsCount(),
+  ]);
 
   const stats = [
     {
       label: "Propiedades activas",
-      value: properties.length,
+      value: propertyStats.total,
       icon: Building2,
       href: "/dashboard/propiedades",
     },
     {
       label: "Destacadas",
-      value: featuredCount,
+      value: propertyStats.featured,
       icon: Star,
       href: "/dashboard/propiedades",
     },
@@ -30,7 +59,7 @@ export default async function DashboardHomePage() {
     },
     {
       label: "Leads activos",
-      value: 4,
+      value: activeLeads,
       icon: MessagesSquare,
       href: "/dashboard/crm",
     },
@@ -56,6 +85,7 @@ export default async function DashboardHomePage() {
           <Link
             key={stat.label}
             href={stat.href}
+            prefetch
             className="group rounded-2xl border border-tl-gold/20 bg-tl-black/60 p-5 transition-colors hover:border-tl-gold/40 hover:bg-tl-black/80"
           >
             <div className="flex items-center justify-between">
@@ -77,7 +107,7 @@ export default async function DashboardHomePage() {
         </p>
         <div className="mt-5 flex flex-wrap gap-3">
           <QuickLink href="/dashboard/propiedades" label="Gestionar propiedades" />
-          <QuickLink href="/dashboard/crm" label="Abrir CRM omnicanal" />
+          <QuickLink href="/dashboard/crm" label="Ver leads del sitio" />
           <QuickLink href="/dashboard/desarrollos" label="Ver desarrollos" />
         </div>
       </section>
@@ -89,6 +119,7 @@ function QuickLink({ href, label }: { href: string; label: string }) {
   return (
     <Link
       href={href}
+      prefetch
       className="rounded-full border border-tl-gold/35 px-5 py-2.5 font-outfit font-light text-xs uppercase tracking-[0.14em] text-tl-beige/80 transition-colors hover:border-tl-gold hover:text-tl-gold"
     >
       {label}

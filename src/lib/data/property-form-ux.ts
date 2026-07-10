@@ -10,7 +10,12 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-export type FormStepId = "basic" | "location" | "features" | "media";
+export type FormStepId =
+  | "basic"
+  | "amenities"
+  | "location"
+  | "features"
+  | "media";
 
 export interface FormStep {
   id: FormStepId;
@@ -25,6 +30,12 @@ export const FORM_STEPS: FormStep[] = [
     label: "Datos básicos",
     shortLabel: "Básicos",
     description: "Tipo, operación y precio",
+  },
+  {
+    id: "amenities",
+    label: "Amenidades",
+    shortLabel: "Amenidades",
+    description: "Características del desarrollo",
   },
   {
     id: "location",

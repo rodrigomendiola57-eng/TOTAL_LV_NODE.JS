@@ -1,9 +1,9 @@
 export function PropertyCatalogSkeleton() {
   return (
-    <main className="flex flex-1 flex-col bg-tl-black">
+    <main className="flex flex-1 flex-col bg-[#1a1a18]">
       <section className="min-h-[min(78vh,720px)] animate-pulse bg-[#111111]" />
 
-      <div className="border-b border-white/10 bg-tl-black/80">
+      <div className="border-b border-white/10 bg-[#1a1a18]/80">
         <div className="mx-auto flex max-w-6xl gap-4 px-4 py-4 sm:px-6">
           <div className="h-10 w-44 rounded-full bg-[#1a1a1a]" />
           <div className="h-10 w-44 rounded-full bg-[#1a1a1a]" />

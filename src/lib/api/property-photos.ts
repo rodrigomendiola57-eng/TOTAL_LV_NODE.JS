@@ -1,12 +1,13 @@
 import type { PhotoDraft, PropertyPhoto } from "@/types/property-photo";
+import { resolveMediaUrl } from "@/lib/media-url";
 import { staticExportFetchInit } from "@/lib/static-export";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000/api";
+import { getApiBaseUrl } from "@/lib/api-base-url";
 
 export async function getPropertyPhotos(propertyId: number): Promise<PropertyPhoto[]> {
   try {
     const response = await fetch(
-      `${API_URL}/properties/${propertyId}/photos/`,
+      `${getApiBaseUrl()}/properties/${propertyId}/photos/`,
       staticExportFetchInit({
         method: "GET",
         headers: { Accept: "application/json" },
@@ -18,7 +19,10 @@ export async function getPropertyPhotos(propertyId: number): Promise<PropertyPho
       throw new Error(`No se pudieron cargar las fotos (${response.status}).`);
     }
 
-    return (await response.json()) as PropertyPhoto[];
+    return ((await response.json()) as PropertyPhoto[]).map((photo) => ({
+      ...photo,
+      url: resolveMediaUrl(photo.url) ?? photo.url,
+    }));
   } catch {
     if (process.env.GITHUB_PAGES === "true") return [];
     throw new Error("No se pudieron cargar las fotos.");
@@ -34,7 +38,7 @@ export async function uploadPropertyPhotos(
     formData.append("images", file);
   }
 
-  const response = await fetch(`${API_URL}/properties/${propertyId}/photos/`, {
+  const response = await fetch(`${getApiBaseUrl()}/properties/${propertyId}/photos/`, {
     method: "POST",
     body: formData,
   });
@@ -53,7 +57,7 @@ export async function deletePropertyPhoto(
   photoId: number,
 ): Promise<void> {
   const response = await fetch(
-    `${API_URL}/properties/${propertyId}/photos/${photoId}/`,
+    `${getApiBaseUrl()}/properties/${propertyId}/photos/${photoId}/`,
     {
       method: "DELETE",
       headers: { Accept: "application/json" },
@@ -72,7 +76,7 @@ export async function reorderPropertyPhotos(
   coverId: number | null,
 ): Promise<PropertyPhoto[]> {
   const response = await fetch(
-    `${API_URL}/properties/${propertyId}/photos/reorder/`,
+    `${getApiBaseUrl()}/properties/${propertyId}/photos/reorder/`,
     {
       method: "POST",
       headers: {

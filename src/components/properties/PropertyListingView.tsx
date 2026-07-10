@@ -1,160 +1,405 @@
 "use client";
 
+
+
 import type { PropertyCatalogConfig } from "@/components/properties/catalog-config";
+import { FeaturedCatalogCarousel } from "@/components/properties/FeaturedCatalogCarousel";
+import { PropertyCatalogFilters } from "@/components/properties/PropertyCatalogFilters";
+
+import { PropertyPagination } from "@/components/properties/PropertyPagination";
+
 import { PropertyCard } from "@/components/ui/PropertyCard";
+
 import { Reveal } from "@/components/ui/Reveal";
-import { HERO_CONTENT_OFFSET } from "@/lib/site-nav";
+
+import { useCatalogMapProperties } from "@/hooks/useCatalogMapProperties";
+
+import type { GetPropertiesPageParams, PropertiesPageResult } from "@/lib/api";
+
 import {
-  applyCatalogFilters,
-  type BedroomFilter,
-  type PropertySortOption,
-} from "@/lib/property-catalog";
+
+  buildCatalogHref,
+
+  type CatalogQueryState,
+
+} from "@/lib/property-catalog-params";
+
 import type { Property } from "@/types/property";
-import { ArrowUpDown, BedDouble } from "lucide-react";
+
+import type { CatalogViewMode } from "@/lib/property-catalog";
+import { HERO_CONTENT_OFFSET } from "@/lib/site-nav";
+import { cn } from "@/lib/utils";
+
+import dynamic from "next/dynamic";
+
 import Link from "next/link";
-import { useMemo, useState } from "react";
 
-interface PropertyListingViewProps {
-  properties: Property[];
-  config: PropertyCatalogConfig;
-}
+import { useCallback, useEffect, useState } from "react";
 
-const SORT_OPTIONS: { value: PropertySortOption; label: string }[] = [
-  { value: "newest", label: "Más recientes" },
-  { value: "price-asc", label: "Precio: menor a mayor" },
-  { value: "price-desc", label: "Precio: mayor a menor" },
-];
 
-const BEDROOM_OPTIONS: { value: BedroomFilter; label: string }[] = [
-  { value: "all", label: "Todas las recámaras" },
-  { value: "1", label: "1+ recámaras" },
-  { value: "2", label: "2+ recámaras" },
-  { value: "3", label: "3+ recámaras" },
-  { value: "4", label: "4+ recámaras" },
-];
 
-const selectClassName =
-  "rounded-full border border-white/10 bg-tl-black/60 px-4 py-2.5 font-outfit font-light text-xs uppercase tracking-[0.12em] text-tl-beige/85 outline-none transition-colors focus:border-tl-gold/50";
+const PropertyCatalogMap = dynamic(
 
-export function PropertyListingView({
-  properties,
-  config,
-}: PropertyListingViewProps) {
-  const [sort, setSort] = useState<PropertySortOption>("newest");
-  const [bedrooms, setBedrooms] = useState<BedroomFilter>("all");
+  () =>
 
-  const filteredProperties = useMemo(
-    () => applyCatalogFilters(properties, sort, bedrooms),
-    [properties, sort, bedrooms],
-  );
+    import("@/components/properties/PropertyCatalogMap").then(
 
-  return (
-    <main className="flex flex-1 flex-col bg-tl-black">
-      <section className="relative min-h-[min(78vh,720px)] overflow-hidden">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url('${config.heroImage}')` }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-tl-black/55 via-tl-black/45 to-tl-black/85" />
-        <div className="absolute inset-0 bg-tl-black/25" />
+      (module) => module.PropertyCatalogMap,
 
-        <div className={`relative z-10 mx-auto flex min-h-[min(78vh,720px)] max-w-6xl items-end px-4 pb-16 sm:px-6 sm:pb-20 ${HERO_CONTENT_OFFSET}`}>
-          <div className="max-w-3xl">
-            <p className="font-outfit text-[10px] font-light uppercase tracking-[0.32em] text-tl-gold/90 sm:text-xs">
-              Total Living
-            </p>
-            <h1 className="mt-3 font-outfit text-4xl font-extralight tracking-[0.02em] text-tl-beige sm:text-5xl lg:text-6xl">
-              {config.title}
-            </h1>
-            <p className="mt-4 max-w-2xl font-outfit text-sm font-light leading-relaxed tracking-[0.02em] text-tl-beige/75 sm:text-base">
-              {config.subtitle}
-            </p>
-          </div>
-        </div>
-      </section>
+    ),
 
-      <div className="sticky top-[4.5rem] z-30 border-b border-white/10 bg-tl-black/75 backdrop-blur-lg sm:top-20">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-4 px-4 py-4 sm:px-6">
-          <div className="flex items-center gap-2 text-tl-beige/50">
-            <ArrowUpDown className="h-4 w-4 text-tl-gold/80" />
-            <span className="font-outfit font-light text-[10px] uppercase tracking-[0.16em]">
-              Ordenar
-            </span>
-          </div>
-          <select
-            value={sort}
-            onChange={(event) =>
-              setSort(event.target.value as PropertySortOption)
-            }
-            className={selectClassName}
-            aria-label="Ordenar propiedades"
-          >
-            {SORT_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+  {
 
-          <div className="hidden h-6 w-px bg-white/10 sm:block" />
+    ssr: false,
 
-          <div className="flex items-center gap-2 text-tl-beige/50">
-            <BedDouble className="h-4 w-4 text-tl-gold/80" />
-            <span className="font-outfit font-light text-[10px] uppercase tracking-[0.16em]">
-              Recámaras
-            </span>
-          </div>
-          <select
-            value={bedrooms}
-            onChange={(event) =>
-              setBedrooms(event.target.value as BedroomFilter)
-            }
-            className={selectClassName}
-            aria-label="Filtrar por recámaras"
-          >
-            {BEDROOM_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+    loading: () => (
 
-          <p className="ml-auto font-outfit font-light text-xs text-tl-beige/55">
-            {filteredProperties.length} resultado
-            {filteredProperties.length === 1 ? "" : "s"}
-          </p>
-        </div>
+      <div className="flex min-h-[50dvh] items-center justify-center rounded-none border border-tl-gold/20 bg-[#1a1a18]/80 sm:min-h-[40rem] sm:rounded-2xl">
+
+        <p className="font-outfit font-light text-sm text-tl-beige/55">
+
+          Preparando mapa...
+
+        </p>
+
       </div>
 
-      <section className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
-        {filteredProperties.length > 0 ? (
-          <div className="grid gap-5 sm:grid-cols-2 sm:gap-6 xl:grid-cols-3">
-            {filteredProperties.map((property, index) => (
-              <Reveal key={property.id} delay={index * 0.05}>
-                <PropertyCard property={property} />
-              </Reveal>
-            ))}
-          </div>
-        ) : properties.length > 0 ? (
-          <div className="rounded-2xl border border-tl-gold/20 bg-tl-black/50 px-6 py-16 text-center">
-            <p className="font-outfit font-light text-sm text-tl-beige/70">
-              No hay propiedades que coincidan con los filtros seleccionados.
-            </p>
-          </div>
-        ) : (
-          <div className="rounded-2xl border border-tl-gold/25 bg-gradient-to-b from-tl-black to-tl-olive/20 px-6 py-20 text-center sm:px-10">
-            <p className="mx-auto max-w-2xl font-outfit font-light text-sm leading-relaxed text-tl-beige/75 sm:text-base">
-              {config.emptyMessage}
-            </p>
-            <Link
-              href={config.contactHref}
-              className="mt-8 inline-flex rounded-full border border-tl-gold px-6 py-3 font-outfit font-light text-xs uppercase tracking-[0.16em] text-tl-gold transition-colors hover:bg-tl-gold hover:text-tl-black"
-            >
-              Contactar asesor
-            </Link>
-          </div>
-        )}
-      </section>
-    </main>
-  );
+    ),
+
+  },
+
+);
+
+
+
+interface PropertyListingViewProps {
+
+  pageData: PropertiesPageResult;
+
+  mapApiParams: Omit<GetPropertiesPageParams, "page">;
+
+  catalogState: CatalogQueryState;
+
+  config: PropertyCatalogConfig;
+
+  basePath: string;
+
+  featuredProperties?: Property[];
+
 }
+
+
+
+export function PropertyListingView({
+
+  pageData,
+
+  mapApiParams,
+
+  catalogState,
+
+  config,
+
+  basePath,
+
+  featuredProperties,
+
+}: PropertyListingViewProps) {
+
+  const { properties, count, totalPages } = pageData;
+
+  const hasFeaturedHero = Boolean(featuredProperties && featuredProperties.length > 0);
+
+  const [viewMode, setViewMode] = useState<CatalogViewMode>(catalogState.vista);
+
+
+
+  useEffect(() => {
+
+    setViewMode(catalogState.vista);
+
+  }, [catalogState.vista]);
+
+
+
+  const isMapView = viewMode === "mapa";
+
+  const shouldPrefetchMap = count > 0;
+
+
+
+  const {
+
+    properties: mapProperties,
+
+    isLoading: mapLoading,
+
+    error: mapError,
+
+  } = useCatalogMapProperties(mapApiParams, { prefetch: shouldPrefetchMap });
+
+
+
+  const handleViewChange = useCallback(
+
+    (vista: CatalogViewMode) => {
+
+      setViewMode(vista);
+
+      const href = buildCatalogHref(basePath, {
+
+        ...catalogState,
+
+        vista,
+
+        page: vista === "mapa" ? 1 : catalogState.page,
+
+      });
+
+      window.history.replaceState(null, "", href);
+
+    },
+
+    [basePath, catalogState],
+
+  );
+
+
+
+  return (
+
+    <main className="flex flex-1 flex-col bg-[#1a1a18]">
+
+      {hasFeaturedHero ? (
+        <FeaturedCatalogCarousel properties={featuredProperties!} />
+      ) : (
+        <section className="relative min-h-[min(52vh,28rem)] overflow-hidden sm:min-h-[min(78vh,720px)]">
+
+          <div
+
+            className="absolute inset-0 bg-cover bg-center"
+
+            style={{ backgroundImage: `url('${config.heroImage}')` }}
+
+          />
+
+          <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/30 to-black/65" />
+
+
+
+          <div
+
+            className={cn(
+
+              "relative z-10 mx-auto flex min-h-[inherit] max-w-6xl items-end px-4 pb-10 sm:px-6 sm:pb-20",
+
+              HERO_CONTENT_OFFSET,
+
+            )}
+
+          >
+
+            <div className="max-w-3xl">
+
+              <p className="font-outfit text-[10px] font-light uppercase tracking-[0.28em] text-tl-gold/90 sm:text-xs sm:tracking-[0.32em]">
+
+                Total Living
+
+              </p>
+
+              <h1 className="mt-2 font-outfit text-3xl font-extralight tracking-[0.02em] text-tl-beige sm:mt-3 sm:text-5xl lg:text-6xl">
+
+                {config.title}
+
+              </h1>
+
+              <p className="mt-3 max-w-2xl font-outfit text-sm font-light leading-relaxed tracking-[0.02em] text-tl-beige/75 sm:mt-4 sm:text-base">
+
+                {config.subtitle}
+
+              </p>
+
+            </div>
+
+          </div>
+
+        </section>
+      )}
+
+      {hasFeaturedHero ? (
+        <section className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
+          <p className="font-outfit text-[10px] font-light uppercase tracking-[0.28em] text-tl-gold/90 sm:text-xs sm:tracking-[0.32em]">
+            Total Living
+          </p>
+          <h1 className="mt-2 font-outfit text-3xl font-extralight tracking-[0.02em] text-tl-beige sm:mt-3 sm:text-5xl lg:text-6xl">
+            {config.title}
+          </h1>
+          <p className="mt-3 max-w-2xl font-outfit text-sm font-light leading-relaxed tracking-[0.02em] text-tl-beige/75 sm:mt-4 sm:text-base">
+            {config.subtitle}
+          </p>
+        </section>
+      ) : null}
+
+
+
+      <PropertyCatalogFilters
+
+          catalogState={catalogState}
+
+          basePath={basePath}
+
+          count={count}
+
+          operationLabel={config.resultsLabel}
+
+          viewMode={viewMode}
+
+          onViewChange={handleViewChange}
+
+        />
+
+
+
+      <section
+
+        id="catalog-content"
+
+        className={cn(
+
+          "scroll-mt-[calc(4.5rem+env(safe-area-inset-top,0px))] sm:scroll-mt-20",
+
+          isMapView
+
+            ? "w-full px-0 py-3 sm:px-4 sm:py-8 lg:px-6"
+
+            : "mx-auto w-full max-w-6xl px-3 py-8 sm:px-6 sm:py-16",
+
+        )}
+
+      >
+
+        {count > 0 ? (
+
+          isMapView ? (
+
+            mapLoading && mapProperties.length === 0 ? (
+
+              <div className="flex min-h-[50dvh] items-center justify-center rounded-none border border-tl-gold/20 bg-[#1a1a18]/80 sm:min-h-[40rem] sm:rounded-2xl">
+
+                <p className="font-outfit font-light text-sm text-tl-beige/55">
+
+                  Cargando propiedades en el mapa...
+
+                </p>
+
+              </div>
+
+            ) : mapError ? (
+
+              <div className="rounded-2xl border border-tl-gold/20 bg-[#1a1a18]/80 px-6 py-16 text-center">
+
+                <p className="font-outfit font-light text-sm text-tl-beige/70">
+
+                  No se pudo cargar el mapa. Intenta de nuevo en un momento.
+
+                </p>
+
+              </div>
+
+            ) : (
+
+              <PropertyCatalogMap properties={mapProperties} />
+
+            )
+
+          ) : properties.length > 0 ? (
+
+            <>
+
+              <div
+
+                id="catalog-grid"
+
+                className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 xl:grid-cols-3"
+
+              >
+
+                {properties.map((property, index) => (
+
+                  <Reveal key={property.id} delay={index * 0.05}>
+
+                    <PropertyCard property={property} />
+
+                  </Reveal>
+
+                ))}
+
+              </div>
+
+
+
+              <PropertyPagination
+
+                basePath={basePath}
+
+                catalogState={catalogState}
+
+                totalPages={totalPages}
+
+                totalCount={count}
+
+                pageSize={pageData.pageSize}
+
+              />
+
+            </>
+
+          ) : (
+
+            <div className="rounded-2xl border border-tl-gold/20 bg-tl-black/50 px-6 py-16 text-center">
+
+              <p className="font-outfit font-light text-sm text-tl-beige/70">
+
+                No hay propiedades en esta página. Intenta regresar a la primera página.
+
+              </p>
+
+            </div>
+
+          )
+
+        ) : (
+
+          <div className="rounded-2xl border border-tl-gold/25 bg-white/[0.03] px-5 py-16 text-center sm:px-10 sm:py-20">
+
+            <p className="mx-auto max-w-2xl font-outfit font-light text-sm leading-relaxed text-tl-beige/75 sm:text-base">
+
+              {config.emptyMessage}
+
+            </p>
+
+            <Link
+
+              href={config.contactHref}
+
+              className="mt-8 inline-flex min-h-12 items-center rounded-full border border-tl-gold px-6 py-3 font-outfit font-light text-xs uppercase tracking-[0.16em] text-tl-gold transition-colors active:bg-tl-gold active:text-tl-black sm:hover:bg-tl-gold sm:hover:text-tl-black"
+
+            >
+
+              Contactar asesor
+
+            </Link>
+
+          </div>
+
+        )}
+
+      </section>
+
+    </main>
+
+  );
+
+}
+
+

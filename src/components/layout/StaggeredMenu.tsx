@@ -568,9 +568,10 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
               onClick={closeMenu}
               title={brandTitle}
               wrapperClassName="sm-overlay-logo"
-              innerClassName="relative flex min-w-0 flex-row flex-nowrap items-center justify-center gap-3 overflow-hidden rounded-xl px-1 py-1"
+              innerClassName="relative flex min-w-0 max-w-full flex-row flex-nowrap items-center justify-center gap-2 overflow-visible rounded-xl px-1 py-1 sm:gap-3"
               symbolClassName="sm-overlay-logo-img relative shrink-0 object-contain"
-              titleClassName="sm-overlay-logo-title shrink-0"
+              titleClassName="sm-overlay-logo-title min-w-0 shrink"
+              animateLetterSpacingFrom="0.1em"
               animateLetterSpacingTo="0.05em"
             />
           </header>

@@ -1,19 +1,4 @@
-import { Settings } from "lucide-react";
-
-const SETTINGS_SECTIONS = [
-  {
-    title: "Cuenta y acceso",
-    description: "Gestión de usuarios administrativos y permisos del panel.",
-  },
-  {
-    title: "Integraciones",
-    description: "WhatsApp Business API, Meta Ads y webhooks del sitio público.",
-  },
-  {
-    title: "Notificaciones",
-    description: "Alertas de nuevos leads, propiedades destacadas y seguimiento CRM.",
-  },
-];
+import { Globe, Inbox, StickyNote } from "lucide-react";
 
 export default function DashboardSettingsPage() {
   return (
@@ -23,32 +8,52 @@ export default function DashboardSettingsPage() {
           Configuración
         </p>
         <h1 className="mt-2 font-cormorant text-4xl font-light text-tl-beige">
-          Ajustes del Panel
+          CRM web
         </h1>
         <p className="mt-2 max-w-2xl font-outfit font-light text-sm text-tl-beige/65">
-          Personaliza la operación del dashboard administrativo y las
-          integraciones omnicanal.
+          Este módulo recibe leads únicamente desde el formulario de contacto
+          del sitio público.
         </p>
       </header>
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        {SETTINGS_SECTIONS.map((section) => (
-          <article
-            key={section.title}
-            className="rounded-2xl border border-tl-gold/20 bg-tl-black/60 p-6"
-          >
-            <Settings className="h-5 w-5 text-tl-gold/70" strokeWidth={1.25} />
-            <h2 className="mt-4 font-outfit font-light text-sm text-tl-beige">
-              {section.title}
-            </h2>
-            <p className="mt-2 font-outfit font-light text-xs leading-relaxed text-tl-beige/55">
-              {section.description}
-            </p>
-            <p className="mt-4 font-outfit font-light text-[10px] uppercase tracking-[0.14em] text-tl-gold/70">
-              Próximamente
-            </p>
-          </article>
-        ))}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <article className="rounded-2xl border border-tl-gold/20 bg-tl-black/60 p-6">
+          <Globe className="h-5 w-5 text-tl-gold/70" strokeWidth={1.25} />
+          <h2 className="mt-4 font-outfit font-light text-sm text-tl-beige">
+            Formulario de contacto
+          </h2>
+          <p className="mt-2 font-outfit font-light text-xs leading-relaxed text-tl-beige/55">
+            Cada envío crea un lead con estatus Nuevo y aparece en la bandeja
+            del CRM con la consulta del visitante.
+          </p>
+          <p className="mt-4 break-all font-mono text-[10px] text-tl-gold/80">
+            POST /api/leads/
+          </p>
+        </article>
+
+        <article className="rounded-2xl border border-tl-gold/20 bg-tl-black/60 p-6">
+          <StickyNote className="h-5 w-5 text-tl-gold/70" strokeWidth={1.25} />
+          <h2 className="mt-4 font-outfit font-light text-sm text-tl-beige">
+            Notas internas
+          </h2>
+          <p className="mt-2 font-outfit font-light text-xs leading-relaxed text-tl-beige/55">
+            Desde el CRM puedes registrar seguimiento por lead. Las notas son
+            solo para el equipo; no se envían al visitante.
+          </p>
+        </article>
+
+        <article className="rounded-2xl border border-tl-gold/20 bg-tl-black/60 p-6 lg:col-span-2">
+          <Inbox className="h-5 w-5 text-tl-gold/70" strokeWidth={1.25} />
+          <h2 className="mt-4 font-outfit font-light text-sm text-tl-beige">
+            Flujo recomendado
+          </h2>
+          <ol className="mt-3 space-y-2 font-outfit text-xs font-light leading-relaxed text-tl-beige/55">
+            <li>1. Revisa leads nuevos en la bandeja.</li>
+            <li>2. Contacta al prospecto por teléfono o correo.</li>
+            <li>3. Cambia el estatus según avance la negociación.</li>
+            <li>4. Deja notas internas para el resto del equipo.</li>
+          </ol>
+        </article>
       </div>
     </div>
   );

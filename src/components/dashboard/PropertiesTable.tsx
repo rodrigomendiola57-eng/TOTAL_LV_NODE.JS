@@ -1,5 +1,6 @@
 "use client";
 
+import { formatPrice } from "@/lib/format-price";
 import type { Property } from "@/types/property";
 import { formatPropertyLocation } from "@/types/property";
 import { cn } from "@/lib/utils";
@@ -9,30 +10,21 @@ interface PropertiesTableProps {
   properties: Property[];
   onEdit: (property: Property) => void;
   onDelete: (property: Property) => void;
-}
-
-function formatPrice(value: string, currency: string): string {
-  const parsed = Number(value);
-  if (Number.isNaN(parsed)) return `${value} ${currency}`;
-
-  return new Intl.NumberFormat("es-MX", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(parsed);
+  emptyMessage?: string;
 }
 
 export function PropertiesTable({
   properties,
   onEdit,
   onDelete,
+  emptyMessage,
 }: PropertiesTableProps) {
   if (properties.length === 0) {
     return (
       <div className="rounded-2xl border border-tl-gold/20 bg-tl-black/50 px-6 py-16 text-center">
         <p className="font-outfit font-light text-sm text-tl-beige/70">
-          No hay propiedades registradas. Crea la primera con el botón
-          &quot;Nueva Propiedad&quot;.
+          {emptyMessage ??
+            'No hay propiedades registradas. Crea la primera con el botón "Nueva Propiedad".'}
         </p>
       </div>
     );
@@ -41,19 +33,29 @@ export function PropertiesTable({
   return (
     <div className="overflow-hidden rounded-2xl border border-tl-gold/20 bg-tl-black/50">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[980px] text-left">
+        <table className="w-full min-w-[1120px] text-left">
           <thead>
             <tr className="border-b border-tl-gold/15 bg-tl-black/80">
-              {["Título", "Precio", "Tipo", "Operación", "Zona", "Destacada", "Acciones"].map(
-                (header) => (
-                  <th
-                    key={header}
-                    className="px-5 py-4 font-outfit font-light text-[10px] uppercase tracking-[0.18em] text-tl-beige/50"
-                  >
-                    {header}
-                  </th>
-                ),
-              )}
+              {[
+                "Título",
+                "ID EasyBroker",
+                "Precio",
+                "Tipo",
+                "Operación",
+                "Zona",
+                "Destacada",
+                "Acciones",
+              ].map((header) => (
+                <th
+                  key={header}
+                  className={cn(
+                    "px-5 py-4 font-outfit font-light text-[10px] uppercase tracking-[0.18em] text-tl-beige/50",
+                    header === "ID EasyBroker" && "hidden lg:table-cell",
+                  )}
+                >
+                  {header}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
@@ -67,6 +69,24 @@ export function PropertiesTable({
                   <p className="mt-1 font-outfit font-light text-xs text-tl-beige/50">
                     {formatPropertyLocation(property)}
                   </p>
+                  {property.easybroker_id ? (
+                    <p className="mt-2 font-mono text-[11px] tracking-[0.04em] text-tl-gold lg:hidden">
+                      {property.easybroker_id}
+                    </p>
+                  ) : (
+                    <p className="mt-2 font-outfit font-light text-[11px] text-tl-beige/35 lg:hidden">
+                      Sin ID EasyBroker
+                    </p>
+                  )}
+                </td>
+                <td className="hidden px-5 py-4 lg:table-cell">
+                  {property.easybroker_id ? (
+                    <span className="inline-flex rounded-full border border-tl-gold/30 bg-tl-gold/10 px-2.5 py-1 font-mono text-[11px] tracking-[0.04em] text-tl-gold">
+                      {property.easybroker_id}
+                    </span>
+                  ) : (
+                    <span className="font-outfit font-light text-xs text-tl-beige/35">—</span>
+                  )}
                 </td>
                 <td className="px-5 py-4 font-outfit font-light text-sm text-tl-gold">
                   {formatPrice(property.price, property.currency)}
@@ -79,8 +99,8 @@ export function PropertiesTable({
                     {property.operation_type}
                   </span>
                 </td>
-                <td className="px-5 py-4 font-outfit font-light text-xs text-tl-beige/70">
-                  {property.zone}
+                <td className="max-w-[12rem] px-5 py-4 font-outfit font-light text-xs text-tl-beige/70">
+                  <span className="line-clamp-2">{property.zone}</span>
                 </td>
                 <td className="px-5 py-4">
                   <span

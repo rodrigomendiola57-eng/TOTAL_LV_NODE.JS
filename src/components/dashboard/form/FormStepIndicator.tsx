@@ -1,22 +1,28 @@
 "use client";
 
-import type { FormStep, FormStepId } from "@/lib/data/property-form-ux";
 import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";
 
-interface FormStepIndicatorProps {
-  steps: FormStep[];
-  currentStep: FormStepId;
-  completedSteps: FormStepId[];
-  onStepClick?: (step: FormStepId) => void;
+export interface StepIndicatorItem {
+  id: string;
+  label: string;
+  shortLabel: string;
+  description: string;
 }
 
-export function FormStepIndicator({
+interface FormStepIndicatorProps<T extends string = string> {
+  steps: Array<StepIndicatorItem & { id: T }>;
+  currentStep: T;
+  completedSteps: T[];
+  onStepClick?: (step: T) => void;
+}
+
+export function FormStepIndicator<T extends string = string>({
   steps,
   currentStep,
   completedSteps,
   onStepClick,
-}: FormStepIndicatorProps) {
+}: FormStepIndicatorProps<T>) {
   const currentIndex = steps.findIndex((step) => step.id === currentStep);
 
   return (
@@ -25,7 +31,8 @@ export function FormStepIndicator({
         {steps.map((step, index) => {
           const isCompleted = completedSteps.includes(step.id);
           const isCurrent = step.id === currentStep;
-          const isClickable = Boolean(onStepClick) && (isCompleted || index <= currentIndex);
+          const isClickable =
+            Boolean(onStepClick) && (isCompleted || index <= currentIndex);
 
           return (
             <div key={step.id} className="flex flex-1 items-center">

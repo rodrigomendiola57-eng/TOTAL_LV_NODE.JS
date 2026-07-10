@@ -1,5 +1,7 @@
 import type { Property } from "@/types/property";
 import { formatPropertyBathrooms, formatPropertyLocation } from "@/types/property";
+import { formatPrice } from "@/lib/format-price";
+import { resolveMediaUrl } from "@/lib/media-url";
 import { MessageCircle } from "lucide-react";
 import Link from "next/link";
 
@@ -7,22 +9,12 @@ interface PropertyCardProps {
   property: Property;
 }
 
-function formatPrice(value: string, currency: string): string {
-  const parsed = Number(value);
-  if (Number.isNaN(parsed)) return `${value} ${currency}`;
-
-  return new Intl.NumberFormat("es-MX", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(parsed);
-}
-
 const FALLBACK_PROPERTY_IMAGE =
   "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=2070&auto=format&fit=crop";
 
 export function PropertyCard({ property }: PropertyCardProps) {
-  const imageUrl = property.cover_image_url || FALLBACK_PROPERTY_IMAGE;
+  const imageUrl =
+    resolveMediaUrl(property.cover_image_url) || FALLBACK_PROPERTY_IMAGE;
   const whatsappText = encodeURIComponent(
     `Hola, me interesa la propiedad "${property.title}" en ${formatPropertyLocation(property)}.`,
   );
@@ -41,7 +33,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
         </p>
 
         <div className="absolute bottom-0 left-0 right-0 px-3.5 pb-3.5 pt-10">
-          <p className="font-outfit text-lg font-extralight tracking-[0.02em] text-tl-gold sm:text-xl">
+          <p className="font-outfit text-2xl font-extralight tracking-[0.02em] text-tl-gold sm:text-3xl">
             {formatPrice(property.price, property.currency)}
           </p>
         </div>
@@ -63,10 +55,10 @@ export function PropertyCard({ property }: PropertyCardProps) {
           <span>{property.build_area_m2} m²</span>
         </div>
 
-        <div className="mt-3 flex items-center gap-2">
+        <div className="mt-3 flex items-center gap-2.5">
           <Link
             href={`/propiedades/${property.id}`}
-            className="inline-flex flex-1 justify-center rounded-full border border-tl-gold/45 px-3 py-1.5 font-outfit text-[10px] font-light uppercase tracking-[0.14em] text-tl-gold transition-colors hover:bg-tl-gold hover:text-tl-black"
+            className="inline-flex min-h-11 flex-1 items-center justify-center rounded-full border border-tl-gold/45 px-4 py-2.5 font-outfit text-[11px] font-light uppercase tracking-[0.14em] text-tl-gold transition-colors active:bg-tl-gold active:text-tl-black sm:min-h-0 sm:py-1.5 sm:text-[10px] sm:hover:bg-tl-gold sm:hover:text-tl-black"
           >
             Ver detalles
           </Link>
@@ -75,9 +67,9 @@ export function PropertyCard({ property }: PropertyCardProps) {
             target="_blank"
             rel="noreferrer"
             aria-label="Contactar por WhatsApp"
-            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-tl-gold/35 text-tl-gold transition-colors hover:border-tl-gold hover:bg-tl-gold/10"
+            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-tl-gold/35 text-tl-gold transition-colors active:border-tl-gold active:bg-tl-gold/10 sm:h-8 sm:w-8 sm:hover:border-tl-gold sm:hover:bg-tl-gold/10"
           >
-            <MessageCircle className="h-3.5 w-3.5" />
+            <MessageCircle className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
           </a>
         </div>
       </div>

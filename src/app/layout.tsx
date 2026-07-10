@@ -1,11 +1,21 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Outfit } from "next/font/google";
+import { Cormorant_Garamond, Montserrat, Outfit } from "next/font/google";
+import "bootstrap-icons/font/bootstrap-icons.css";
 import "./globals.css";
 
 /** Tipografía primaria — títulos y encabezados de marca. */
 const cormorant = Cormorant_Garamond({
   variable: "--font-cormorant",
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
+});
+
+/** Tipografía de cuerpo — manual de marca. */
+const montserrat = Montserrat({
+  variable: "--font-montserrat",
+  subsets: ["latin"],
+  weight: ["300", "400", "500"],
   display: "swap",
 });
 
@@ -31,7 +41,7 @@ export default function RootLayout({
   return (
     <html
       lang="es"
-      className={`${cormorant.variable} ${outfit.variable} h-full antialiased`}
+      className={`${cormorant.variable} ${montserrat.variable} ${outfit.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-[#1a1a18] text-tl-beige">
         {children}

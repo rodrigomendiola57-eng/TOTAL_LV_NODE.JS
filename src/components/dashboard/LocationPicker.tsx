@@ -1,18 +1,19 @@
 "use client";
 
+import { GoogleMapsProvider } from "@/components/maps/GoogleMapsProvider";
+import {
+  getGoogleMapsMapId,
+  isGoogleMapsConfigured,
+} from "@/lib/maps/google-maps-config";
 import { DEFAULT_MAP_CENTER } from "@/lib/data/property-options";
 import { cn } from "@/lib/utils";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
+import {
+  AdvancedMarker,
+  Map as GoogleMap,
+  useMap,
+} from "@vis.gl/react-google-maps";
 import { MapPin } from "lucide-react";
 import { useEffect } from "react";
-import {
-  MapContainer,
-  Marker,
-  TileLayer,
-  useMap,
-  useMapEvents,
-} from "react-leaflet";
 
 interface LocationPickerProps {
   latitude: number;
@@ -20,39 +21,39 @@ interface LocationPickerProps {
   onLocationChange: (coords: { latitude: number; longitude: number }) => void;
 }
 
-const markerIcon = L.icon({
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41],
-});
-
-function MapClickHandler({
-  onLocationChange,
-}: {
-  onLocationChange: LocationPickerProps["onLocationChange"];
-}) {
-  useMapEvents({
-    click(event) {
-      onLocationChange({
-        latitude: event.latlng.lat,
-        longitude: event.latlng.lng,
-      });
-    },
-  });
-
-  return null;
+function GoldPinMarker() {
+  return (
+    <span
+      className="block h-9 w-7 -translate-x-1/2"
+      style={{ marginLeft: "50%" }}
+      aria-hidden
+    >
+      <svg viewBox="0 0 28 36" className="h-9 w-7 drop-shadow-lg">
+        <path
+          fill="#D6B585"
+          stroke="#F2ECE0"
+          strokeWidth="1.5"
+          d="M14 1C7.4 1 2 6.4 2 13c0 8.4 12 21 12 21s12-12.6 12-21C26 6.4 20.6 1 14 1z"
+        />
+        <circle cx="14" cy="13" r="4.5" fill="#38382E" />
+      </svg>
+    </span>
+  );
 }
 
-function RecenterMap({ latitude, longitude }: { latitude: number; longitude: number }) {
+function RecenterMap({
+  latitude,
+  longitude,
+}: {
+  latitude: number;
+  longitude: number;
+}) {
   const map = useMap();
 
   useEffect(() => {
-    map.setView([latitude, longitude], map.getZoom());
-  }, [latitude, longitude, map]);
+    if (!map) return;
+    map.panTo({ lat: latitude, lng: longitude });
+  }, [map, latitude, longitude]);
 
   return null;
 }
@@ -62,7 +63,19 @@ export function LocationPicker({
   longitude,
   onLocationChange,
 }: LocationPickerProps) {
-  const position: [number, number] = [latitude, longitude];
+  const position = { lat: latitude, lng: longitude };
+
+  if (!isGoogleMapsConfigured()) {
+    return (
+      <div className="rounded-2xl border border-tl-gold/20 bg-[#0a0a0a] px-4 py-8 text-center">
+        <p className="font-outfit text-sm text-tl-beige/60">
+          Configura{" "}
+          <code className="text-tl-gold">NEXT_PUBLIC_GOOGLE_MAPS_API_KEY</code>{" "}
+          en .env para el picker de ubicación.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="overflow-hidden rounded-2xl border border-tl-gold/20 bg-[#0a0a0a]">
@@ -78,20 +91,37 @@ export function LocationPicker({
           <CoordPill label="Lng" value={longitude.toFixed(5)} />
         </div>
       </div>
-      <MapContainer
-        center={position}
-        zoom={13}
-        scrollWheelZoom
-        className="h-80 w-full [&_.leaflet-control-attribution]:text-[9px]"
-      >
-        <TileLayer
-          attribution='&copy; OpenStreetMap'
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-        />
-        <MapClickHandler onLocationChange={onLocationChange} />
-        <RecenterMap latitude={latitude} longitude={longitude} />
-        <Marker position={position} icon={markerIcon} />
-      </MapContainer>
+
+      <div className="h-80 w-full">
+        <GoogleMapsProvider>
+          <GoogleMap
+            className="h-full w-full"
+            defaultCenter={position}
+            defaultZoom={13}
+            gestureHandling="greedy"
+            disableDefaultUI={false}
+            mapTypeControl={false}
+            streetViewControl={false}
+            fullscreenControl={false}
+            mapId={getGoogleMapsMapId()}
+            reuseMaps
+            onClick={(event) => {
+              const latLng = event.detail.latLng;
+              if (!latLng) return;
+              onLocationChange({
+                latitude: latLng.lat,
+                longitude: latLng.lng,
+              });
+            }}
+          >
+            <RecenterMap latitude={latitude} longitude={longitude} />
+            <AdvancedMarker position={position}>
+              <GoldPinMarker />
+            </AdvancedMarker>
+          </GoogleMap>
+        </GoogleMapsProvider>
+      </div>
+
       <p className="border-t border-tl-gold/15 px-4 py-3 font-outfit font-light text-xs text-tl-beige/50">
         Haz clic en el mapa para marcar la propiedad. También puedes ajustar las
         coordenadas manualmente abajo.

@@ -46,73 +46,75 @@
     height: 5rem;
   }
 
+  /* Un solo fade angosto: sin ::before/::after (evita doble sombra) */
   .brand-marquee__window .logoloop--fade-narrow {
     mask-image: linear-gradient(
       to right,
       transparent 0%,
-      rgba(0, 0, 0, 0.08) 3%,
-      rgba(0, 0, 0, 0.25) 8%,
-      rgba(0, 0, 0, 0.5) 13%,
-      rgba(0, 0, 0, 0.75) 17%,
-      black 21%,
-      black 79%,
-      rgba(0, 0, 0, 0.75) 83%,
-      rgba(0, 0, 0, 0.5) 87%,
-      rgba(0, 0, 0, 0.25) 92%,
-      rgba(0, 0, 0, 0.08) 97%,
+      black 4%,
+      black 96%,
       transparent 100%
     );
     -webkit-mask-image: linear-gradient(
       to right,
       transparent 0%,
-      rgba(0, 0, 0, 0.08) 3%,
-      rgba(0, 0, 0, 0.25) 8%,
-      rgba(0, 0, 0, 0.5) 13%,
-      rgba(0, 0, 0, 0.75) 17%,
-      black 21%,
-      black 79%,
-      rgba(0, 0, 0, 0.75) 83%,
-      rgba(0, 0, 0, 0.5) 87%,
-      rgba(0, 0, 0, 0.25) 92%,
-      rgba(0, 0, 0, 0.08) 97%,
+      black 4%,
+      black 96%,
       transparent 100%
     );
   }
 
   .brand-marquee__window .logoloop--fade-narrow::before,
   .brand-marquee__window .logoloop--fade-narrow::after {
-    width: clamp(80px, 38%, 420px);
+    display: none;
+    content: none;
   }
 }
 
-.brand-marquee__window .logoloop--fade-narrow {
-  mask-image: linear-gradient(
-    to right,
-    transparent 0%,
-    rgba(0, 0, 0, 0.2) 6%,
-    rgba(0, 0, 0, 0.65) 11%,
-    black 18%,
-    black 82%,
-    rgba(0, 0, 0, 0.65) 89%,
-    rgba(0, 0, 0, 0.2) 94%,
-    transparent 100%
-  );
-  -webkit-mask-image: linear-gradient(
-    to right,
-    transparent 0%,
-    rgba(0, 0, 0, 0.2) 6%,
-    rgba(0, 0, 0, 0.65) 11%,
-    black 18%,
-    black 82%,
-    rgba(0, 0, 0, 0.65) 89%,
-    rgba(0, 0, 0, 0.2) 94%,
-    transparent 100%
-  );
+/* Móvil/tablet (< lg): un solo fade suave — sin recuadros ::before/::after duplicados */
+@media (max-width: 1023px) {
+  .brand-marquee__window .logoloop--fade-narrow {
+    mask-image: linear-gradient(
+      to right,
+      transparent 0%,
+      black 7%,
+      black 93%,
+      transparent 100%
+    );
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent 0%,
+      black 7%,
+      black 93%,
+      transparent 100%
+    );
+  }
+
+  .brand-marquee__window .logoloop--fade-narrow::before,
+  .brand-marquee__window .logoloop--fade-narrow::after {
+    display: none;
+    content: none;
+  }
 }
 
-.brand-marquee__window .logoloop--fade-narrow::before,
-.brand-marquee__window .logoloop--fade-narrow::after {
-  width: clamp(36px, 14%, 120px);
+/* Teléfonos: fade aún más corto en los bordes */
+@media (max-width: 639px) {
+  .brand-marquee__window .logoloop--fade-narrow {
+    mask-image: linear-gradient(
+      to right,
+      transparent 0%,
+      black 4%,
+      black 96%,
+      transparent 100%
+    );
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent 0%,
+      black 4%,
+      black 96%,
+      transparent 100%
+    );
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

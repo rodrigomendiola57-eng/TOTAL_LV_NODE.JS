@@ -9,6 +9,7 @@ from rest_framework import status
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from .image_processing import optimize_uploaded_file
 from .models import Property, PropertyPhoto
 from .photo_serializers import PropertyPhotoSerializer, PropertyPhotoUploadSerializer
 
@@ -70,7 +71,7 @@ def upload_property_photos(property_obj: Property, request: Request) -> Response
 
         photo = PropertyPhoto.objects.create(
             property=property_obj,
-            image=upload_serializer.validated_data["image"],
+            image=optimize_uploaded_file(upload_serializer.validated_data["image"]),
             order=max_order + 1 + index,
             is_cover=not has_photos and index == 0,
         )

@@ -1,0 +1,18 @@
+version: "3"
+
+# Total Living — túneles para ver el sitio en el celular.
+# NO uses el dominio de Mendifly (confabulatory-cecil-grummer.ngrok-free.dev).
+#
+# Iniciar ambos túneles:
+#   ngrok start --all --config "%LOCALAPPDATA%\ngrok\ngrok.yml" --config "C:\TOTAL_LV_NODE.JS\ngrok.yml"
+#
+# Solo frontend (URL nueva cada vez en plan free):
+#   ngrok http 3000
+
+tunnels:
+  total-living-web:
+    addr: 3000
+    proto: http
+  total-living-api:
+    addr: 8000
+    proto: http

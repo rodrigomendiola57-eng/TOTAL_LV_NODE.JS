@@ -1,8 +1,9 @@
-"""Modelos del CRM interno — Total Living."""
+"""Modelos del CRM web — Total Living."""
 
 from __future__ import annotations
 
 from django.db import models
+from django.utils import timezone
 
 from properties.models import Property
 
@@ -29,27 +30,60 @@ class Agent(models.Model):
 
 
 class LeadStatus(models.TextChoices):
-    """Etapas del embudo comercial de un prospecto."""
-
     NUEVO = "Nuevo", "Nuevo"
     EN_CONTACTO = "En Contacto", "En Contacto"
     NEGOCIACION = "Negociación", "Negociación"
     CERRADO = "Cerrado", "Cerrado"
 
 
-class Lead(models.Model):
-    """
-    Prospecto interesado en una propiedad o en contacto general.
+class LeadChannel(models.TextChoices):
+    WEB = "Web", "Web"
+    WHATSAPP = "WhatsApp", "WhatsApp"
+    INSTAGRAM = "Instagram", "Instagram"
+    FACEBOOK = "Facebook", "Facebook"
 
-    El teléfono se utiliza principalmente para seguimiento vía WhatsApp.
-    """
+
+class MessageDirection(models.TextChoices):
+    INBOUND = "inbound", "Entrante"
+    OUTBOUND = "outbound", "Saliente"
+
+
+class DeliveryStatus(models.TextChoices):
+    PENDING = "pending", "Pendiente"
+    SENT = "sent", "Enviado"
+    DELIVERED = "delivered", "Entregado"
+    FAILED = "failed", "Fallido"
+
+
+class Lead(models.Model):
+    """Prospecto captado desde el sitio web."""
 
     name = models.CharField("Nombre", max_length=150)
-    phone = models.CharField("Teléfono (WhatsApp)", max_length=20)
-    email = models.EmailField("Correo electrónico")
+    phone = models.CharField("Teléfono", max_length=20, blank=True)
+    email = models.EmailField("Correo electrónico", blank=True)
+    channel = models.CharField(
+        "Canal",
+        max_length=20,
+        choices=LeadChannel.choices,
+        default=LeadChannel.WEB,
+    )
+    external_contact_id = models.CharField(
+        "ID externo del contacto",
+        max_length=255,
+        blank=True,
+        db_index=True,
+    )
     interested_in = models.ForeignKey(
         Property,
         verbose_name="Interés en propiedad",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="leads",
+    )
+    assigned_agent = models.ForeignKey(
+        Agent,
+        verbose_name="Asesor asignado",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -61,12 +95,73 @@ class Lead(models.Model):
         choices=LeadStatus.choices,
         default=LeadStatus.NUEVO,
     )
+    last_message_preview = models.CharField(
+        "Último mensaje",
+        max_length=280,
+        blank=True,
+    )
+    unread_count = models.PositiveIntegerField("No leídos", default=0)
     created_at = models.DateTimeField("Creado el", auto_now_add=True)
+    updated_at = models.DateTimeField("Actualizado el", auto_now=True)
 
     class Meta:
         verbose_name = "Prospecto"
         verbose_name_plural = "Prospectos"
-        ordering = ["-created_at"]
+        ordering = ["-updated_at", "-created_at"]
 
     def __str__(self) -> str:
-        return f"{self.name} — {self.get_status_display()}"
+        return f"{self.name} — {self.get_channel_display()}"
+
+    def touch_from_message(self, preview: str, *, inbound: bool) -> None:
+        self.last_message_preview = preview[:280]
+        self.updated_at = timezone.now()
+        if inbound:
+            self.unread_count += 1
+        self.save(
+            update_fields=["last_message_preview", "updated_at", "unread_count"],
+        )
+
+
+class LeadMessage(models.Model):
+    """Mensaje individual dentro de una conversación de lead."""
+
+    lead = models.ForeignKey(
+        Lead,
+        verbose_name="Prospecto",
+        on_delete=models.CASCADE,
+        related_name="messages",
+    )
+    direction = models.CharField(
+        "Dirección",
+        max_length=10,
+        choices=MessageDirection.choices,
+    )
+    content = models.TextField("Contenido")
+    channel = models.CharField(
+        "Canal",
+        max_length=20,
+        choices=LeadChannel.choices,
+    )
+    external_id = models.CharField(
+        "ID externo del mensaje",
+        max_length=255,
+        blank=True,
+        db_index=True,
+    )
+    delivery_status = models.CharField(
+        "Estado de entrega",
+        max_length=12,
+        choices=DeliveryStatus.choices,
+        default=DeliveryStatus.SENT,
+    )
+    metadata = models.JSONField("Metadatos", default=dict, blank=True)
+    sent_at = models.DateTimeField("Enviado el", default=timezone.now)
+    read_at = models.DateTimeField("Leído el", null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Mensaje"
+        verbose_name_plural = "Mensajes"
+        ordering = ["sent_at"]
+
+    def __str__(self) -> str:
+        return f"{self.lead.name}: {self.content[:40]}"

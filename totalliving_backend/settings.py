@@ -13,7 +13,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 env = environ.Env(
     DEBUG=(bool, False),
-    ALLOWED_HOSTS=(list, ["localhost", "127.0.0.1"]),
+    ALLOWED_HOSTS=(list, ["localhost", "127.0.0.1", ".ngrok-free.dev", ".ngrok-free.app"]),
+    EASYBROKER_API_KEY=(str, ""),
+    EASYBROKER_API_BASE_URL=(str, "https://api.easybroker.com/v1"),
 )
 
 environ.Env.read_env(BASE_DIR / ".env")
@@ -46,6 +48,8 @@ INSTALLED_APPS = [
   # Apps del proyecto
     "properties",
     "crm",
+    "site_content",
+    "developments",
 ]
 
 MIDDLEWARE = [
@@ -60,10 +64,15 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-# Permite peticiones del frontend Next.js en desarrollo.
+# Permite peticiones del frontend Next.js en desarrollo y ngrok.
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+]
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https://.*\.ngrok-free\.dev$",
+    r"^https://.*\.ngrok-free\.app$",
+    r"^https://.*\.ngrok\.io$",
 ]
 
 REST_FRAMEWORK = {
@@ -72,7 +81,7 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.AllowAny",
     ],
-    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "DEFAULT_PAGINATION_CLASS": "totalliving_backend.pagination.StandardResultsSetPagination",
     "PAGE_SIZE": 12,
     "DEFAULT_FILTER_BACKENDS": [
         "django_filters.rest_framework.DjangoFilterBackend",
@@ -158,3 +167,8 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+# EasyBroker — sincronización de inventario
+EASYBROKER_API_KEY = env("EASYBROKER_API_KEY")
+EASYBROKER_API_BASE_URL = env("EASYBROKER_API_BASE_URL")
+

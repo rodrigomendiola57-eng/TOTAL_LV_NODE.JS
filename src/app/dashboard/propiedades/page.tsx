@@ -1,8 +1,10 @@
 import { PropertiesManager } from "@/components/dashboard/PropertiesManager";
-import { getAllProperties } from "@/lib/api";
+import { getDashboardProperties } from "@/lib/api";
+
+export const revalidate = 20;
 
 export default async function DashboardPropertiesPage() {
-  const properties = await getAllProperties();
+  const properties = await getDashboardProperties();
 
   return <PropertiesManager properties={properties} />;
 }

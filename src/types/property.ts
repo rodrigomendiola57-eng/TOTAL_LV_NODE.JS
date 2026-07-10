@@ -23,7 +23,24 @@ export type QueretaroZone =
   | "Zona Corregidora"
   | "Zona El Refugio / Norte de El Marqués"
   | "Zona Juriquilla / Jurica"
-  | "Zona Zibatá / Zakia";
+  | "Zona Zibatá / Zakia"
+  | "Otra / Sin clasificar";
+
+export type AmenityCategory =
+  | "Seguridad"
+  | "Amenidades del desarrollo"
+  | "Interiores"
+  | "Exteriores y áreas verdes"
+  | "Servicios"
+  | "Ubicación y vistas";
+
+export interface Amenity {
+  id: number;
+  name: string;
+  slug: string;
+  category: AmenityCategory;
+  icon: string;
+}
 
 export interface Property {
   id: number;
@@ -51,12 +68,17 @@ export interface Property {
   build_year: number | null;
   environments: number;
   maintenance_fee: string | null;
+  amenities: number[];
+  amenities_detail?: Amenity[];
   is_featured: boolean;
+  easybroker_id?: string | null;
+  easybroker_synced_at?: string | null;
   created_at: string;
   updated_at: string;
   latitude?: number;
   longitude?: number;
   cover_image_url?: string | null;
+  technical_sheet_url?: string | null;
 }
 
 export interface PropertyFormValues {
@@ -85,6 +107,7 @@ export interface PropertyFormValues {
   build_year: string;
   environments: string;
   maintenance_fee: string;
+  amenities: number[];
   is_featured: boolean;
 }
 
@@ -115,6 +138,7 @@ export interface PropertyCreatePayload {
   build_year: number | null;
   environments: number;
   maintenance_fee: number | null;
+  amenities: number[];
   is_featured: boolean;
 }
 

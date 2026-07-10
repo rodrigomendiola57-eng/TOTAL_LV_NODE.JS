@@ -1,14 +1,23 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Star } from "lucide-react";
+import { Star, type LucideIcon } from "lucide-react";
 
 interface FeaturedToggleProps {
   checked: boolean;
   onChange: (checked: boolean) => void;
+  title?: string;
+  description?: string;
+  icon?: LucideIcon;
 }
 
-export function FeaturedToggle({ checked, onChange }: FeaturedToggleProps) {
+export function FeaturedToggle({
+  checked,
+  onChange,
+  title = "Propiedad destacada",
+  description = "Aparecerá en la sección premium del sitio público.",
+  icon: Icon = Star,
+}: FeaturedToggleProps) {
   return (
     <button
       type="button"
@@ -31,14 +40,15 @@ export function FeaturedToggle({ checked, onChange }: FeaturedToggleProps) {
               : "border-tl-gold/20 text-tl-beige/40",
           )}
         >
-          <Star className="h-4 w-4" fill={checked ? "currentColor" : "none"} />
+          <Icon
+            className="h-4 w-4"
+            fill={Icon === Star && checked ? "currentColor" : "none"}
+          />
         </span>
         <div>
-          <p className="font-outfit font-light text-sm text-tl-beige">
-            Propiedad destacada
-          </p>
+          <p className="font-outfit font-light text-sm text-tl-beige">{title}</p>
           <p className="mt-0.5 font-outfit font-light text-xs text-tl-beige/50">
-            Aparecerá en la sección premium del sitio público.
+            {description}
           </p>
         </div>
       </div>
@@ -58,3 +68,4 @@ export function FeaturedToggle({ checked, onChange }: FeaturedToggleProps) {
     </button>
   );
 }
+

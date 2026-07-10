@@ -28,6 +28,7 @@ export function propertyToFormValues(property: Property): PropertyFormValues {
     build_year: property.build_year ? String(property.build_year) : "",
     environments: String(property.environments),
     maintenance_fee: property.maintenance_fee ?? "",
+    amenities: property.amenities ?? [],
     is_featured: property.is_featured,
   };
 }
@@ -60,6 +61,7 @@ export function formValuesToPayload(values: PropertyFormValues): PropertyCreateP
     build_year: values.build_year ? Number(values.build_year) : null,
     environments: Number(values.environments),
     maintenance_fee: values.maintenance_fee ? Number(values.maintenance_fee) : null,
+    amenities: values.amenities ?? [],
     is_featured: values.is_featured,
   };
 }

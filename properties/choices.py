@@ -60,6 +60,18 @@ class QueretaroZone(models.TextChoices):
         "Zona Juriquilla / Jurica",
     )
     ZIBATA_ZAKIA = "Zona Zibatá / Zakia", "Zona Zibatá / Zakia"
+    OTRA = "Otra / Sin clasificar", "Otra / Sin clasificar"
+
+
+class AmenityCategory(models.TextChoices):
+    """Agrupaciones para el catálogo de amenidades."""
+
+    SEGURIDAD = "Seguridad", "Seguridad"
+    DESARROLLO = "Amenidades del desarrollo", "Amenidades del desarrollo"
+    INTERIOR = "Interiores", "Interiores"
+    EXTERIOR = "Exteriores y áreas verdes", "Exteriores y áreas verdes"
+    SERVICIOS = "Servicios", "Servicios"
+    UBICACION = "Ubicación y vistas", "Ubicación y vistas"
 
 
 class MexicanState(models.TextChoices):

@@ -32,6 +32,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -48,6 +49,9 @@ venv/
 *.sqlite3
 db.sqlite3
 /media/
+
+# videos de hero (demasiado grandes para GitHub; copiar manualmente entre PCs)
+/public/videos/*.mp4
 
 # python env
 *.egg-info/

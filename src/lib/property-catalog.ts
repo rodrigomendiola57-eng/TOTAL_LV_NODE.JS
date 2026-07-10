@@ -1,7 +1,10 @@
-import type { Property } from "@/types/property";
+import type { Property, PropertyType, QueretaroZone } from "@/types/property";
 
 export type PropertySortOption = "price-asc" | "price-desc" | "newest";
 export type BedroomFilter = "all" | "1" | "2" | "3" | "4";
+export type CatalogViewMode = "lista" | "mapa";
+export type ZoneFilter = QueretaroZone | "all";
+export type PropertyTypeFilter = PropertyType | "all";
 
 export function sortProperties(
   properties: Property[],
@@ -40,4 +43,13 @@ export function applyCatalogFilters(
   bedrooms: BedroomFilter,
 ): Property[] {
   return sortProperties(filterByBedrooms(properties, bedrooms), sort);
+}
+
+export function hasCatalogMapCoordinates(property: Property): boolean {
+  return (
+    property.latitude != null &&
+    property.longitude != null &&
+    Number.isFinite(property.latitude) &&
+    Number.isFinite(property.longitude)
+  );
 }

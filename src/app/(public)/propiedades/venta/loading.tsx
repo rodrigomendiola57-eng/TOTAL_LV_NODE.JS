@@ -1,5 +1,5 @@
 import { PropertyCatalogSkeleton } from "@/components/properties/PropertyCatalogSkeleton";
 
-export default function PropiedadesVentaLoading() {
+export default function PropertyCatalogLoading() {
   return <PropertyCatalogSkeleton />;
 }

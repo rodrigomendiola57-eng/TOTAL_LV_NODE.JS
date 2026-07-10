@@ -4,7 +4,47 @@ from __future__ import annotations
 
 from django.contrib.gis.db import models
 
-from .choices import MexicanState, OperationType, PropertyType, QueretaroZone
+from .choices import (
+    AmenityCategory,
+    MexicanState,
+    OperationType,
+    PropertyType,
+    QueretaroZone,
+)
+
+
+class Amenity(models.Model):
+    """
+    Amenidad o característica de un desarrollo/residencia.
+
+    Forma un catálogo reutilizable (alberca, gimnasio, caseta de vigilancia,
+    etc.) que se asocia a las propiedades mediante una relación N a N.
+    """
+
+    name = models.CharField("Nombre", max_length=80, unique=True)
+    slug = models.SlugField("Slug", max_length=90, unique=True)
+    category = models.CharField(
+        "Categoría",
+        max_length=40,
+        choices=AmenityCategory.choices,
+        default=AmenityCategory.DESARROLLO,
+    )
+    icon = models.CharField(
+        "Ícono",
+        max_length=40,
+        blank=True,
+        help_text="Nombre del ícono (lucide) usado en el frontend.",
+    )
+    order = models.PositiveIntegerField("Orden", default=0)
+    is_active = models.BooleanField("Activa", default=True)
+
+    class Meta:
+        verbose_name = "Amenidad"
+        verbose_name_plural = "Amenidades"
+        ordering = ["category", "order", "name"]
+
+    def __str__(self) -> str:
+        return self.name
 
 
 class Property(models.Model):
@@ -90,7 +130,32 @@ class Property(models.Model):
         blank=True,
     )
 
+    amenities = models.ManyToManyField(
+        Amenity,
+        related_name="properties",
+        blank=True,
+        verbose_name="Amenidades",
+    )
+
     is_featured = models.BooleanField("Destacada", default=False)
+    easybroker_id = models.CharField(
+        "ID EasyBroker",
+        max_length=32,
+        blank=True,
+        null=True,
+        unique=True,
+    )
+    easybroker_synced_at = models.DateTimeField(
+        "Última sync EasyBroker",
+        null=True,
+        blank=True,
+    )
+    technical_sheet = models.FileField(
+        "Ficha técnica (PDF)",
+        upload_to="properties/technical-sheets/%Y/%m/",
+        blank=True,
+        null=True,
+    )
     created_at = models.DateTimeField("Creada el", auto_now_add=True)
     updated_at = models.DateTimeField("Actualizada el", auto_now=True)
 

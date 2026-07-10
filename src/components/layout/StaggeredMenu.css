@@ -208,12 +208,13 @@
 .sm-overlay-logo-title {
   font-family: var(--font-cormorant), serif;
   font-weight: 300;
-  font-size: clamp(1.55rem, 7.2vw, 2.35rem);
+  font-size: clamp(1.35rem, 6.5vw, 2.35rem);
   letter-spacing: 0.05em;
   color: #f2ece0;
   line-height: 1;
   white-space: nowrap;
-  flex-shrink: 0;
+  flex-shrink: 1;
+  min-width: 0;
 }
 
 .sm-overlay-footer {

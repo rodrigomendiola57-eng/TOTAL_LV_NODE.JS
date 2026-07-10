@@ -35,6 +35,7 @@ export const QUERETARO_ZONES: QueretaroZone[] = [
   "Zona El Refugio / Norte de El Marqués",
   "Zona Juriquilla / Jurica",
   "Zona Zibatá / Zakia",
+  "Otra / Sin clasificar",
 ];
 
 /** Centro por defecto: Querétaro, Qro. */

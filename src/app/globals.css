@@ -6,17 +6,54 @@
   --font-outfit: var(--font-outfit);
 }
 
+html {
+  scroll-behavior: smooth;
+  overflow-x: clip;
+}
+
 body {
   font-family: var(--font-outfit), sans-serif;
   font-weight: 300;
   letter-spacing: 0.02em;
   background: #1a1a18;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
-html {
-  scroll-behavior: smooth;
-  overflow-x: hidden;
+/* Chrome móvil: scroll nativo sin smooth ni overscroll que pelee con la UI */
+@media (max-width: 1023px) {
+  html,
+  body {
+    scroll-behavior: auto;
+  }
+}
+
+@media (max-width: 1023px) and (pointer: coarse) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  body {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (max-width: 1023px) {
+  .home-ambient-orb {
+    filter: none !important;
+  }
+}
+
+/* Evitar backdrop-filter en barras fijas/sticky en táctil (muy costoso en Chrome) */
+@media (max-width: 1023px) and (pointer: coarse) {
+  .tl-mobile-solid-chrome {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+
+  [class*="backdrop-blur"] {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
 }
 
 .text-fluid-h1 {
@@ -42,4 +79,13 @@ html {
   font-size: clamp(0.95rem, 1.2vw, 1.1rem);
   line-height: 1.75;
   letter-spacing: 0.02em;
+}
+
+@keyframes about-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
 }
