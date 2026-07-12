@@ -1,11 +1,13 @@
 "use client";
 
+import { lockBodyScroll } from "@/lib/lock-body-scroll";
 import { resolveMediaUrl } from "@/lib/media-url";
 import { cn } from "@/lib/utils";
 import type { PropertyPhoto } from "@/types/property-photo";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Grid3x3, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 
 interface PropertyDetailGalleryProps {
   photos: PropertyPhoto[];
@@ -42,6 +44,11 @@ export function PropertyDetailGallery({
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [portalReady, setPortalReady] = useState(false);
+
+  useEffect(() => {
+    setPortalReady(true);
+  }, []);
 
   const activeSlide = slides[activeIndex] ?? slides[0];
   const activeUrl = getPhotoUrl(
@@ -77,17 +84,126 @@ export function PropertyDetailGallery({
       if (event.key === "ArrowRight") goTo(1);
     };
 
-    document.body.style.overflow = "hidden";
+    const unlock = lockBodyScroll();
     window.addEventListener("keydown", onKeyDown);
 
+    const preventTouchScroll = (e: TouchEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target?.closest("[data-property-lightbox]")) return;
+      e.preventDefault();
+    };
+    document.addEventListener("touchmove", preventTouchScroll, {
+      passive: false,
+    });
+
     return () => {
-      document.body.style.overflow = "";
+      unlock();
       window.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("touchmove", preventTouchScroll);
     };
   }, [lightboxOpen, goTo]);
 
   const previewSlides = slides.slice(0, PREVIEW_COUNT);
   const remainingCount = Math.max(0, slides.length - PREVIEW_COUNT);
+
+  const lightbox = lightboxOpen ? (
+    <motion.div
+      data-property-lightbox
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[200] flex flex-col overscroll-none bg-tl-black/96 backdrop-blur-md"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Galería en pantalla completa"
+    >
+      <div className="flex items-center justify-between px-4 py-4 sm:px-6">
+        <p className="font-outfit text-xs font-light uppercase tracking-[0.18em] text-tl-beige/60">
+          {activeIndex + 1} / {slides.length}
+        </p>
+        <button
+          type="button"
+          onClick={() => setLightboxOpen(false)}
+          className="rounded-full border border-white/15 p-2.5 text-tl-beige transition-colors hover:border-tl-gold/50 hover:text-tl-gold"
+          aria-label="Cerrar galería"
+        >
+          <X className="h-5 w-5" />
+        </button>
+      </div>
+
+      <div className="relative flex flex-1 items-center justify-center px-4 pb-4 sm:px-12">
+        <button
+          type="button"
+          onClick={() => goTo(-1)}
+          className="absolute left-3 z-10 rounded-full border border-white/15 bg-tl-black/50 p-3 text-tl-beige backdrop-blur-sm transition-colors hover:border-tl-gold/50 sm:left-6"
+          aria-label="Foto anterior"
+        >
+          <ChevronLeft className="h-5 w-5" />
+        </button>
+
+        <motion.div
+          key={activeIndex}
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.98 }}
+          transition={{ duration: 0.2 }}
+          className="max-h-[72vh] w-full max-w-6xl overflow-hidden rounded-2xl"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={getPhotoUrl(
+              slides[activeIndex]?.id !== -1
+                ? (slides[activeIndex] as PropertyPhoto)
+                : null,
+              slides[activeIndex]?.url ?? fallbackUrl,
+            )}
+            alt={slides[activeIndex]?.alt_text || title}
+            className="mx-auto max-h-[72vh] w-full object-contain"
+          />
+        </motion.div>
+
+        <button
+          type="button"
+          onClick={() => goTo(1)}
+          className="absolute right-3 z-10 rounded-full border border-white/15 bg-tl-black/50 p-3 text-tl-beige backdrop-blur-sm transition-colors hover:border-tl-gold/50 sm:right-6"
+          aria-label="Foto siguiente"
+        >
+          <ChevronRight className="h-5 w-5" />
+        </button>
+      </div>
+
+      {slides.length > 1 ? (
+        <div className="border-t border-white/8 px-4 py-4 sm:px-6">
+          <div className="mx-auto flex max-w-4xl gap-2 overflow-x-auto pb-1">
+            {slides.map((photo, index) => (
+              <button
+                key={photo.id === -1 ? `fallback-${index}` : photo.id}
+                type="button"
+                onClick={() => setActiveIndex(index)}
+                className={cn(
+                  "relative h-14 w-20 shrink-0 overflow-hidden rounded-lg border transition-all sm:h-16 sm:w-24",
+                  index === activeIndex
+                    ? "border-tl-gold ring-1 ring-tl-gold/50"
+                    : "border-white/10 opacity-70 hover:opacity-100",
+                )}
+                aria-label={`Ir a foto ${index + 1}`}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={getPhotoUrl(
+                    photo.id !== -1 ? photo : null,
+                    photo.url ?? fallbackUrl,
+                  )}
+                  alt=""
+                  className="h-full w-full object-cover"
+                />
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
+    </motion.div>
+  ) : null;
 
   return (
     <>
@@ -221,105 +337,12 @@ export function PropertyDetailGallery({
         ) : null}
       </section>
 
-      <AnimatePresence>
-        {lightboxOpen ? (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex flex-col bg-tl-black/96 backdrop-blur-md"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Galería en pantalla completa"
-          >
-            <div className="flex items-center justify-between px-4 py-4 sm:px-6">
-              <p className="font-outfit text-xs font-light uppercase tracking-[0.18em] text-tl-beige/60">
-                {activeIndex + 1} / {slides.length}
-              </p>
-              <button
-                type="button"
-                onClick={() => setLightboxOpen(false)}
-                className="rounded-full border border-white/15 p-2.5 text-tl-beige transition-colors hover:border-tl-gold/50 hover:text-tl-gold"
-                aria-label="Cerrar galería"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <div className="relative flex flex-1 items-center justify-center px-4 pb-4 sm:px-12">
-              <button
-                type="button"
-                onClick={() => goTo(-1)}
-                className="absolute left-3 z-10 rounded-full border border-white/15 bg-tl-black/50 p-3 text-tl-beige backdrop-blur-sm transition-colors hover:border-tl-gold/50 sm:left-6"
-                aria-label="Foto anterior"
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </button>
-
-              <motion.div
-                key={activeIndex}
-                initial={{ opacity: 0, scale: 0.98 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.98 }}
-                transition={{ duration: 0.2 }}
-                className="max-h-[72vh] w-full max-w-6xl overflow-hidden rounded-2xl"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={getPhotoUrl(
-                    slides[activeIndex]?.id !== -1
-                      ? (slides[activeIndex] as PropertyPhoto)
-                      : null,
-                    slides[activeIndex]?.url ?? fallbackUrl,
-                  )}
-                  alt={slides[activeIndex]?.alt_text || title}
-                  className="mx-auto max-h-[72vh] w-full object-contain"
-                />
-              </motion.div>
-
-              <button
-                type="button"
-                onClick={() => goTo(1)}
-                className="absolute right-3 z-10 rounded-full border border-white/15 bg-tl-black/50 p-3 text-tl-beige backdrop-blur-sm transition-colors hover:border-tl-gold/50 sm:right-6"
-                aria-label="Foto siguiente"
-              >
-                <ChevronRight className="h-5 w-5" />
-              </button>
-            </div>
-
-            {slides.length > 1 ? (
-              <div className="border-t border-white/8 px-4 py-4 sm:px-6">
-                <div className="mx-auto flex max-w-4xl gap-2 overflow-x-auto pb-1">
-                  {slides.map((photo, index) => (
-                    <button
-                      key={photo.id === -1 ? `fallback-${index}` : photo.id}
-                      type="button"
-                      onClick={() => setActiveIndex(index)}
-                      className={cn(
-                        "relative h-14 w-20 shrink-0 overflow-hidden rounded-lg border transition-all sm:h-16 sm:w-24",
-                        index === activeIndex
-                          ? "border-tl-gold ring-1 ring-tl-gold/50"
-                          : "border-white/10 opacity-70 hover:opacity-100",
-                      )}
-                      aria-label={`Ir a foto ${index + 1}`}
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={getPhotoUrl(
-                          photo.id !== -1 ? photo : null,
-                          photo.url ?? fallbackUrl,
-                        )}
-                        alt=""
-                        className="h-full w-full object-cover"
-                      />
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
+      {portalReady
+        ? createPortal(
+            <AnimatePresence>{lightbox}</AnimatePresence>,
+            document.body,
+          )
+        : null}
     </>
   );
 }

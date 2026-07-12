@@ -58,7 +58,7 @@ export function NumberStepper({
           step={step}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full bg-transparent text-center font-cormorant text-3xl text-tl-beige outline-none"
+          className="w-full bg-transparent text-center font-outfit font-extralight text-3xl text-tl-beige outline-none"
         />
         <button
           type="button"

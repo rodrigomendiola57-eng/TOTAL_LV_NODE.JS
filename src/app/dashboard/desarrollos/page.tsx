@@ -22,7 +22,7 @@ export default function DashboardDesarrollosHubPage() {
         <p className="font-outfit text-[10px] uppercase tracking-[0.22em] text-tl-gold/80">
           Módulo
         </p>
-        <h1 className="mt-2 font-cormorant text-4xl font-light text-tl-beige">
+        <h1 className="mt-2 font-outfit text-4xl font-extralight text-tl-beige">
           Desarrollos
         </h1>
         <p className="mt-3 max-w-2xl font-outfit text-sm font-light leading-relaxed text-tl-beige/60">
@@ -38,7 +38,7 @@ export default function DashboardDesarrollosHubPage() {
             href={item.href}
             className="rounded-2xl border border-tl-gold/20 bg-[#0a0a0a]/70 p-6 transition-colors hover:border-tl-gold/45"
           >
-            <h2 className="font-cormorant text-2xl font-light text-tl-beige">
+            <h2 className="font-outfit text-2xl font-extralight text-tl-beige">
               {item.title}
             </h2>
             <p className="mt-2 font-outfit text-sm font-light text-tl-beige/55">

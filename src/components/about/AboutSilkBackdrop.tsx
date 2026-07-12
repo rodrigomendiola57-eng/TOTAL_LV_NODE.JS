@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
-import { matchesLiteMotionViewport } from "@/hooks/use-lite-motion";
+import { usePathname } from "next/navigation";
 
 const Silk = dynamic(
   () => import("@/components/ui/Silk").then((mod) => mod.Silk),
@@ -10,45 +10,48 @@ const Silk = dynamic(
 );
 
 /**
- * Fondo para el módulo Nosotros. En móvil usa gradiente estático para evitar
- * jank de scroll con WebGL. En desktop Silk cubre toda la página y se pausa
- * cuando la pestaña está oculta o el usuario prefiere menos movimiento.
+ * Fondo Silk de Nosotros / Inicio / desarrollos.
+ * Mismo Silk en móvil y desktop (antes el fallback estático en móvil
+ * era casi invisible sobre #1a1a18 y parecía que “no había background”).
+ * Solo se sustituye por gradiente si el usuario pide reduced-motion.
  */
 export function AboutSilkBackdrop() {
   const rootRef = useRef<HTMLDivElement>(null);
-  const [paused, setPaused] = useState(true);
-  const [useStaticBackground, setUseStaticBackground] = useState(true);
+  const pathname = usePathname();
+  const [paused, setPaused] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
+  const [mobilePerf, setMobilePerf] = useState(false);
 
   useEffect(() => {
-    const isLite = matchesLiteMotionViewport();
-    setUseStaticBackground(isLite);
-
-    if (isLite) {
-      setPaused(true);
-      return;
-    }
-
     const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const mobileQuery = window.matchMedia(
+      "(max-width: 1023px), (pointer: coarse)",
+    );
 
-    const syncPaused = () => {
-      setPaused(motionQuery.matches || document.hidden);
+    const sync = () => {
+      const reduced = motionQuery.matches;
+      setReducedMotion(reduced);
+      setMobilePerf(mobileQuery.matches);
+      setPaused(reduced || document.hidden);
     };
 
-    syncPaused();
-    motionQuery.addEventListener("change", syncPaused);
-    document.addEventListener("visibilitychange", syncPaused);
+    sync();
+    motionQuery.addEventListener("change", sync);
+    mobileQuery.addEventListener("change", sync);
+    document.addEventListener("visibilitychange", sync);
 
     return () => {
-      motionQuery.removeEventListener("change", syncPaused);
-      document.removeEventListener("visibilitychange", syncPaused);
+      motionQuery.removeEventListener("change", sync);
+      mobileQuery.removeEventListener("change", sync);
+      document.removeEventListener("visibilitychange", sync);
     };
   }, []);
 
-  if (useStaticBackground) {
+  if (reducedMotion) {
     return (
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 -z-10 min-h-full overflow-hidden bg-[#1a1a18]"
+        className="pointer-events-none absolute inset-0 z-0 overflow-hidden bg-[#1a1a18]"
       >
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_120%_80%_at_50%_-10%,rgba(90,94,72,0.42),transparent_55%)]" />
         <div className="absolute inset-0 bg-[linear-gradient(180deg,#1c1e18_0%,#1a1a18_38%,#141412_100%)]" />
@@ -61,15 +64,17 @@ export function AboutSilkBackdrop() {
     <div
       ref={rootRef}
       aria-hidden
-      className="pointer-events-none absolute inset-x-0 top-0 -z-10 min-h-full overflow-hidden"
+      className="pointer-events-none absolute inset-0 z-0 overflow-hidden"
     >
       <Silk
+        key={pathname}
         speed={5}
         scale={1.15}
         color="#5A5E48"
         noiseIntensity={1.5}
         rotation={0}
         paused={paused}
+        dpr={mobilePerf ? 1 : [1, 1.25]}
         className="absolute inset-0 h-full w-full"
       />
       <div className="absolute inset-0 bg-[#121210]/28" />

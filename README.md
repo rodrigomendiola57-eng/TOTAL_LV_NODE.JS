@@ -46,6 +46,7 @@ Con Django y Next.js en marcha (`runserver` + `npm run dev`):
 | Módulo | URL |
 |--------|-----|
 | **Sitio público** | [http://localhost:3000](http://localhost:3000) |
+| **Login panel** | [http://localhost:3000/login](http://localhost:3000/login) |
 | **Dashboard (panel Total Living)** | [http://localhost:3000/dashboard](http://localhost:3000/dashboard) |
 | **Propiedades (dashboard)** | [http://localhost:3000/dashboard/propiedades](http://localhost:3000/dashboard/propiedades) |
 | **Desarrollos (dashboard)** | [http://localhost:3000/dashboard/desarrollos](http://localhost:3000/dashboard/desarrollos) |
@@ -77,7 +78,13 @@ El panel operativo de Total Living (catálogo, formularios, CRM) vive en Next.js
 
 **http://localhost:3000/dashboard**
 
-Por ahora no tiene login propio; úsalo en local con el backend Django corriendo en el puerto 8000.
+Requiere login en `/login`. Los usuarios se crean en **Django Admin → Users**:
+
+1. Crea el usuario (usuario + contraseña).
+2. Marca **Staff status** (obligatorio para entrar al panel).
+3. Opcional: **Superuser** si también debe usar `/admin/`.
+
+Con ese usuario/contraseña entra en [http://localhost:3000/login](http://localhost:3000/login). El sitio público sigue sin login.
 
 ### CRM web
 
@@ -88,6 +95,29 @@ Tras actualizar el backend, aplica migraciones:
 ```
 
 El formulario de contacto en `/contacto` crea leads con canal **Web** y aparecen en `/dashboard/crm`. Desde el CRM puedes filtrar por estatus, buscar por nombre/correo/teléfono, cambiar estatus y agregar notas internas por lead.
+
+## Compartir propiedades (WhatsApp / redes / correo)
+
+Las fichas generan una **vista previa con foto y marca Total Living** (Open Graph). El dominio de producción es:
+
+```env
+NEXT_PUBLIC_SITE_URL=https://www.totalliving.mx
+```
+
+Hoy [totalliving.mx](https://www.totalliving.mx/) sigue en la V1; las previews con el diseño nuevo solo se verán cuando este portal esté publicado en ese dominio. En local, WhatsApp/Facebook no pueden scrapear `localhost`.
+
+## Zonas (catálogo CMS)
+
+Backend + dashboard para el módulo público `/zonas`:
+
+```powershell
+.\venv\Scripts\python.exe manage.py migrate zones
+.\venv\Scripts\python.exe manage.py seed_zones
+```
+
+- API: `GET/POST /api/zones/`, `GET/PATCH/DELETE /api/zones/{slug}/`
+- Panel: `/dashboard/zonas` → catálogo
+- Si la API no responde, el front usa el fallback estático.
 
 ## Ver en el celular
 
@@ -181,3 +211,5 @@ Los mapas del sitio usan **Google Maps** (catálogo, detalle, desarrollos, picke
 - **Fase 2 (piloto detalle):** [docs/GOOGLE_MAPS_FASE2.md](docs/GOOGLE_MAPS_FASE2.md)
 - **Fase 3 (catálogo + resto):** [docs/GOOGLE_MAPS_FASE3.md](docs/GOOGLE_MAPS_FASE3.md)
 - Variable: `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` en `.env`
+- **Media / uploads (seguridad):** [docs/MEDIA_SECURITY.md](docs/MEDIA_SECURITY.md)
+- **Fase 3 (CSP, edge rate limit, alertas):** [docs/SECURITY_FASE3.md](docs/SECURITY_FASE3.md)

@@ -183,6 +183,29 @@ class DevelopmentUnitModel(models.Model):
     available = models.PositiveIntegerField(null=True, blank=True)
     order = models.PositiveIntegerField(default=0)
 
+    # Recorrido 3D (Matterport u otros providers compatibles por URL)
+    tour_provider = models.CharField(
+        max_length=32,
+        blank=True,
+        default="matterport",
+        help_text="Proveedor del tour 3D (matterport, …).",
+    )
+    tour_id = models.CharField(
+        max_length=64,
+        blank=True,
+        help_text="ID limpio del space (ej. Matterport m=XXXXXXXXXXX).",
+    )
+    tour_url = models.URLField(
+        max_length=500,
+        blank=True,
+        help_text="URL original pegada en el dashboard.",
+    )
+    tour_title = models.CharField(max_length=120, blank=True)
+    tour_enabled = models.BooleanField(
+        default=False,
+        help_text="Si está activo, se muestra el embed en la ficha pública.",
+    )
+
     class Meta:
         ordering = ["order", "id"]
         unique_together = [("development", "slug")]

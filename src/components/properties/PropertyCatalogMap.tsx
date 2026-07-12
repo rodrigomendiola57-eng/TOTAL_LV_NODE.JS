@@ -206,7 +206,7 @@ function CatalogGoogleMap({
     >
       <div
         className={cn(
-          "relative min-h-0",
+          "relative isolate z-0 min-h-0 overflow-hidden",
           sidebarOpen ? "min-h-0 lg:flex-1" : "min-h-0 flex-1",
         )}
       >
@@ -251,13 +251,13 @@ function CatalogGoogleMap({
         <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/5" />
 
         {sidebarOpen ? (
-          <div className="pointer-events-none absolute left-3 top-3 z-[400] max-w-[70%] rounded-full border border-white/10 bg-tl-black/80 px-2.5 py-1 font-outfit text-[9px] font-light uppercase tracking-[0.12em] text-tl-beige/65 backdrop-blur-md sm:left-4 sm:top-4 sm:max-w-none sm:px-3 sm:py-1.5 sm:text-[10px]">
+          <div className="pointer-events-none absolute left-3 top-3 z-10 max-w-[70%] rounded-full border border-white/10 bg-tl-black/80 px-2.5 py-1 font-outfit text-[9px] font-light uppercase tracking-[0.12em] text-tl-beige/65 backdrop-blur-md sm:left-4 sm:top-4 sm:max-w-none sm:px-3 sm:py-1.5 sm:text-[10px]">
             Toca un círculo → zoom
           </div>
         ) : null}
 
         {selectedProperty ? (
-          <div className="pointer-events-auto absolute inset-x-0 bottom-0 z-[460] max-lg:pb-[max(0px,env(safe-area-inset-bottom,0px))] sm:bottom-5 sm:left-4 sm:right-auto sm:max-w-[18rem] sm:pb-0">
+          <div className="pointer-events-auto absolute inset-x-0 bottom-0 z-30 max-lg:pb-[max(0px,env(safe-area-inset-bottom,0px))] sm:bottom-5 sm:left-4 sm:right-auto sm:max-w-[18rem] sm:pb-0">
             <PropertyMapPreviewCard
               property={selectedProperty}
               onClose={onDismissSelection}

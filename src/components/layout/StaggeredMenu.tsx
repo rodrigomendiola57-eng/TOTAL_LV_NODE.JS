@@ -396,6 +396,13 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
 
   const closeMenu = useCallback(() => {
     if (!openRef.current) return;
+    const active = document.activeElement;
+    if (
+      active instanceof HTMLElement &&
+      panelRef.current?.contains(active)
+    ) {
+      active.blur();
+    }
     setMenuOpen(false);
     onMenuClose?.();
     playClose();

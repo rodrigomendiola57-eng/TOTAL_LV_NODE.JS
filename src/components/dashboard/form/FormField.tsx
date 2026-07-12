@@ -52,7 +52,7 @@ export function FormSection({
           </span>
         ) : null}
         <div>
-          <h3 className="font-cormorant text-2xl font-light text-tl-beige">{title}</h3>
+          <h3 className="font-outfit text-2xl font-extralight text-tl-beige">{title}</h3>
           {description ? (
             <p className="mt-1 font-outfit font-light text-xs leading-relaxed text-tl-beige/55">
               {description}

@@ -113,7 +113,7 @@ export function DevelopmentsCatalogManager({
           <p className="font-outfit text-[10px] uppercase tracking-[0.2em] text-tl-gold/80">
             Catálogo
           </p>
-          <h2 className="mt-1 font-cormorant text-3xl font-light text-tl-beige sm:text-4xl">
+          <h2 className="mt-1 font-outfit text-3xl font-extralight text-tl-beige sm:text-4xl">
             Desarrollos
           </h2>
           <p className="mt-2 max-w-xl font-outfit text-sm font-light text-tl-beige/55">
@@ -144,7 +144,7 @@ export function DevelopmentsCatalogManager({
         </div>
       ) : rows.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-tl-gold/25 bg-white/[0.02] px-6 py-16 text-center">
-          <p className="font-cormorant text-2xl font-light text-tl-beige">
+          <p className="font-outfit text-2xl font-extralight text-tl-beige">
             Empieza tu portafolio
           </p>
           <p className="mx-auto mt-2 max-w-md font-outfit text-sm font-light text-tl-beige/55">
@@ -191,7 +191,7 @@ export function DevelopmentsCatalogManager({
                   <div className="flex flex-1 flex-col justify-between gap-4 p-4 sm:p-5">
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="font-cormorant text-2xl font-light text-tl-beige">
+                        <h3 className="font-outfit text-2xl font-extralight text-tl-beige">
                           {row.name}
                         </h3>
                         <span

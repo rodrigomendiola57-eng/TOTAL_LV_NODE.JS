@@ -66,46 +66,46 @@ export default async function DashboardHomePage() {
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       <header>
-        <p className="font-outfit font-light text-[10px] uppercase tracking-[0.22em] text-tl-gold">
-          Resumen
+        <p className="font-outfit text-[10px] font-light uppercase tracking-[0.22em] text-tl-gold">
+          Dashboard
         </p>
-        <h1 className="mt-2 font-cormorant text-4xl font-light text-tl-beige">
+        <h1 className="mt-2 font-outfit text-[1.85rem] font-extralight leading-tight text-tl-beige sm:text-4xl">
           Panel de Control
         </h1>
-        <p className="mt-2 max-w-2xl font-outfit font-light text-sm text-tl-beige/65">
+        <p className="mt-2 max-w-2xl font-outfit text-sm font-light leading-relaxed text-tl-beige/65">
           Vista general del catálogo inmobiliario y la actividad comercial de
           Total Living.
         </p>
       </header>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         {stats.map((stat) => (
           <Link
             key={stat.label}
             href={stat.href}
             prefetch
-            className="group rounded-2xl border border-tl-gold/20 bg-tl-black/60 p-5 transition-colors hover:border-tl-gold/40 hover:bg-tl-black/80"
+            className="group rounded-2xl border border-tl-gold/15 bg-[#0a0a0a] p-4 transition-colors active:border-tl-gold/40 sm:p-5 sm:hover:border-tl-gold/30"
           >
-            <div className="flex items-center justify-between">
-              <p className="font-outfit font-light text-[10px] uppercase tracking-[0.16em] text-tl-beige/50">
+            <div className="flex items-start justify-between gap-2">
+              <p className="font-outfit text-[9px] font-light uppercase leading-snug tracking-[0.14em] text-tl-beige/45 sm:text-[10px] sm:tracking-[0.16em]">
                 {stat.label}
               </p>
-              <stat.icon className="h-4 w-4 text-tl-gold/70 transition-colors group-hover:text-tl-gold" />
+              <stat.icon className="mt-0.5 h-4 w-4 shrink-0 text-tl-gold/80 transition-colors group-hover:text-tl-gold" />
             </div>
-            <p className="mt-4 font-cormorant text-4xl text-tl-beige">
+            <p className="mt-3 font-outfit text-3xl font-extralight text-tl-beige sm:mt-4 sm:text-4xl">
               {stat.value}
             </p>
           </Link>
         ))}
       </div>
 
-      <section className="rounded-2xl border border-tl-gold/20 bg-tl-black/60 p-6">
-        <p className="font-outfit font-light text-[10px] uppercase tracking-[0.18em] text-tl-gold">
+      <section className="rounded-2xl border border-tl-gold/15 bg-[#0a0a0a] p-4 sm:p-6">
+        <p className="font-outfit text-[10px] font-extralight uppercase tracking-[0.18em] text-tl-gold">
           Accesos rápidos
         </p>
-        <div className="mt-5 flex flex-wrap gap-3">
+        <div className="mt-4 flex flex-col gap-2.5 sm:mt-5 sm:flex-row sm:flex-wrap sm:gap-3">
           <QuickLink href="/dashboard/propiedades" label="Gestionar propiedades" />
           <QuickLink href="/dashboard/crm" label="Ver leads del sitio" />
           <QuickLink href="/dashboard/desarrollos" label="Ver desarrollos" />
@@ -120,7 +120,7 @@ function QuickLink({ href, label }: { href: string; label: string }) {
     <Link
       href={href}
       prefetch
-      className="rounded-full border border-tl-gold/35 px-5 py-2.5 font-outfit font-light text-xs uppercase tracking-[0.14em] text-tl-beige/80 transition-colors hover:border-tl-gold hover:text-tl-gold"
+      className="inline-flex min-h-12 items-center justify-center rounded-full border border-tl-gold/35 px-5 py-3 text-center font-outfit text-[11px] font-light uppercase tracking-[0.14em] text-tl-beige transition-colors active:border-tl-gold active:text-tl-gold sm:min-h-0 sm:py-2.5 sm:text-xs sm:hover:border-tl-gold sm:hover:text-tl-gold"
     >
       {label}
     </Link>

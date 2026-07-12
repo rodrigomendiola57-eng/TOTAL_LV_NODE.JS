@@ -1,6 +1,9 @@
 import type { ZoneCatalogEntry } from "@/types/zone";
 
-/** Catálogo de las 8 zonas principales de Querétaro (sin "Otra / Sin clasificar"). */
+/**
+ * Fallback estático si la API no responde.
+ * Fuente de verdad en producción: GET /api/zones/
+ */
 export const ZONE_CATALOG: ZoneCatalogEntry[] = [
   {
     id: 1,
@@ -133,6 +136,11 @@ export const ZONE_CATALOG: ZoneCatalogEntry[] = [
   },
 ];
 
+export function getZoneCatalogFallback(): ZoneCatalogEntry[] {
+  return ZONE_CATALOG;
+}
+
+/** @deprecated Prefer listZoneCatalog() desde API; se mantiene por compatibilidad. */
 export function getZoneCatalog(): ZoneCatalogEntry[] {
   return ZONE_CATALOG;
 }

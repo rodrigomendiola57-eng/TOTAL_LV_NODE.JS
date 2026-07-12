@@ -18,6 +18,7 @@ export function useContactLeadForm({
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState(defaultMessage);
+  const [website, setWebsite] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,6 +38,7 @@ export function useContactLeadForm({
     setPhone("");
     setEmail("");
     setMessage(defaultMessage);
+    setWebsite("");
     setError(null);
     setSuccess(false);
   }, [defaultMessage]);
@@ -79,12 +81,14 @@ export function useContactLeadForm({
           channel: "Web",
           interested_in: interestedIn,
           initial_message: trimmedMessage,
+          website,
         });
         setSuccess(true);
         setName("");
         setPhone("");
         setEmail("");
         setMessage(defaultMessage);
+        setWebsite("");
         onSuccess?.();
       } catch (submitError) {
         setError(
@@ -96,7 +100,7 @@ export function useContactLeadForm({
         setLoading(false);
       }
     },
-    [email, interestedIn, message, name, onSuccess, phone, defaultMessage],
+    [email, interestedIn, message, name, onSuccess, phone, defaultMessage, website],
   );
 
   const enableAutofill = useCallback(() => {
@@ -121,6 +125,8 @@ export function useContactLeadForm({
     setEmail,
     message,
     setMessage,
+    website,
+    setWebsite,
     loading,
     success,
     error,

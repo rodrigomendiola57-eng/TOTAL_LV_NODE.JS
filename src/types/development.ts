@@ -3,8 +3,9 @@ export type DevelopmentStatus =
   | "En construcción"
   | "Entrega inmediata";
 
-/** Una planta/nivel del modelo (p. ej. "Baja", "Alta"). */
+/** Una planta/nivel del modelo (p. ej. "Planta baja", "Terraza"). */
 export interface DevelopmentFloorPlan {
+  id?: number;
   label: string;
   image: string;
 }
@@ -37,6 +38,16 @@ export interface DevelopmentModel {
   floorPlans?: DevelopmentFloorPlan[];
   /** Cuántas unidades de este modelo siguen disponibles. */
   available?: number;
+  /** Recorrido 3D (Matterport). */
+  tour?: DevelopmentModelTour | null;
+}
+
+export interface DevelopmentModelTour {
+  provider: string;
+  id: string;
+  url?: string;
+  title?: string;
+  enabled: boolean;
 }
 
 export function formatBathrooms(bathrooms: number, half?: number): string {

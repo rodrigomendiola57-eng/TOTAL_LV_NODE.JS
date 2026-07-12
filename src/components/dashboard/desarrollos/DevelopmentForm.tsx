@@ -370,7 +370,7 @@ export function DevelopmentForm({
             <p className="font-outfit text-[10px] uppercase tracking-[0.2em] text-tl-gold/80">
               {mode === "create" ? "Nuevo desarrollo" : "Editar desarrollo"}
             </p>
-            <h2 className="mt-1 font-cormorant text-3xl font-light text-tl-beige sm:text-4xl">
+            <h2 className="mt-1 font-outfit text-3xl font-extralight text-tl-beige sm:text-4xl">
               {form.name.trim() || "Sin título"}
             </h2>
             <p className="mt-1 font-outfit text-xs text-tl-beige/50">
@@ -514,7 +514,7 @@ export function DevelopmentForm({
                   checked={form.featured}
                   onChange={(checked) => setField("featured", checked)}
                   title="Desarrollo destacado"
-                  description="Aparece primero en el listado público."
+                  description="Sale en el carrusel del hero (si hay más de 3 proyectos) y primero en el portafolio."
                 />
                 <FeaturedToggle
                   checked={form.is_published}

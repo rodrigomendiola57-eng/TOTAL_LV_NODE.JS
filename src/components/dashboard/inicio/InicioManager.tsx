@@ -347,7 +347,7 @@ export function InicioManager() {
           <p className="font-outfit text-[10px] uppercase tracking-[0.28em] text-tl-gold">
             CMS
           </p>
-          <h1 className="mt-2 font-cormorant text-3xl font-light text-tl-beige">
+          <h1 className="mt-2 font-outfit text-3xl font-extralight text-tl-beige">
             Módulo Inicio
           </h1>
           <p className="mt-2 max-w-2xl font-outfit text-sm text-tl-beige/65">
@@ -412,7 +412,7 @@ export function InicioManager() {
 
       <section className="rounded-3xl border border-tl-gold/15 bg-tl-black/30 p-6 lg:p-8">
         <div className="mb-8 border-b border-tl-gold/10 pb-6">
-          <h2 className="font-cormorant text-2xl text-tl-beige">
+          <h2 className="font-outfit font-extralight text-2xl text-tl-beige">
             {activeMeta?.label}
           </h2>
           <p className="mt-2 font-outfit text-sm text-tl-beige/60">

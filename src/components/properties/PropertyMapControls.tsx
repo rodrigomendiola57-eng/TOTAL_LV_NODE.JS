@@ -39,7 +39,7 @@ export function PropertyMapControls({
   }
 
   return (
-    <div className="pointer-events-none absolute inset-0 z-[450]">
+    <div className="pointer-events-none absolute inset-0 z-20 isolate">
       <div
         className={cn(
           "pointer-events-auto absolute flex flex-col overflow-hidden rounded-2xl border border-tl-gold/25 bg-tl-black/92 shadow-[0_10px_32px_rgba(0,0,0,0.45)] backdrop-blur-md",

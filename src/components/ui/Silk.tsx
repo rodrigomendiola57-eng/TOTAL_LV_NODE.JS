@@ -3,6 +3,7 @@
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import {
   forwardRef,
+  useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -89,18 +90,31 @@ interface SilkPlaneProps {
   uniforms: SilkUniforms;
 }
 
+/**
+ * Mantiene el plano a tamaño del viewport y fuerza redibujo tras resize.
+ * Sin esto, al navegar/volver el buffer WebGL puede quedar con una franja
+ * vertical “rota” (tamaño viejo + CSS estirado o píxeles sin limpiar).
+ */
 const SilkPlane = forwardRef<Mesh, SilkPlaneProps>(function SilkPlane(
   { uniforms },
   ref,
 ) {
-  const { viewport } = useThree();
+  const { viewport, size, invalidate, gl } = useThree();
   const meshRef = ref as RefObject<Mesh | null>;
 
   useLayoutEffect(() => {
     const mesh = meshRef.current;
     if (!mesh) return;
+
     mesh.scale.set(viewport.width, viewport.height, 1);
-  }, [meshRef, viewport]);
+
+    // Asegura que el drawing buffer coincida con el tamaño medido.
+    if (size.width > 0 && size.height > 0) {
+      gl.setSize(size.width, size.height, false);
+    }
+
+    invalidate();
+  }, [meshRef, viewport.width, viewport.height, size.width, size.height, gl, invalidate]);
 
   useFrame((_, delta) => {
     const material = meshRef.current?.material as ShaderMaterial | undefined;
@@ -120,6 +134,40 @@ const SilkPlane = forwardRef<Mesh, SilkPlaneProps>(function SilkPlane(
   );
 });
 
+/** Tras montar / volver a la pestaña, fuerza 1–2 frames para asentar el tamaño. */
+function SilkMountSync({ paused }: { paused: boolean }) {
+  const { invalidate } = useThree();
+
+  useEffect(() => {
+    let frame2 = 0;
+    const frame1 = window.requestAnimationFrame(() => {
+      invalidate();
+      frame2 = window.requestAnimationFrame(() => invalidate());
+    });
+
+    const onVisible = () => {
+      if (!document.hidden) invalidate();
+    };
+
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("pageshow", onVisible);
+
+    return () => {
+      window.cancelAnimationFrame(frame1);
+      window.cancelAnimationFrame(frame2);
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("pageshow", onVisible);
+    };
+  }, [invalidate]);
+
+  useEffect(() => {
+    // Al reanudar animación o al pausar con "demand", pinta un frame limpio.
+    invalidate();
+  }, [paused, invalidate]);
+
+  return null;
+}
+
 export interface SilkProps {
   speed?: number;
   scale?: number;
@@ -127,6 +175,8 @@ export interface SilkProps {
   noiseIntensity?: number;
   rotation?: number;
   paused?: boolean;
+  /** DPR del canvas. En móvil conviene 1 para rendimiento. */
+  dpr?: number | [number, number];
   className?: string;
 }
 
@@ -137,9 +187,11 @@ export function Silk({
   noiseIntensity = 1.5,
   rotation = 0,
   paused = false,
+  dpr = [1, 1.25],
   className,
 }: SilkProps) {
   const meshRef = useRef<Mesh>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const uniforms = useMemo<SilkUniforms>(
     () => ({
@@ -153,14 +205,36 @@ export function Silk({
     [speed, scale, noiseIntensity, color, rotation],
   );
 
+  useEffect(() => {
+    const node = containerRef.current;
+    if (!node || typeof ResizeObserver === "undefined") return;
+
+    const observer = new ResizeObserver(() => {
+      window.dispatchEvent(new Event("resize"));
+    });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <div className={className} aria-hidden>
+    <div ref={containerRef} className={className} aria-hidden>
       <Canvas
-        dpr={[1, 1.25]}
-        frameloop={paused ? "never" : "always"}
-        gl={{ antialias: false, powerPreference: "high-performance", alpha: false }}
+        dpr={dpr}
+        frameloop={paused ? "demand" : "always"}
+        resize={{ scroll: true, debounce: { scroll: 50, resize: 0 } }}
+        gl={{
+          antialias: false,
+          powerPreference: "high-performance",
+          alpha: false,
+          preserveDrawingBuffer: false,
+        }}
         style={{ width: "100%", height: "100%", display: "block" }}
+        onCreated={({ gl, invalidate: inv }) => {
+          gl.setClearColor(new Color(...hexToNormalizedRGB(color)), 1);
+          inv();
+        }}
       >
+        <SilkMountSync paused={paused} />
         <SilkPlane ref={meshRef} uniforms={uniforms} />
       </Canvas>
     </div>

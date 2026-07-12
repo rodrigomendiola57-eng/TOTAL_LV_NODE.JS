@@ -116,6 +116,11 @@ class DevelopmentUnitModelSerializer(serializers.ModelSerializer):
             "order",
             "gallery",
             "floor_plans",
+            "tour_provider",
+            "tour_id",
+            "tour_url",
+            "tour_title",
+            "tour_enabled",
         )
         read_only_fields = ("id", "image_url", "gallery", "floor_plans")
 
@@ -282,7 +287,73 @@ class DevelopmentUnitModelWriteSerializer(serializers.ModelSerializer):
             "features",
             "available",
             "order",
+            "tour_provider",
+            "tour_id",
+            "tour_url",
+            "tour_title",
+            "tour_enabled",
         )
         extra_kwargs = {
             "slug": {"required": False, "allow_blank": True},
         }
+
+    def validate(self, attrs):
+        tour_url = attrs.get("tour_url", getattr(self.instance, "tour_url", ""))
+        tour_id = attrs.get("tour_id", getattr(self.instance, "tour_id", ""))
+        provider = attrs.get(
+            "tour_provider",
+            getattr(self.instance, "tour_provider", "") or "matterport",
+        )
+
+        raw = (tour_id or tour_url or "").strip()
+        if raw:
+            parsed = _parse_matterport_id(raw)
+            if parsed:
+                attrs["tour_id"] = parsed
+                attrs["tour_provider"] = provider or "matterport"
+                if not attrs.get("tour_url") and tour_url:
+                    attrs["tour_url"] = tour_url
+                elif not attrs.get("tour_url") and not tour_url:
+                    attrs["tour_url"] = f"https://my.matterport.com/show/?m={parsed}"
+            elif attrs.get("tour_enabled") or getattr(self.instance, "tour_enabled", False):
+                raise serializers.ValidationError(
+                    {
+                        "tour_id": (
+                            "No se reconoció un ID de Matterport. "
+                            "Pega una URL como https://my.matterport.com/show/?m=XXXXXXXXXXX"
+                        ),
+                    },
+                )
+        return attrs
+
+
+def _parse_matterport_id(value: str) -> str | None:
+    """Extrae el model ID de una URL Matterport o valida un ID suelto."""
+    import re
+    from urllib.parse import parse_qs, urlparse
+
+    text = value.strip()
+    if not text:
+        return None
+
+    if re.fullmatch(r"[A-Za-z0-9_-]{11,25}", text):
+        return text
+
+    try:
+        parsed = urlparse(text)
+        if "matterport.com" not in (parsed.netloc or "").lower():
+            # Puede ser solo query o path raro
+            match = re.search(r"[?&]m=([A-Za-z0-9_-]{11,25})", text)
+            return match.group(1) if match else None
+        query = parse_qs(parsed.query)
+        if "m" in query and query["m"]:
+            candidate = query["m"][0]
+            if re.fullmatch(r"[A-Za-z0-9_-]{11,25}", candidate):
+                return candidate
+        match = re.search(r"/show/([A-Za-z0-9_-]{11,25})", parsed.path or "")
+        if match:
+            return match.group(1)
+    except Exception:
+        return None
+    return None
+

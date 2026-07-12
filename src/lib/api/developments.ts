@@ -72,6 +72,11 @@ export interface DevelopmentApiUnitModel {
     image_url: string;
     order: number;
   }>;
+  tour_provider?: string;
+  tour_id?: string;
+  tour_url?: string;
+  tour_title?: string;
+  tour_enabled?: boolean;
 }
 
 export type DevelopmentWritePayload = {
@@ -107,13 +112,25 @@ async function developmentsFetch<T>(
   endpoint: string,
   init?: RequestInit,
 ): Promise<T> {
-  const response = await fetch(`${getApiBaseUrl()}${endpoint}`, {
+  const method = (init?.method ?? "GET").toUpperCase();
+  const hasBody = init?.body != null && init.body !== "";
+  const isFormData =
+    typeof FormData !== "undefined" && init?.body instanceof FormData;
+
+  const base = getApiBaseUrl();
+  // Next App Router redirige 308 si la ruta del proxy lleva slash final;
+  // el proxy vuelve a añadir el slash que Django exige.
+  const path = base.includes("/api/django")
+    ? endpoint.replace(/\/+$/, "") || "/"
+    : endpoint.endsWith("/")
+      ? endpoint
+      : `${endpoint}/`;
+
+  const response = await fetch(`${base}${path}`, {
     ...init,
     headers: {
       Accept: "application/json",
-      ...(init?.body instanceof FormData
-        ? {}
-        : { "Content-Type": "application/json" }),
+      ...(hasBody && !isFormData ? { "Content-Type": "application/json" } : {}),
       ...(init?.headers ?? {}),
     },
     cache: "no-store",
@@ -121,11 +138,28 @@ async function developmentsFetch<T>(
 
   if (!response.ok) {
     const detail = await response.text();
-    throw new Error(detail || `Developments request failed (${response.status})`);
+    let message = detail || `Developments request failed (${response.status})`;
+    try {
+      const parsed = JSON.parse(detail) as { detail?: unknown };
+      if (typeof parsed.detail === "string") message = parsed.detail;
+    } catch {
+      /* texto plano */
+    }
+    throw new Error(message);
   }
 
-  if (response.status === 204) {
-    return undefined as T;
+  if (
+    response.status === 204 ||
+    response.status === 205 ||
+    method === "DELETE"
+  ) {
+    const text = await response.text();
+    if (!text) return undefined as T;
+    try {
+      return JSON.parse(text) as T;
+    } catch {
+      return undefined as T;
+    }
   }
 
   return response.json() as Promise<T>;
@@ -141,6 +175,7 @@ function mapFloorPlan(
   plan: DevelopmentApiUnitModel["floor_plans"][number],
 ): DevelopmentFloorPlan {
   return {
+    id: plan.id,
     label: plan.label,
     image: resolveMediaUrl(plan.image_url) ?? plan.image_url,
   };
@@ -167,6 +202,24 @@ function mapUnitModel(model: DevelopmentApiUnitModel): DevelopmentModel {
     features: model.features ?? [],
     floorPlans: (model.floor_plans ?? []).map(mapFloorPlan),
     available: model.available ?? undefined,
+    tour:
+      model.tour_enabled && model.tour_id
+        ? {
+            provider: model.tour_provider || "matterport",
+            id: model.tour_id,
+            url: model.tour_url || undefined,
+            title: model.tour_title || undefined,
+            enabled: true,
+          }
+        : model.tour_id
+          ? {
+              provider: model.tour_provider || "matterport",
+              id: model.tour_id,
+              url: model.tour_url || undefined,
+              title: model.tour_title || undefined,
+              enabled: Boolean(model.tour_enabled),
+            }
+          : null,
   };
 }
 
@@ -329,6 +382,11 @@ export type DevelopmentUnitModelWritePayload = {
   features?: string[];
   available?: number | null;
   order?: number;
+  tour_provider?: string;
+  tour_id?: string;
+  tour_url?: string;
+  tour_title?: string;
+  tour_enabled?: boolean;
 };
 
 export async function listDevelopmentGallery(
@@ -458,6 +516,18 @@ export async function deleteDevelopmentModelGalleryImage(
   );
 }
 
+export async function listDevelopmentModelFloorPlans(
+  modelId: number,
+): Promise<DevelopmentMediaItem[]> {
+  const rows = await developmentsFetch<DevelopmentMediaItem[]>(
+    `/development-models/${modelId}/floor-plans/`,
+  );
+  return rows.map((row) => ({
+    ...row,
+    image_url: resolveMediaUrl(row.image_url) ?? row.image_url,
+  }));
+}
+
 export async function addDevelopmentModelFloorPlan(
   modelId: number,
   file: File,
@@ -469,6 +539,25 @@ export async function addDevelopmentModelFloorPlan(
   const row = await developmentsFetch<DevelopmentMediaItem>(
     `/development-models/${modelId}/floor-plans/`,
     { method: "POST", body },
+  );
+  return {
+    ...row,
+    image_url: resolveMediaUrl(row.image_url) ?? row.image_url,
+  };
+}
+
+export async function updateDevelopmentModelFloorPlan(
+  modelId: number,
+  planId: number,
+  payload: { label?: string; file?: File; order?: number },
+): Promise<DevelopmentMediaItem> {
+  const body = new FormData();
+  if (payload.label != null) body.append("label", payload.label);
+  if (payload.file) body.append("file", payload.file);
+  if (payload.order != null) body.append("order", String(payload.order));
+  const row = await developmentsFetch<DevelopmentMediaItem>(
+    `/development-models/${modelId}/floor-plans/${planId}/`,
+    { method: "PATCH", body },
   );
   return {
     ...row,

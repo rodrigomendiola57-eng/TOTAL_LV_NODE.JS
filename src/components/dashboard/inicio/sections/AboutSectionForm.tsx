@@ -76,7 +76,7 @@ export function AboutSectionForm({
       </div>
 
       <div className="space-y-4">
-        <h3 className="font-cormorant text-xl text-tl-beige">
+        <h3 className="font-outfit font-extralight text-xl text-tl-beige">
           Carrusel de imágenes
         </h3>
         {content.about_slides.map((slide) => (

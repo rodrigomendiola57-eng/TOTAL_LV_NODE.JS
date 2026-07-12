@@ -118,7 +118,7 @@ export function PropertiesManager({
           <p className="font-outfit font-light text-[10px] uppercase tracking-[0.22em] text-tl-gold">
             Catálogo
           </p>
-          <h1 className="mt-2 font-cormorant text-4xl font-light text-tl-beige">{title}</h1>
+          <h1 className="mt-2 font-outfit text-4xl font-extralight text-tl-beige">{title}</h1>
           <p className="mt-2 max-w-2xl font-outfit font-light text-sm text-tl-beige/65">
             {description}
           </p>

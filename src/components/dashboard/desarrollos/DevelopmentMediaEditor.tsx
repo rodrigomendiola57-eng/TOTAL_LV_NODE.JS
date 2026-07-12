@@ -10,6 +10,7 @@ import {
 } from "@/lib/api/developments";
 import { resolveMediaUrl } from "@/lib/media-url";
 import { cn } from "@/lib/utils";
+import { ACCEPTED_IMAGE_ACCEPT_ATTR } from "@/types/property-photo";
 import {
   ImagePlus,
   Loader2,
@@ -178,7 +179,7 @@ export function DevelopmentMediaEditor({
             <input
               ref={coverInputRef}
               type="file"
-              accept="image/*"
+              accept={ACCEPTED_IMAGE_ACCEPT_ATTR}
               className="hidden"
               onChange={(e) => {
                 void handleCoverFile(e.target.files?.[0] ?? null);
@@ -217,7 +218,7 @@ export function DevelopmentMediaEditor({
             <input
               ref={galleryInputRef}
               type="file"
-              accept="image/*"
+              accept={ACCEPTED_IMAGE_ACCEPT_ATTR}
               multiple
               className="hidden"
               onChange={(e) => {

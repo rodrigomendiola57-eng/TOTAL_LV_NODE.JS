@@ -44,15 +44,16 @@ export function CityHighlightSection({
     <section
       ref={sectionRef}
       aria-label={ariaLabel}
-      className="relative w-full overflow-hidden md:min-h-[60dvh]"
+      className="relative w-full overflow-hidden min-h-[92dvh] md:min-h-[60dvh]"
     >
+      {/* Móvil: foto a casi pantalla completa (solo teléfono). */}
       <img
         aria-hidden
         src={imageMobile}
         alt=""
         width={478}
         height={1024}
-        className="relative z-0 block h-auto w-full md:hidden"
+        className="absolute inset-0 z-0 h-full w-full object-cover object-center md:hidden"
       />
 
       <motion.div
@@ -70,7 +71,7 @@ export function CityHighlightSection({
         className="pointer-events-none absolute inset-0 z-[1] bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(56,56,46,0.12)_75%,rgba(26,26,24,0.38)_100%)]"
       />
 
-      <div className="absolute inset-0 z-10 flex items-center justify-center px-5 py-16 md:relative md:min-h-[60dvh] md:py-28">
+      <div className="relative z-10 flex min-h-[92dvh] items-center justify-center px-5 py-20 md:min-h-[60dvh] md:py-28">
         <motion.div
           initial={{ opacity: 0, y: reducedMotion ? 0 : 32 }}
           whileInView={{ opacity: 1, y: 0 }}

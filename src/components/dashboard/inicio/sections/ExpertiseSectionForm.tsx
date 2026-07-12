@@ -48,7 +48,7 @@ export function ExpertiseSectionForm({
       </InicioField>
 
       <div className="space-y-4">
-        <h3 className="font-cormorant text-xl text-tl-beige">Servicios</h3>
+        <h3 className="font-outfit font-extralight text-xl text-tl-beige">Servicios</h3>
         {content.expertise_services.map((service) => (
           <div
             key={service.id}
@@ -93,7 +93,7 @@ export function ExpertiseSectionForm({
       </div>
 
       <div className="space-y-4">
-        <h3 className="font-cormorant text-xl text-tl-beige">Pilares</h3>
+        <h3 className="font-outfit font-extralight text-xl text-tl-beige">Pilares</h3>
         {content.expertise_pillars.map((pillar) => (
           <div
             key={pillar.id}

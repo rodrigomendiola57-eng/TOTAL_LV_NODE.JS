@@ -5,7 +5,6 @@ from __future__ import annotations
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
-from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from .models import (
@@ -38,7 +37,6 @@ from .services import (
 class HomePageViewSet(viewsets.ViewSet):
     """Singleton de contenido de inicio: GET/PATCH en /api/home/current/."""
 
-    permission_classes = [AllowAny]
     parser_classes = [JSONParser, MultiPartParser, FormParser]
 
     def _get_home(self) -> HomePage:
@@ -126,7 +124,6 @@ class HomePageViewSet(viewsets.ViewSet):
 
 
 class HomeAboutSlideViewSet(viewsets.ModelViewSet):
-    permission_classes = [AllowAny]
     parser_classes = [JSONParser, MultiPartParser, FormParser]
     http_method_names = ["get", "post", "patch", "delete", "head", "options"]
 
@@ -199,7 +196,6 @@ class HomeAboutSlideViewSet(viewsets.ModelViewSet):
 
 
 class HomeExpertiseServiceViewSet(viewsets.ModelViewSet):
-    permission_classes = [AllowAny]
     http_method_names = ["get", "post", "patch", "delete", "head", "options"]
 
     def get_queryset(self):
@@ -235,7 +231,6 @@ class HomeExpertiseServiceViewSet(viewsets.ModelViewSet):
 
 
 class HomeExpertisePillarViewSet(viewsets.ModelViewSet):
-    permission_classes = [AllowAny]
     http_method_names = ["get", "post", "patch", "delete", "head", "options"]
 
     def get_queryset(self):

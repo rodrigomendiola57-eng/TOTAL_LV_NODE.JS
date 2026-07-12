@@ -86,6 +86,7 @@ export async function createLead(payload: CreateLeadPayload): Promise<Lead> {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       channel: "Web",
+      website: payload.website ?? "",
       ...payload,
     }),
   });

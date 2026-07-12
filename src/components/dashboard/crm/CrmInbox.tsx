@@ -272,16 +272,16 @@ export function CrmInbox() {
   const notes = messages.filter((message) => message.sender === "agent");
 
   return (
-    <div className="space-y-6">
-      <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+    <div className="space-y-5 sm:space-y-6">
+      <header className="flex flex-col gap-3 sm:gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="font-outfit font-light text-[10px] uppercase tracking-[0.22em] text-tl-gold">
+          <p className="font-outfit text-[10px] font-light uppercase tracking-[0.22em] text-tl-gold">
             CRM
           </p>
-          <h1 className="mt-2 font-cormorant text-4xl font-light text-tl-beige">
+          <h1 className="mt-1.5 font-outfit text-[1.75rem] font-extralight leading-tight text-tl-beige sm:mt-2 sm:text-4xl">
             Leads del sitio web
           </h1>
-          <p className="mt-2 max-w-2xl font-outfit font-light text-sm text-tl-beige/65">
+          <p className="mt-2 hidden max-w-2xl font-outfit text-sm font-light text-tl-beige/65 sm:block">
             Consultas enviadas desde el formulario de contacto. Filtra, da
             seguimiento y guarda notas internas por prospecto.
           </p>
@@ -290,18 +290,18 @@ export function CrmInbox() {
           type="button"
           onClick={() => void loadLeads()}
           disabled={refreshing}
-          className="inline-flex items-center gap-2 self-start rounded-full border border-tl-gold/30 px-4 py-2 font-outfit text-xs font-light uppercase tracking-[0.12em] text-tl-beige/75 transition-colors hover:border-tl-gold/50 hover:text-tl-beige disabled:opacity-60"
+          className="inline-flex min-h-11 items-center gap-2 self-start rounded-full border border-tl-gold/30 px-4 py-2.5 font-outfit text-xs font-light uppercase tracking-[0.12em] text-tl-beige/75 transition-colors active:border-tl-gold/50 active:text-tl-beige disabled:opacity-60 sm:min-h-0 sm:py-2 sm:hover:border-tl-gold/50 sm:hover:text-tl-beige"
         >
           <RefreshCw className={cn("h-3.5 w-3.5", refreshing && "animate-spin")} />
           Actualizar
         </button>
       </header>
 
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-3 xl:grid-cols-4">
         <StatCard label="Total" value={stats.total} />
-        <StatCard label="Activos" value={stats.activos} accent="olive" />
+        <StatCard label="Activos" value={stats.activos} />
         <StatCard label="Nuevos" value={stats.nuevos} accent="gold" />
-        <StatCard label="Sin leer" value={stats.unread} accent="sky" />
+        <StatCard label="Sin leer" value={stats.unread} accent="gold" />
       </div>
 
       <CrmFiltersBar
@@ -318,7 +318,7 @@ export function CrmInbox() {
       ) : null}
 
       {loading ? (
-        <div className="flex h-[420px] items-center justify-center rounded-2xl border border-tl-gold/20 bg-tl-black/60">
+        <div className="flex h-[min(50dvh,420px)] items-center justify-center rounded-2xl border border-tl-gold/15 bg-[#0a0a0a] lg:border-tl-gold/20 lg:bg-tl-black/60">
           <Loader2 className="h-6 w-6 animate-spin text-tl-gold" />
         </div>
       ) : allLeads.length === 0 ? (
@@ -334,19 +334,19 @@ export function CrmInbox() {
           onAction={() => setFilters(DEFAULT_CRM_LEAD_FILTERS)}
         />
       ) : (
-        <div className="grid min-h-[620px] grid-cols-1 gap-4 xl:grid-cols-[320px_minmax(0,1fr)]">
+        <div className="grid min-h-[min(70dvh,620px)] grid-cols-1 gap-3 sm:gap-4 xl:min-h-[620px] xl:grid-cols-[320px_minmax(0,1fr)]">
           <section
             className={cn(
-              "flex flex-col overflow-hidden rounded-2xl border border-tl-gold/20 bg-tl-black/60",
+              "flex flex-col overflow-hidden rounded-2xl border border-tl-gold/15 bg-[#0a0a0a] lg:border-tl-gold/20 lg:bg-tl-black/60",
               mobileView === "detail" ? "hidden xl:flex" : "flex",
             )}
           >
-            <div className="border-b border-tl-gold/15 px-4 py-4">
-              <p className="font-outfit font-light text-[10px] uppercase tracking-[0.18em] text-tl-beige/50">
+            <div className="border-b border-tl-gold/15 px-4 py-3.5 sm:py-4">
+              <p className="font-outfit text-[10px] font-light uppercase tracking-[0.18em] text-tl-beige/50">
                 Bandeja ({filteredLeads.length})
               </p>
             </div>
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto overscroll-contain">
               {filteredLeads.map((lead) => {
                 const isSelected = lead.id === selectedLeadId;
                 const isUnread = lead.unread || (lead.unread_count ?? 0) > 0;
@@ -357,26 +357,26 @@ export function CrmInbox() {
                     type="button"
                     onClick={() => handleSelectLead(lead.id)}
                     className={cn(
-                      "w-full border-b border-tl-gold/10 px-4 py-4 text-left transition-colors",
+                      "w-full border-b border-white/[0.06] px-4 py-4 text-left transition-colors active:bg-tl-gold/10 sm:py-4",
                       isSelected
                         ? "bg-tl-gold/10"
-                        : "hover:bg-tl-olive/15",
+                        : "lg:hover:bg-white/[0.03]",
                     )}
                   >
                     <div className="flex items-start gap-3">
-                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-tl-gold/25 bg-tl-olive/25 font-cormorant text-lg text-tl-gold">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-tl-gold/25 bg-black font-outfit text-lg font-extralight text-tl-gold">
                         {getInitials(lead.name)}
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-start justify-between gap-2">
-                          <p className="truncate font-outfit font-light text-sm text-tl-beige">
+                          <p className="truncate font-outfit text-sm font-extralight text-tl-beige">
                             {lead.name}
                           </p>
                           <span className="shrink-0 font-outfit text-[10px] font-light text-tl-beige/40">
                             {formatLeadDate(lead.updated_at)}
                           </span>
                         </div>
-                        <p className="mt-1 line-clamp-2 font-outfit font-light text-xs leading-relaxed text-tl-beige/55">
+                        <p className="mt-1 line-clamp-2 font-outfit text-xs font-light leading-relaxed text-tl-beige/55">
                           {lead.last_message || "Sin mensaje"}
                         </p>
                         <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -398,7 +398,7 @@ export function CrmInbox() {
 
           <section
             className={cn(
-              "flex min-h-[620px] flex-col overflow-hidden rounded-2xl border border-tl-gold/20 bg-tl-black/60",
+              "flex min-h-[min(75dvh,620px)] flex-col overflow-hidden rounded-2xl border border-tl-gold/15 bg-[#0a0a0a] xl:min-h-[620px] lg:border-tl-gold/20 lg:bg-tl-black/60",
               mobileView === "list" ? "hidden xl:flex" : "flex",
             )}
           >
@@ -409,14 +409,14 @@ export function CrmInbox() {
                     <button
                       type="button"
                       onClick={() => setMobileView("list")}
-                      className="mt-1 rounded-full border border-white/10 p-2 text-tl-beige/70 transition-colors hover:border-tl-gold/30 hover:text-tl-beige xl:hidden"
+                      className="mt-0.5 inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 text-tl-beige/70 transition-colors active:border-tl-gold/30 active:text-tl-beige xl:hidden"
                       aria-label="Volver a la bandeja"
                     >
                       <ArrowLeft className="h-4 w-4" />
                     </button>
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <h2 className="font-cormorant text-2xl font-light text-tl-beige">
+                        <h2 className="font-outfit text-xl font-extralight text-tl-beige sm:text-2xl">
                           {selectedLead.name}
                         </h2>
                         <StatusBadge status={selectedLead.status} />
@@ -427,7 +427,7 @@ export function CrmInbox() {
                     </div>
                   </div>
 
-                  <div className="mt-4 flex flex-wrap gap-2">
+                  <div className="mt-4 flex gap-2 overflow-x-auto pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] sm:flex-wrap sm:overflow-visible [&::-webkit-scrollbar]:hidden">
                     {selectedLead.phone ? (
                       <ContactAction
                         href={`tel:${selectedLead.phone}`}
@@ -446,7 +446,7 @@ export function CrmInbox() {
                       <button
                         type="button"
                         onClick={() => void copyValue("phone", selectedLead.phone)}
-                        className="inline-flex items-center gap-1.5 rounded-full border border-white/10 px-3 py-1.5 font-outfit text-[10px] font-light uppercase tracking-[0.1em] text-tl-beige/65 transition-colors hover:border-tl-gold/30 hover:text-tl-beige"
+                        className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-white/10 px-3.5 py-2.5 font-outfit text-[10px] font-light uppercase tracking-[0.1em] text-tl-beige/65 transition-colors active:border-tl-gold/30 active:text-tl-beige sm:py-1.5 sm:hover:border-tl-gold/30 sm:hover:text-tl-beige"
                       >
                         <Copy className="h-3.5 w-3.5" />
                         {copiedField === "phone" ? "Copiado" : "Copiar tel."}
@@ -521,7 +521,7 @@ export function CrmInbox() {
                       )}
                     </div>
 
-                    <div className="border-t border-tl-gold/15 p-4 sm:p-5">
+                    <div className="border-t border-tl-gold/15 p-4 pb-[max(1rem,env(safe-area-inset-bottom,0px))] sm:p-5">
                       <form
                         onSubmit={(event) => {
                           event.preventDefault();
@@ -532,18 +532,18 @@ export function CrmInbox() {
                         <label className="block font-outfit text-[10px] font-light uppercase tracking-[0.14em] text-tl-beige/45">
                           Agregar nota interna
                         </label>
-                        <div className="flex items-end gap-3">
+                        <div className="flex items-end gap-2.5 sm:gap-3">
                           <textarea
                             value={reply}
                             onChange={(event) => setReply(event.target.value)}
                             rows={2}
-                            placeholder="Ej. Llamar mañana, enviar opciones en Juriquilla..."
-                            className="flex-1 resize-none rounded-xl border border-tl-gold/20 bg-[#0a0a0a] px-4 py-3 font-outfit font-light text-sm text-tl-beige outline-none placeholder:text-tl-beige/35 focus:border-tl-gold/60"
+                            placeholder="Ej. Llamar mañana…"
+                            className="min-h-12 flex-1 resize-none rounded-xl border border-tl-gold/20 bg-black px-4 py-3 font-outfit text-sm font-light text-tl-beige outline-none placeholder:text-tl-beige/35 focus:border-tl-gold/60 sm:bg-[#0a0a0a]"
                           />
                           <button
                             type="submit"
                             disabled={sending || !reply.trim()}
-                            className="rounded-full bg-tl-gold p-3 text-tl-black transition-opacity hover:opacity-90 disabled:opacity-40"
+                            className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-tl-gold text-tl-black transition-opacity active:opacity-90 disabled:opacity-40 sm:h-auto sm:w-auto sm:p-3 sm:hover:opacity-90"
                             aria-label="Guardar nota"
                           >
                             {sending ? (
@@ -640,23 +640,19 @@ function StatCard({
 }: {
   label: string;
   value: number;
-  accent?: "neutral" | "gold" | "olive" | "sky";
+  accent?: "neutral" | "gold";
 }) {
-  const accentClass =
-    accent === "gold"
-      ? "text-tl-gold"
-      : accent === "olive"
-        ? "text-tl-beige"
-        : accent === "sky"
-          ? "text-sky-300"
-          : "text-tl-beige";
-
   return (
-    <div className="rounded-2xl border border-tl-gold/20 bg-tl-black/60 px-4 py-4">
-      <p className="font-outfit text-[10px] font-light uppercase tracking-[0.16em] text-tl-beige/45">
+    <div className="rounded-2xl border border-tl-gold/15 bg-[#0a0a0a] px-3.5 py-3.5 sm:px-4 sm:py-4 lg:border-tl-gold/20 lg:bg-tl-black/60">
+      <p className="font-outfit text-[9px] font-light uppercase tracking-[0.14em] text-tl-beige/45 sm:text-[10px] sm:tracking-[0.16em]">
         {label}
       </p>
-      <p className={cn("mt-2 font-cormorant text-3xl font-light", accentClass)}>
+      <p
+        className={cn(
+          "mt-2 font-outfit text-[1.75rem] font-extralight sm:text-3xl",
+          accent === "gold" ? "text-tl-gold" : "text-tl-beige",
+        )}
+      >
         {value}
       </p>
     </div>
@@ -688,7 +684,7 @@ function ContactAction({
   return (
     <a
       href={href}
-      className="inline-flex items-center gap-1.5 rounded-full border border-tl-gold/25 bg-tl-gold/10 px-3 py-1.5 font-outfit text-[10px] font-light uppercase tracking-[0.1em] text-tl-gold transition-colors hover:border-tl-gold/45 hover:bg-tl-gold/15"
+      className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-tl-gold/25 bg-tl-gold/10 px-3.5 py-2.5 font-outfit text-[10px] font-light uppercase tracking-[0.1em] text-tl-gold transition-colors active:border-tl-gold/45 sm:py-1.5 sm:hover:border-tl-gold/45 sm:hover:bg-tl-gold/15"
     >
       <Icon className="h-3.5 w-3.5" />
       {label}
@@ -748,9 +744,9 @@ function EmptyState({
   onAction?: () => void;
 }) {
   return (
-    <div className="rounded-2xl border border-dashed border-tl-gold/25 bg-tl-black/60 px-6 py-16 text-center">
+    <div className="rounded-2xl border border-dashed border-tl-gold/25 bg-[#0a0a0a] px-5 py-14 text-center sm:px-6 sm:py-16 lg:bg-tl-black/60">
       <Inbox className="mx-auto h-8 w-8 text-tl-gold/60" />
-      <h2 className="mt-4 font-cormorant text-2xl font-light text-tl-beige">
+      <h2 className="mt-4 font-outfit text-2xl font-extralight text-tl-beige">
         {title}
       </h2>
       <p className="mx-auto mt-2 max-w-md font-outfit text-sm font-light text-tl-beige/55">

@@ -18,9 +18,20 @@ const revealEase = [0.22, 1, 0.36, 1] as const;
 interface AboutTeamSectionProps {
   team: TeamMember[];
   orgChart: OrgChartNode;
+  teamEyebrow?: string;
+  teamTitle?: string;
+  orgEyebrow?: string;
+  orgTitle?: string;
 }
 
-export function AboutTeamSection({ team, orgChart }: AboutTeamSectionProps) {
+export function AboutTeamSection({
+  team,
+  orgChart,
+  teamEyebrow = "Equipo Total Living",
+  teamTitle = "El equipo detrás de cada decisión",
+  orgEyebrow = "Organigrama",
+  orgTitle = "Estructura organizacional",
+}: AboutTeamSectionProps) {
   const liteMotion = useLiteMotion();
   const viewport = { once: true as const, amount: liteMotion ? 0.2 : 0.35 };
 
@@ -42,8 +53,8 @@ export function AboutTeamSection({ team, orgChart }: AboutTeamSectionProps) {
       <div className={ABOUT_CONTAINER}>
         <SectionWrap {...sectionMotion}>
           <AboutSectionHeading
-            eyebrow="Equipo Total Living"
-            title="El equipo detrás de cada decisión"
+            eyebrow={teamEyebrow}
+            title={teamTitle}
             align="center"
           />
         </SectionWrap>
@@ -112,10 +123,10 @@ export function AboutTeamSection({ team, orgChart }: AboutTeamSectionProps) {
           <div className="mt-12 sm:mt-16">
             <div className="mb-6 max-w-2xl sm:mb-8">
               <p className="font-outfit text-[10px] font-light uppercase tracking-[0.24em] text-tl-gold">
-                Organigrama
+                {orgEyebrow}
               </p>
               <h3 className="mt-2 font-outfit text-2xl font-extralight text-tl-beige sm:text-4xl">
-                Estructura organizacional
+                {orgTitle}
               </h3>
               <p className="mt-3 font-outfit text-sm font-light leading-relaxed text-tl-beige/70">
                 Vista general de la dirección y áreas clave. Los roles y nombres
@@ -134,10 +145,10 @@ export function AboutTeamSection({ team, orgChart }: AboutTeamSectionProps) {
         >
           <div className="mb-6 max-w-2xl sm:mb-8">
             <p className="font-outfit text-[10px] font-light uppercase tracking-[0.24em] text-tl-gold">
-              Organigrama
+              {orgEyebrow}
             </p>
             <h3 className="mt-2 font-outfit text-2xl font-extralight text-tl-beige sm:text-4xl">
-              Estructura organizacional
+              {orgTitle}
             </h3>
             <p className="mt-3 font-outfit text-sm font-light leading-relaxed text-tl-beige/70">
               Vista general de la dirección y áreas clave. Los roles y nombres

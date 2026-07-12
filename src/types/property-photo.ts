@@ -27,11 +27,13 @@ export const ACCEPTED_IMAGE_TYPES = [
   "image/heic",
   "image/heif",
   "image/avif",
-  "image/svg+xml",
 ] as const;
 
+/** Sin SVG: uploads del panel (logos estáticos en /public no usan esto). */
 export const ACCEPTED_IMAGE_EXTENSIONS =
-  ".jpg,.jpeg,.jpe,.png,.webp,.gif,.bmp,.tif,.tiff,.heic,.heif,.avif,.svg";
+  ".jpg,.jpeg,.jpe,.png,.webp,.gif,.bmp,.tif,.tiff,.heic,.heif,.avif";
+
+export const ACCEPTED_IMAGE_ACCEPT_ATTR = `${ACCEPTED_IMAGE_EXTENSIONS},image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,image/avif`;
 
 export const MAX_PHOTO_SIZE_BYTES = 15 * 1024 * 1024;
 

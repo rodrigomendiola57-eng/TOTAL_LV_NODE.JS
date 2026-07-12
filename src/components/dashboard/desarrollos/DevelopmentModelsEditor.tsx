@@ -13,17 +13,26 @@ import {
   deleteDevelopmentModel,
   deleteDevelopmentModelFloorPlan,
   deleteDevelopmentModelGalleryImage,
+  listDevelopmentModelFloorPlans,
   listDevelopmentModelGallery,
   listDevelopmentModels,
   updateDevelopmentModel,
+  updateDevelopmentModelFloorPlan,
   uploadDevelopmentModelCover,
   type DevelopmentApiUnitModel,
   type DevelopmentMediaItem,
   type DevelopmentUnitModelWritePayload,
 } from "@/lib/api/developments";
 import { resolveMediaUrl } from "@/lib/media-url";
-import { cn } from "@/lib/utils";
 import {
+  buildMatterportShareUrl,
+  MATTERPORT_DEMO_MODEL_ID,
+  parseMatterportId,
+} from "@/lib/maps/matterport";
+import { cn } from "@/lib/utils";
+import { ACCEPTED_IMAGE_ACCEPT_ATTR } from "@/types/property-photo";
+import {
+  Box,
   ChevronDown,
   ImagePlus,
   Layers,
@@ -33,6 +42,17 @@ import {
   Upload,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+
+const FLOOR_PLAN_PRESETS = [
+  "Planta baja",
+  "Primer piso",
+  "Segundo piso",
+  "Tercer piso",
+  "Terraza",
+  "Azotea",
+  "Roof garden",
+  "Planta única",
+] as const;
 
 type ModelFormState = {
   name: string;
@@ -49,6 +69,9 @@ type ModelFormState = {
   features: string[];
   available: string;
   cover_image_external_url: string;
+  tour_url: string;
+  tour_title: string;
+  tour_enabled: boolean;
 };
 
 function emptyModelForm(): ModelFormState {
@@ -67,6 +90,9 @@ function emptyModelForm(): ModelFormState {
     features: [],
     available: "",
     cover_image_external_url: "",
+    tour_url: "",
+    tour_title: "",
+    tour_enabled: false,
   };
 }
 
@@ -86,10 +112,16 @@ function fromApi(model: DevelopmentApiUnitModel): ModelFormState {
     features: model.features ?? [],
     available: model.available != null ? String(model.available) : "",
     cover_image_external_url: model.cover_image_external_url ?? "",
+    tour_url:
+      model.tour_url ||
+      (model.tour_id ? buildMatterportShareUrl(model.tour_id) : ""),
+    tour_title: model.tour_title ?? "",
+    tour_enabled: Boolean(model.tour_enabled),
   };
 }
 
 function toPayload(form: ModelFormState): DevelopmentUnitModelWritePayload {
+  const parsedId = parseMatterportId(form.tour_url);
   return {
     name: form.name.trim(),
     slug: form.slug.trim() || undefined,
@@ -105,6 +137,11 @@ function toPayload(form: ModelFormState): DevelopmentUnitModelWritePayload {
     features: form.features,
     available: form.available ? Number(form.available) : null,
     cover_image_external_url: form.cover_image_external_url.trim(),
+    tour_provider: "matterport",
+    tour_url: form.tour_url.trim(),
+    tour_id: parsedId ?? "",
+    tour_title: form.tour_title.trim(),
+    tour_enabled: form.tour_enabled && Boolean(parsedId),
   };
 }
 
@@ -154,19 +191,37 @@ export function DevelopmentModelsEditor({
     void refresh();
   }, [refresh]);
 
-  async function loadModelMedia(modelId: number, model: DevelopmentApiUnitModel) {
+  function syncFloorPlansInModels(
+    modelId: number,
+    plans: DevelopmentMediaItem[],
+  ) {
+    setModels((current) =>
+      current.map((item) =>
+        item.id === modelId
+          ? {
+              ...item,
+              floor_plans: plans.map((plan) => ({
+                id: plan.id,
+                label: plan.label ?? "Planta",
+                image_url: plan.image_url,
+                order: plan.order ?? 0,
+              })),
+            }
+          : item,
+      ),
+    );
+  }
+
+  async function loadModelMedia(modelId: number) {
     setMediaBusy(true);
     try {
-      const galleryRows = await listDevelopmentModelGallery(modelId);
+      const [galleryRows, planRows] = await Promise.all([
+        listDevelopmentModelGallery(modelId),
+        listDevelopmentModelFloorPlans(modelId),
+      ]);
       setGallery(galleryRows);
-      setFloorPlans(
-        (model.floor_plans ?? []).map((plan) => ({
-          id: plan.id,
-          image_url: resolveMediaUrl(plan.image_url) ?? plan.image_url,
-          label: plan.label,
-          order: plan.order,
-        })),
-      );
+      setFloorPlans(planRows);
+      syncFloorPlansInModels(modelId, planRows);
     } catch {
       setGallery([]);
       setFloorPlans([]);
@@ -180,6 +235,7 @@ export function DevelopmentModelsEditor({
     setGallery([]);
     setFloorPlans([]);
     setExpandedId("new");
+    setPlanLabel("Planta baja");
     setError(null);
   }
 
@@ -187,7 +243,7 @@ export function DevelopmentModelsEditor({
     setDraft(fromApi(model));
     setExpandedId(model.id);
     setError(null);
-    await loadModelMedia(model.id, model);
+    await loadModelMedia(model.id);
   }
 
   function setField<K extends keyof ModelFormState>(
@@ -212,12 +268,12 @@ export function DevelopmentModelsEditor({
         await refresh();
         setExpandedId(created.id);
         setDraft(fromApi(created));
-        await loadModelMedia(created.id, created);
+        await loadModelMedia(created.id);
       } else if (typeof expandedId === "number") {
         const updated = await updateDevelopmentModel(expandedId, payload);
         await refresh();
         setDraft(fromApi(updated));
-        await loadModelMedia(updated.id, updated);
+        await loadModelMedia(updated.id);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo guardar el modelo");
@@ -274,10 +330,13 @@ export function DevelopmentModelsEditor({
 
   async function handleDeleteGallery(imageId: number) {
     if (typeof expandedId !== "number") return;
+    if (!window.confirm("¿Eliminar esta foto de la galería?")) return;
     setMediaBusy(true);
+    setError(null);
     try {
       await deleteDevelopmentModelGalleryImage(expandedId, imageId);
-      setGallery((current) => current.filter((item) => item.id !== imageId));
+      const rows = await listDevelopmentModelGallery(expandedId);
+      setGallery(rows);
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo eliminar");
     } finally {
@@ -285,17 +344,23 @@ export function DevelopmentModelsEditor({
     }
   }
 
+  async function reloadFloorPlans(modelId: number) {
+    const rows = await listDevelopmentModelFloorPlans(modelId);
+    setFloorPlans(rows);
+    syncFloorPlansInModels(modelId, rows);
+  }
+
   async function handleFloorPlanUpload(file: File | null) {
     if (!file || typeof expandedId !== "number") return;
     setMediaBusy(true);
     setError(null);
     try {
-      const plan = await addDevelopmentModelFloorPlan(
+      await addDevelopmentModelFloorPlan(
         expandedId,
         file,
         planLabel.trim() || "Planta",
       );
-      setFloorPlans((current) => [...current, plan]);
+      await reloadFloorPlans(expandedId);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al subir planta");
     } finally {
@@ -303,12 +368,46 @@ export function DevelopmentModelsEditor({
     }
   }
 
+  async function handleReplacePlanImage(planId: number, file: File | null) {
+    if (!file || typeof expandedId !== "number") return;
+    setMediaBusy(true);
+    setError(null);
+    try {
+      await updateDevelopmentModelFloorPlan(expandedId, planId, { file });
+      await reloadFloorPlans(expandedId);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error al reemplazar planta");
+    } finally {
+      setMediaBusy(false);
+    }
+  }
+
+  async function handleUpdatePlanLabel(planId: number, label: string) {
+    if (typeof expandedId !== "number") return;
+    const next = label.trim();
+    if (!next) return;
+    setMediaBusy(true);
+    setError(null);
+    try {
+      await updateDevelopmentModelFloorPlan(expandedId, planId, {
+        label: next,
+      });
+      await reloadFloorPlans(expandedId);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo renombrar");
+    } finally {
+      setMediaBusy(false);
+    }
+  }
+
   async function handleDeletePlan(planId: number) {
     if (typeof expandedId !== "number") return;
+    if (!window.confirm("¿Eliminar esta planta?")) return;
     setMediaBusy(true);
+    setError(null);
     try {
       await deleteDevelopmentModelFloorPlan(expandedId, planId);
-      setFloorPlans((current) => current.filter((item) => item.id !== planId));
+      await reloadFloorPlans(expandedId);
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo eliminar");
     } finally {
@@ -397,7 +496,7 @@ export function DevelopmentModelsEditor({
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-cormorant text-xl text-tl-beige">
+                    <p className="truncate font-outfit text-xl font-extralight text-tl-beige">
                       {model.name}
                     </p>
                     <p className="mt-0.5 font-outfit text-xs text-tl-beige/50">
@@ -420,7 +519,7 @@ export function DevelopmentModelsEditor({
           {expandedId === "new" || typeof expandedId === "number" ? (
             <div className="rounded-2xl border border-tl-gold/30 bg-gradient-to-b from-tl-gold/5 to-transparent p-4 sm:p-5">
               <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-                <h4 className="font-cormorant text-2xl font-light text-tl-beige">
+                <h4 className="font-outfit text-2xl font-extralight text-tl-beige">
                   {expandedId === "new" ? "Nuevo modelo" : draft.name || "Editar modelo"}
                 </h4>
                 <div className="flex flex-wrap gap-2">
@@ -609,7 +708,7 @@ export function DevelopmentModelsEditor({
                       <input
                         ref={coverRef}
                         type="file"
-                        accept="image/*"
+                        accept={ACCEPTED_IMAGE_ACCEPT_ATTR}
                         className="hidden"
                         onChange={(e) => {
                           void handleCoverUpload(e.target.files?.[0] ?? null);
@@ -643,7 +742,7 @@ export function DevelopmentModelsEditor({
                         <input
                           ref={galleryRef}
                           type="file"
-                          accept="image/*"
+                          accept={ACCEPTED_IMAGE_ACCEPT_ATTR}
                           multiple
                           className="hidden"
                           onChange={(e) => {
@@ -671,10 +770,12 @@ export function DevelopmentModelsEditor({
                               />
                               <button
                                 type="button"
+                                disabled={mediaBusy}
                                 onClick={() => void handleDeleteGallery(item.id)}
-                                className="absolute right-1.5 top-1.5 rounded-full bg-tl-black/75 p-1 text-red-300"
+                                className="absolute right-1.5 top-1.5 flex h-8 w-8 items-center justify-center rounded-full bg-tl-black/80 text-red-300"
+                                aria-label="Eliminar foto"
                               >
-                                <Trash2 className="h-3 w-3" />
+                                <Trash2 className="h-3.5 w-3.5" />
                               </button>
                             </div>
                           ))}
@@ -684,31 +785,64 @@ export function DevelopmentModelsEditor({
                   </div>
 
                   <div className="space-y-3">
-                    <p className="font-outfit text-[11px] uppercase tracking-[0.14em] text-tl-beige/60">
-                      Plantas arquitectónicas
-                    </p>
+                    <div>
+                      <p className="font-outfit text-[11px] uppercase tracking-[0.14em] text-tl-beige/60">
+                        Plantas arquitectónicas
+                      </p>
+                      <p className="mt-1 font-outfit text-xs font-light text-tl-beige/45">
+                        Agrega tantas como necesites (planta baja, pisos,
+                        terraza, azotea…). Cada una con su etiqueta e imagen.
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      {FLOOR_PLAN_PRESETS.map((preset) => (
+                        <button
+                          key={preset}
+                          type="button"
+                          onClick={() => setPlanLabel(preset)}
+                          className={cn(
+                            "rounded-full border px-3 py-1.5 font-outfit text-[10px] uppercase tracking-[0.12em] transition-colors",
+                            planLabel === preset
+                              ? "border-tl-gold bg-tl-gold/15 text-tl-gold"
+                              : "border-tl-gold/20 text-tl-beige/55 hover:border-tl-gold/40 hover:text-tl-beige/80",
+                          )}
+                        >
+                          {preset}
+                        </button>
+                      ))}
+                    </div>
+
                     <div className="flex flex-wrap items-end gap-3">
-                      <FormField label="Etiqueta" className="min-w-[10rem] flex-1">
+                      <FormField
+                        label="Etiqueta de la nueva planta"
+                        className="min-w-[12rem] flex-1"
+                        hint="Puedes escribir cualquier nombre"
+                      >
                         <input
                           className={formInputClass}
                           value={planLabel}
                           onChange={(e) => setPlanLabel(e.target.value)}
-                          placeholder="Planta baja"
+                          placeholder="Ej. Planta baja, Terraza…"
                         />
                       </FormField>
                       <button
                         type="button"
-                        disabled={mediaBusy}
+                        disabled={mediaBusy || typeof expandedId !== "number"}
                         onClick={() => planRef.current?.click()}
-                        className="mb-0.5 inline-flex items-center gap-2 rounded-full border border-tl-gold/35 px-4 py-3 font-outfit text-[10px] uppercase tracking-[0.14em] text-tl-gold"
+                        className="mb-0.5 inline-flex items-center gap-2 rounded-full border border-tl-gold/35 px-4 py-3 font-outfit text-[10px] uppercase tracking-[0.14em] text-tl-gold disabled:opacity-40"
                       >
-                        <Upload className="h-3.5 w-3.5" />
+                        {mediaBusy ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <Upload className="h-3.5 w-3.5" />
+                        )}
                         Subir planta
                       </button>
                       <input
                         ref={planRef}
                         type="file"
-                        accept="image/*"
+                        accept={ACCEPTED_IMAGE_ACCEPT_ATTR}
                         className="hidden"
                         onChange={(e) => {
                           void handleFloorPlanUpload(e.target.files?.[0] ?? null);
@@ -716,35 +850,164 @@ export function DevelopmentModelsEditor({
                         }}
                       />
                     </div>
-                    {floorPlans.length > 0 ? (
+
+                    {floorPlans.length === 0 ? (
+                      <div className="flex h-28 items-center justify-center rounded-2xl border border-dashed border-tl-gold/20 text-tl-beige/40">
+                        <span className="font-outfit text-xs">
+                          Sin plantas aún — elige etiqueta y sube la imagen
+                        </span>
+                      </div>
+                    ) : (
                       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                         {floorPlans.map((plan) => (
                           <div
                             key={plan.id}
-                            className="overflow-hidden rounded-xl border border-tl-gold/15"
+                            className="overflow-hidden rounded-xl border border-tl-gold/15 bg-tl-black/40"
                           >
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                               src={plan.image_url}
                               alt={plan.label || "Planta"}
-                              className="aspect-[4/3] w-full object-cover bg-white"
+                              className="aspect-[4/3] w-full bg-white object-contain"
                             />
-                            <div className="flex items-center justify-between gap-2 px-3 py-2">
-                              <span className="font-outfit text-xs text-tl-beige/70">
-                                {plan.label || "Planta"}
-                              </span>
-                              <button
-                                type="button"
-                                onClick={() => void handleDeletePlan(plan.id)}
-                                className="text-red-300/80"
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </button>
+                            <div className="space-y-2 px-3 py-2.5">
+                              <input
+                                className={cn(formInputClass, "py-2 text-xs")}
+                                defaultValue={plan.label || "Planta"}
+                                disabled={mediaBusy}
+                                onBlur={(e) => {
+                                  const next = e.target.value.trim();
+                                  if (next && next !== (plan.label || "")) {
+                                    void handleUpdatePlanLabel(plan.id, next);
+                                  }
+                                }}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") {
+                                    e.currentTarget.blur();
+                                  }
+                                }}
+                                aria-label="Etiqueta de la planta"
+                              />
+                              <div className="flex items-center gap-2">
+                                <label className="inline-flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-full border border-tl-gold/30 px-3 py-2 font-outfit text-[10px] uppercase tracking-[0.12em] text-tl-gold">
+                                  <Upload className="h-3 w-3" />
+                                  Cambiar imagen
+                                  <input
+                                    type="file"
+                                    accept={ACCEPTED_IMAGE_ACCEPT_ATTR}
+                                    className="hidden"
+                                    disabled={mediaBusy}
+                                    onChange={(e) => {
+                                      void handleReplacePlanImage(
+                                        plan.id,
+                                        e.target.files?.[0] ?? null,
+                                      );
+                                      e.target.value = "";
+                                    }}
+                                  />
+                                </label>
+                                <button
+                                  type="button"
+                                  disabled={mediaBusy}
+                                  onClick={() => void handleDeletePlan(plan.id)}
+                                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-red-400/30 text-red-300"
+                                  aria-label="Eliminar planta"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
                             </div>
                           </div>
                         ))}
                       </div>
-                    ) : null}
+                    )}
+                  </div>
+
+                  <div className="space-y-4 rounded-2xl border border-tl-gold/20 bg-tl-gold/[0.03] p-4 sm:p-5">
+                    <div className="flex items-start gap-3">
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-tl-gold/25 bg-tl-gold/10 text-tl-gold">
+                        <Box className="h-5 w-5" />
+                      </span>
+                      <div>
+                        <p className="font-outfit text-[11px] uppercase tracking-[0.14em] text-tl-gold/80">
+                          Recorrido 3D · Matterport
+                        </p>
+                        <p className="mt-1 font-outfit text-xs font-light text-tl-beige/50">
+                          Pega el link de compartir de Matterport. Para probar
+                          sin cuenta, usa el demo oficial.
+                        </p>
+                      </div>
+                    </div>
+
+                    <FormField
+                      label="URL o ID de Matterport"
+                      hint="Ej. https://my.matterport.com/show/?m=Zh14WDtkjdC"
+                    >
+                      <input
+                        className={formInputClass}
+                        value={draft.tour_url}
+                        onChange={(e) => setField("tour_url", e.target.value)}
+                        placeholder="https://my.matterport.com/show/?m=…"
+                      />
+                    </FormField>
+
+                    <FormField label="Título del tour (opcional)">
+                      <input
+                        className={formInputClass}
+                        value={draft.tour_title}
+                        onChange={(e) => setField("tour_title", e.target.value)}
+                        placeholder={`Recorrido 3D — ${draft.name || "modelo"}`}
+                      />
+                    </FormField>
+
+                    <div className="flex flex-wrap items-center gap-3">
+                      <label className="inline-flex cursor-pointer items-center gap-2 font-outfit text-sm text-tl-beige/80">
+                        <input
+                          type="checkbox"
+                          checked={draft.tour_enabled}
+                          onChange={(e) =>
+                            setField("tour_enabled", e.target.checked)
+                          }
+                          className="h-4 w-4 accent-tl-gold"
+                        />
+                        Mostrar en el sitio público
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setField(
+                            "tour_url",
+                            buildMatterportShareUrl(MATTERPORT_DEMO_MODEL_ID),
+                          );
+                          setField("tour_enabled", true);
+                          if (!draft.tour_title.trim()) {
+                            setField(
+                              "tour_title",
+                              `Recorrido 3D — ${draft.name || "demo"}`,
+                            );
+                          }
+                        }}
+                        className="rounded-full border border-tl-gold/30 px-3 py-1.5 font-outfit text-[10px] uppercase tracking-[0.12em] text-tl-gold"
+                      >
+                        Usar demo Matterport
+                      </button>
+                      {parseMatterportId(draft.tour_url) ? (
+                        <a
+                          href={buildMatterportShareUrl(
+                            parseMatterportId(draft.tour_url)!,
+                          )}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="font-outfit text-[10px] uppercase tracking-[0.12em] text-tl-beige/45 hover:text-tl-gold"
+                        >
+                          Probar link →
+                        </a>
+                      ) : draft.tour_url.trim() ? (
+                        <span className="font-outfit text-[10px] text-red-300/80">
+                          URL no reconocida
+                        </span>
+                      ) : null}
+                    </div>
                   </div>
                 </div>
               ) : null}

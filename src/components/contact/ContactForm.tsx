@@ -101,6 +101,22 @@ export function ContactForm({
         name="total-living-contact"
         className="space-y-4 sm:space-y-5"
       >
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -left-[9999px] top-auto h-0 w-0 overflow-hidden opacity-0"
+        >
+          <label htmlFor="tl-contact-website">Sitio web</label>
+          <input
+            id="tl-contact-website"
+            name="website"
+            type="text"
+            tabIndex={-1}
+            autoComplete="off"
+            value={form.website}
+            onChange={(event) => form.setWebsite(event.target.value)}
+          />
+        </div>
+
         <ContactField
           label="Tu nombre"
           icon={UserRound}
@@ -206,11 +222,11 @@ export function ContactForm({
         <div className="sticky bottom-[max(0.75rem,env(safe-area-inset-bottom,0px))] z-10 -mx-1 bg-gradient-to-t from-[#141412] via-[#141412]/95 to-transparent px-1 pb-1 pt-3 md:static md:mx-0 md:bg-none md:p-0">
           <button
             type="submit"
-            disabled={!form.canSubmit}
+            disabled={form.loading}
             className={cn(
               contactButton,
               "flex w-full min-h-12 items-center justify-center gap-2 rounded-2xl border border-tl-gold bg-tl-gold px-6 py-3.5 text-tl-black shadow-[0_8px_32px_rgba(214,181,133,0.18)] transition-all sm:min-h-[3.35rem]",
-              "hover:brightness-105 active:scale-[0.99] disabled:cursor-not-allowed disabled:border-tl-gold/20 disabled:bg-tl-gold/25 disabled:text-tl-black/45 disabled:shadow-none",
+              "hover:brightness-105 active:scale-[0.99] disabled:cursor-wait disabled:opacity-90",
             )}
           >
             {form.loading ? (

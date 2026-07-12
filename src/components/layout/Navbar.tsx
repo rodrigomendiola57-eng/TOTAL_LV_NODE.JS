@@ -37,7 +37,7 @@ const propertyLinks = [
   { label: "Propiedades en Venta", href: "/propiedades/venta" },
   { label: "Propiedades en Renta", href: "/propiedades/renta" },
   { label: "Desarrollos", href: "/propiedades/desarrollos" },
-];
+] as const;
 
 interface NavLinkProps {
   href: string;
@@ -69,30 +69,43 @@ function NavDropdown({ label, links, isOpen, onOpen, onClose }: NavDropdownProps
     <div className="relative" onMouseEnter={onOpen} onMouseLeave={onClose}>
       <button
         type="button"
-        className="group relative inline-flex items-center gap-1.5 py-2 font-outfit text-[1.05rem] font-extralight tracking-[0.02em] text-tl-beige/90 transition-colors hover:text-tl-gold lg:text-lg"
+        aria-expanded={isOpen}
+        className="group relative inline-flex items-center gap-1 py-2 font-outfit text-[1.05rem] font-extralight tracking-[0.02em] text-tl-beige/90 transition-colors hover:text-tl-gold lg:text-lg"
       >
         {label}
-        <ChevronDown className="h-4 w-4 lg:h-[1.125rem] lg:w-[1.125rem]" />
-        <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-tl-gold transition-all duration-300 group-hover:w-full" />
+        <ChevronDown
+          className={`h-3.5 w-3.5 transition-transform duration-300 lg:h-4 lg:w-4 ${
+            isOpen ? "rotate-180 text-tl-gold" : ""
+          }`}
+          strokeWidth={1.25}
+        />
+        <span
+          className={`absolute -bottom-0.5 left-0 h-px bg-tl-gold transition-all duration-300 ${
+            isOpen ? "w-full" : "w-0 group-hover:w-full"
+          }`}
+        />
       </button>
+
       <AnimatePresence>
         {isOpen ? (
           <motion.div
-            initial={{ opacity: 0, y: 8 }}
+            initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 8 }}
-            transition={{ duration: 0.2 }}
-            className="absolute left-0 top-11 min-w-60 rounded-xl border border-tl-gold/25 bg-tl-black/95 p-2 shadow-[0_18px_44px_rgba(0,0,0,0.45)] backdrop-blur-md"
+            exit={{ opacity: 0, y: 2 }}
+            transition={{ duration: 0.15 }}
+            className="absolute left-1/2 top-full z-50 -translate-x-1/2 pt-3"
           >
-            {links.map((link) => (
-              <Link
-                key={link.label}
-                href={link.href}
-                className="block rounded-lg px-3 py-2.5 font-outfit text-sm font-extralight tracking-[0.02em] text-tl-beige/90 transition-colors hover:bg-tl-gold/10 hover:text-tl-gold lg:text-[1.05rem]"
-              >
-                {link.label}
-              </Link>
-            ))}
+            <div className="flex flex-col items-center gap-2.5 py-1">
+              {links.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="whitespace-nowrap font-outfit text-[1.05rem] font-extralight tracking-[0.06em] text-tl-beige/70 transition-colors hover:text-tl-gold lg:text-lg"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
           </motion.div>
         ) : null}
       </AnimatePresence>
@@ -142,7 +155,7 @@ export function Navbar() {
 
   return (
     <>
-      <header className="fixed inset-x-0 top-0 z-50 hidden md:block">
+      <header className="fixed inset-x-0 top-0 z-[100] hidden md:block">
         <motion.nav
         animate={{
           backgroundColor: solid

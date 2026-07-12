@@ -6,6 +6,7 @@ import {
   uploadDevelopmentsPageHero,
 } from "@/lib/api/developments";
 import type { DevelopmentsPageContent } from "@/types/developments-page";
+import { ACCEPTED_IMAGE_ACCEPT_ATTR } from "@/types/property-photo";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -109,7 +110,7 @@ export function DevelopmentsTextsManager() {
           <p className="font-outfit text-[10px] uppercase tracking-[0.2em] text-tl-gold/80">
             CMS · Listado público
           </p>
-          <h2 className="mt-1 font-cormorant text-3xl font-light text-tl-beige">
+          <h2 className="mt-1 font-outfit text-3xl font-extralight text-tl-beige">
             Textos de desarrollos
           </h2>
           <p className="mt-1 font-outfit text-sm font-light text-tl-beige/55">
@@ -183,7 +184,7 @@ export function DevelopmentsTextsManager() {
           <span className={labelClass}>Subir imagen hero</span>
           <input
             type="file"
-            accept="image/*"
+            accept={ACCEPTED_IMAGE_ACCEPT_ATTR}
             className="font-outfit text-sm text-tl-beige/70"
             onChange={(e) =>
               void handleHeroUpload(e.target.files?.[0] ?? null)

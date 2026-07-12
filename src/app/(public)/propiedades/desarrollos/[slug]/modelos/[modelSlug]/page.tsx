@@ -1,5 +1,8 @@
 import { DevelopmentModelView } from "@/components/developments/detail/DevelopmentModelView";
-import { getDevelopmentModel, getDevelopments } from "@/lib/mock/developments";
+import {
+  getPublicDevelopmentBySlug,
+  getPublicDevelopments,
+} from "@/lib/api/developments";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
@@ -7,43 +10,49 @@ interface ModelPageProps {
   params: Promise<{ slug: string; modelSlug: string }>;
 }
 
-export function generateStaticParams() {
-  return getDevelopments().flatMap((development) =>
-    development.models.map((model) => ({
-      slug: development.slug,
-      modelSlug: model.slug,
-    })),
-  );
+export const revalidate = 30;
+
+export async function generateStaticParams() {
+  try {
+    const developments = await getPublicDevelopments();
+    return developments.flatMap((development) =>
+      development.models.map((model) => ({
+        slug: development.slug,
+        modelSlug: model.slug,
+      })),
+    );
+  } catch {
+    return [];
+  }
 }
 
 export async function generateMetadata({
   params,
 }: ModelPageProps): Promise<Metadata> {
   const { slug, modelSlug } = await params;
-  const result = getDevelopmentModel(slug, modelSlug);
+  const development = await getPublicDevelopmentBySlug(slug);
+  const model = development?.models.find((item) => item.slug === modelSlug);
 
-  if (!result) {
+  if (!development || !model) {
     return { title: "Modelo no encontrado | Total Living" };
   }
 
   return {
-    title: `${result.model.name} · ${result.development.name} | Total Living`,
-    description: result.model.description,
+    title: `${model.name} · ${development.name} | Total Living`,
+    description: model.description,
   };
 }
 
 export default async function DevelopmentModelPage({ params }: ModelPageProps) {
   const { slug, modelSlug } = await params;
-  const result = getDevelopmentModel(slug, modelSlug);
+  const development = await getPublicDevelopmentBySlug(slug);
+  const model = development?.models.find((item) => item.slug === modelSlug);
 
-  if (!result) {
+  if (!development || !model) {
     notFound();
   }
 
   return (
-    <DevelopmentModelView
-      development={result.development}
-      model={result.model}
-    />
+    <DevelopmentModelView development={development} model={model} />
   );
 }

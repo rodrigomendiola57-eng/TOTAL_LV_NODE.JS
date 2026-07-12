@@ -21,13 +21,15 @@ import { useRef, type RefObject } from "react";
 
 const revealEase = [0.22, 1, 0.36, 1] as const;
 
-const MISSION_IMAGE =
+const FALLBACK_MISSION_IMAGE =
   "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1400&auto=format&fit=crop";
-const VISION_IMAGE =
+const FALLBACK_VISION_IMAGE =
   "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1400&auto=format&fit=crop";
 
 interface AboutMissionVisionSectionProps {
   missionVision: MissionVision;
+  missionImage?: string;
+  visionImage?: string;
 }
 
 const IMMERSIVE_HEIGHT_CLASS =
@@ -286,8 +288,12 @@ function ScrollProgressBar({ progress }: { progress: MotionValue<number> }) {
 
 function MissionVisionStageLite({
   missionVision,
+  missionImage,
+  visionImage,
 }: {
   missionVision: MissionVision;
+  missionImage: string;
+  visionImage: string;
 }) {
   return (
     <div className="relative flex flex-col lg:w-full lg:max-w-none lg:flex-row lg:px-0">
@@ -295,7 +301,7 @@ function MissionVisionStageLite({
         kind="mission"
         title={missionVision.mission.title}
         statement={missionVision.mission.statement}
-        image={MISSION_IMAGE}
+        image={missionImage}
         imageAlt="Interior residencial premium en Querétaro"
         scrollProgress={undefined as unknown as MotionValue<number>}
         liteMotion
@@ -304,7 +310,7 @@ function MissionVisionStageLite({
         kind="vision"
         title={missionVision.vision.title}
         statement={missionVision.vision.statement}
-        image={VISION_IMAGE}
+        image={visionImage}
         imageAlt="Horizonte urbano y arquitectura contemporánea"
         scrollProgress={undefined as unknown as MotionValue<number>}
         liteMotion
@@ -315,9 +321,13 @@ function MissionVisionStageLite({
 
 function MissionVisionStageRich({
   missionVision,
+  missionImage,
+  visionImage,
   stageRef,
 }: {
   missionVision: MissionVision;
+  missionImage: string;
+  visionImage: string;
   stageRef: RefObject<HTMLDivElement | null>;
 }) {
   const { scrollYProgress } = useScroll({
@@ -338,7 +348,7 @@ function MissionVisionStageRich({
           kind="mission"
           title={missionVision.mission.title}
           statement={missionVision.mission.statement}
-          image={MISSION_IMAGE}
+          image={missionImage}
           imageAlt="Interior residencial premium en Querétaro"
           scrollProgress={scrollYProgress}
           liteMotion={false}
@@ -347,7 +357,7 @@ function MissionVisionStageRich({
           kind="vision"
           title={missionVision.vision.title}
           statement={missionVision.vision.statement}
-          image={VISION_IMAGE}
+          image={visionImage}
           imageAlt="Horizonte urbano y arquitectura contemporánea"
           scrollProgress={scrollYProgress}
           liteMotion={false}
@@ -384,6 +394,8 @@ function CenterPulseDot({
 
 export function AboutMissionVisionSection({
   missionVision,
+  missionImage = FALLBACK_MISSION_IMAGE,
+  visionImage = FALLBACK_VISION_IMAGE,
 }: AboutMissionVisionSectionProps) {
   const liteMotion = useLiteMotion();
   const stageRef = useRef<HTMLDivElement>(null);
@@ -427,9 +439,18 @@ export function AboutMissionVisionSection({
 
       <div ref={stageRef} className="relative lg:w-screen lg:max-w-[100vw] lg:ml-[calc(50%-50vw)]">
         {liteMotion ? (
-          <MissionVisionStageLite missionVision={missionVision} />
+          <MissionVisionStageLite
+            missionVision={missionVision}
+            missionImage={missionImage}
+            visionImage={visionImage}
+          />
         ) : (
-          <MissionVisionStageRich missionVision={missionVision} stageRef={stageRef} />
+          <MissionVisionStageRich
+            missionVision={missionVision}
+            missionImage={missionImage}
+            visionImage={visionImage}
+            stageRef={stageRef}
+          />
         )}
 
         {liteMotion ? (

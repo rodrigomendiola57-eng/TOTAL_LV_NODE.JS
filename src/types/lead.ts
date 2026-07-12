@@ -38,6 +38,8 @@ export interface CreateLeadPayload {
   channel?: LeadChannel;
   interested_in?: number | null;
   initial_message?: string;
+  /** Honeypot — debe ir vacío. */
+  website?: string;
 }
 
 export interface LeadFilters {

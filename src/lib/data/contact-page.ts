@@ -7,18 +7,18 @@ export const CONTACT_PAGE = {
   },
   channels: [
     {
-      id: "email",
-      label: "Correo",
-      value: "contacto@totalliving.mx",
-      href: "mailto:contacto@totalliving.mx",
-      hint: "Respuesta en horario laboral",
-    },
-    {
       id: "whatsapp",
       label: "WhatsApp",
       value: "+52 442 100 0000",
       href: "https://wa.me/524421000000",
       hint: "Agenda visitas y consultas rápidas",
+    },
+    {
+      id: "email",
+      label: "Correo",
+      value: "contacto@totalliving.mx",
+      href: "mailto:contacto@totalliving.mx",
+      hint: "Respuesta en horario laboral",
     },
     {
       id: "location",

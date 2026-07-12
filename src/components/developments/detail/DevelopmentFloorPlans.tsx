@@ -1,9 +1,10 @@
 "use client";
 
+import { DevelopmentLightbox } from "@/components/developments/detail/DevelopmentLightbox";
 import { cn } from "@/lib/utils";
 import type { DevelopmentFloorPlan } from "@/types/development";
-import { Maximize2, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Maximize2 } from "lucide-react";
+import { useCallback, useState } from "react";
 
 interface DevelopmentFloorPlansProps {
   plans: DevelopmentFloorPlan[];
@@ -18,19 +19,7 @@ const COLS: Record<number, string> = {
 
 export function DevelopmentFloorPlans({ plans }: DevelopmentFloorPlansProps) {
   const [active, setActive] = useState<DevelopmentFloorPlan | null>(null);
-
-  useEffect(() => {
-    if (!active) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setActive(null);
-    };
-    window.addEventListener("keydown", onKey);
-    document.body.style.overflow = "hidden";
-    return () => {
-      window.removeEventListener("keydown", onKey);
-      document.body.style.overflow = "";
-    };
-  }, [active]);
+  const close = useCallback(() => setActive(null), []);
 
   if (plans.length === 0) return null;
 
@@ -42,8 +31,8 @@ export function DevelopmentFloorPlans({ plans }: DevelopmentFloorPlansProps) {
           COLS[Math.min(plans.length, 4)] ?? "sm:grid-cols-2 lg:grid-cols-4",
         )}
       >
-        {plans.map((plan) => (
-          <figure key={plan.label} className="group">
+        {plans.map((plan, index) => (
+          <figure key={plan.id ?? `${plan.label}-${index}`} className="group">
             <figcaption className="mb-3 text-center font-outfit text-[11px] font-light uppercase tracking-[0.22em] text-tl-gold">
               {plan.label}
             </figcaption>
@@ -52,11 +41,13 @@ export function DevelopmentFloorPlans({ plans }: DevelopmentFloorPlansProps) {
               onClick={() => setActive(plan)}
               className="relative block w-full overflow-hidden rounded-2xl border border-white/10 bg-tl-beige/[0.04]"
             >
-              <div
-                className="aspect-[3/4] w-full bg-contain bg-center bg-no-repeat p-4"
-                style={{ backgroundImage: `url('${plan.image}')` }}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={plan.image}
+                alt={plan.label}
+                className="aspect-[3/4] w-full object-contain bg-white/5 p-3 sm:p-4"
               />
-              <span className="absolute bottom-3 right-3 flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-tl-black/45 text-tl-beige/80 opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100">
+              <span className="absolute bottom-3 right-3 flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-tl-black/45 text-tl-beige/80 opacity-100 backdrop-blur-sm transition-opacity sm:opacity-0 sm:group-hover:opacity-100">
                 <Maximize2 className="h-4 w-4" />
               </span>
             </button>
@@ -65,31 +56,12 @@ export function DevelopmentFloorPlans({ plans }: DevelopmentFloorPlansProps) {
       </div>
 
       {active ? (
-        <div
-          className="fixed inset-0 z-[120] flex items-center justify-center bg-tl-black/95 p-4 backdrop-blur-sm"
-          onClick={() => setActive(null)}
-        >
-          <button
-            type="button"
-            aria-label="Cerrar"
-            onClick={() => setActive(null)}
-            className="absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full border border-white/15 text-tl-beige/80 transition-colors hover:border-tl-gold/60 hover:text-tl-gold"
-          >
-            <X className="h-5 w-5" />
-          </button>
-          <figure
-            className="max-h-[88vh] w-full max-w-4xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div
-              className="mx-auto aspect-[3/4] max-h-[78vh] w-full rounded-2xl bg-contain bg-center bg-no-repeat"
-              style={{ backgroundImage: `url('${active.image}')` }}
-            />
-            <figcaption className="mt-4 text-center font-outfit text-xs font-light uppercase tracking-[0.2em] text-tl-gold">
-              {active.label}
-            </figcaption>
-          </figure>
-        </div>
+        <DevelopmentLightbox
+          src={active.image}
+          alt={active.label}
+          caption={active.label}
+          onClose={close}
+        />
       ) : null}
     </>
   );

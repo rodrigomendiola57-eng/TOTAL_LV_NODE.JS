@@ -46,7 +46,7 @@ export function FeaturedSectionForm({
       </InicioField>
 
       <div className="space-y-4">
-        <h3 className="font-cormorant text-xl text-tl-beige">Enlaces rápidos</h3>
+        <h3 className="font-outfit font-extralight text-xl text-tl-beige">Enlaces rápidos</h3>
         {content.featured_links.map((link, index) => (
           <div
             key={`${link.href}-${index}`}

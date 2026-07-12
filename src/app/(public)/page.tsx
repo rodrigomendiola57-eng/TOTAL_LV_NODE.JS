@@ -26,7 +26,7 @@ export default async function Home() {
   const albumImages = mapSlidesToAlbumImages(homeContent.about_slides);
 
   return (
-    <main id="inicio" className="flex flex-1 flex-col overflow-x-clip bg-[#1a1a18]">
+    <main id="inicio" className="relative flex flex-1 flex-col overflow-x-clip bg-[#1a1a18]">
       <HeroSection
         eyebrow={homeContent.hero_eyebrow}
         title={homeContent.hero_title}
@@ -34,8 +34,8 @@ export default async function Home() {
         backgroundUrl={resolveHeroBackgroundUrl(homeContent)}
       />
 
-      {/* Mismo Silk que Nosotros: solo Quiénes somos → Propiedades destacadas */}
-      <div className="relative isolate overflow-x-clip">
+      {/* Mismo Silk que Nosotros — también en móvil */}
+      <div className="relative">
         <AboutSilkBackdrop />
 
         <div className="relative z-10 pt-16 sm:pt-24">
@@ -103,7 +103,7 @@ export default async function Home() {
         imageMobile={cityImages.mobile}
       />
 
-      <section id="asesoria" className="relative w-full overflow-hidden">
+      <section id="asesoria" className="relative w-full overflow-x-clip">
         <HomeExpertiseSection
           title={homeContent.expertise_title}
           subtitle={homeContent.expertise_subtitle}

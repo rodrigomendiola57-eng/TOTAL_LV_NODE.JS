@@ -167,7 +167,7 @@ export function PropertyDetailView({
             <PropertySimilarPanel
               properties={similarProperties}
               zone={property.zone}
-              className="lg:hidden"
+              variant="carousel"
             />
           ) : null}
         </div>

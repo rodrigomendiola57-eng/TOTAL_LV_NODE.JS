@@ -1,5 +1,6 @@
 "use client";
 
+import { ACCEPTED_IMAGE_ACCEPT_ATTR } from "@/types/property-photo";
 import { cn } from "@/lib/utils";
 import { ImagePlus, Loader2 } from "lucide-react";
 import Image from "next/image";
@@ -88,7 +89,7 @@ export function InicioImageUpload({
       <input
         ref={inputRef}
         type="file"
-        accept="image/jpeg,image/png,image/webp"
+        accept={ACCEPTED_IMAGE_ACCEPT_ATTR}
         className="hidden"
         onChange={(event) => {
           const file = event.target.files?.[0];

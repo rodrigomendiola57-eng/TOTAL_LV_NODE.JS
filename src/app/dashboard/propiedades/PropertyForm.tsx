@@ -399,7 +399,7 @@ export function PropertyForm({ property, onClose, onSuccess }: PropertyFormProps
             <p className="font-outfit font-light text-[10px] uppercase tracking-[0.24em] text-tl-gold">
               Total Living · Catálogo
             </p>
-            <h2 className="mt-1 font-cormorant text-3xl font-light text-tl-beige sm:text-4xl">
+            <h2 className="mt-1 font-outfit text-3xl font-extralight text-tl-beige sm:text-4xl">
               {isEditing ? "Editar Propiedad" : "Nueva Propiedad"}
             </h2>
             {property?.easybroker_id ? (

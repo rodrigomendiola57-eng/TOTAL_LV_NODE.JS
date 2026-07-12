@@ -74,6 +74,15 @@ class Command(BaseCommand):
                     development=development,
                     **model_payload,
                 )
+                # Si el seed no trae galería, usa portada + fotos del desarrollo.
+                if not model_gallery:
+                    if unit.cover_image_external_url:
+                        model_gallery.append(unit.cover_image_external_url)
+                    for url in gallery_urls:
+                        if url and url not in model_gallery:
+                            model_gallery.append(url)
+                        if len(model_gallery) >= 5:
+                            break
                 for order, url in enumerate(model_gallery):
                     DevelopmentModelImage.objects.create(
                         unit_model=unit,

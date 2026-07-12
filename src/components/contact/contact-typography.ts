@@ -41,9 +41,8 @@ export const contactSectionShell =
 export const contactMainGrid =
   "grid grid-cols-1 gap-8 md:gap-10 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] xl:items-start xl:gap-12 2xl:gap-14";
 
-/** Columna del formulario — primero en móvil/tablet, sticky solo en xl+. */
-export const contactFormColumn =
-  "order-1 pt-10 sm:pt-12 md:pt-14 xl:order-2 xl:sticky xl:top-[calc(6.75rem+env(safe-area-inset-top,0px))] xl:max-h-[calc(100dvh-8rem-env(safe-area-inset-top,0px))] xl:overflow-y-auto xl:overscroll-contain xl:pt-16";
+/** Columna del formulario — desktop xl+ (móvil usa layout propio). */
+export const contactFormColumn = "xl:order-2 xl:pt-16";
 
-/** Columna informativa — después del form en móvil/tablet. */
-export const contactInfoColumn = "order-2 space-y-8 md:space-y-10 xl:order-1";
+/** Columna informativa — desktop xl+. */
+export const contactInfoColumn = "space-y-8 md:space-y-10 xl:order-1";

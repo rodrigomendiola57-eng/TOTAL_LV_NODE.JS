@@ -6,6 +6,7 @@ export type ZoneGrowthLabel =
   | "Crecimiento medio"
   | "Emergente";
 
+/** Shape del catálogo público / dashboard (alineado a API Django). */
 export interface ZoneCatalogEntry {
   id: number;
   slug: string;
@@ -14,4 +15,7 @@ export interface ZoneCatalogEntry {
   description: string;
   subZones: string[];
   image: string;
+  isPublished?: boolean;
+  order?: number;
+  updatedAt?: string;
 }

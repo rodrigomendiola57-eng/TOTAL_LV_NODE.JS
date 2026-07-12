@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 MAX_SIDE_PX = 1920
 JPEG_QUALITY = 85
 JPEG_OPTIMIZE = True
-SKIP_EXTENSIONS = {".svg"}
+SKIP_EXTENSIONS = frozenset()  # SVG ya no se acepta en uploads; no hay bypass.
 
 
 def build_optimized_filename(original_name: str) -> str:

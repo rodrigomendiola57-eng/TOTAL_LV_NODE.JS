@@ -4,7 +4,10 @@ import LogoLoop from "@/components/ui/LogoLoop";
 import { useMemo } from "react";
 import "./BrandLogoMarquee.css";
 
-const BRAND_LOGO_COUNT = 10;
+const INSTAGRAM_URL = "https://www.instagram.com/total.living.mx/";
+
+/** Pares símbolo + T (misma altura, tipografía de marca). */
+const BRAND_PAIR_COUNT = 8;
 
 function BrandLogoMark() {
   return (
@@ -23,22 +26,40 @@ function BrandLogoMark() {
   );
 }
 
+/** Letra T del wordmark (Cormorant), ligeramente mayor que el isotipo. */
+function BrandLetterT() {
+  return (
+    <span
+      aria-hidden
+      className="inline-flex h-[calc(var(--logoloop-logoHeight)+8px)] items-center justify-center font-cormorant font-light leading-none text-tl-beige"
+      style={{ fontSize: "calc(var(--logoloop-logoHeight) + 8px)" }}
+    >
+      T
+    </span>
+  );
+}
+
 export function BrandLogoMarquee() {
   const logos = useMemo(
     () =>
-      Array.from({ length: BRAND_LOGO_COUNT }, (_, index) => ({
-        node: <BrandLogoMark key={`brand-logo-${index}`} />,
-        ariaLabel: "Símbolo de marca",
-      })),
+      Array.from({ length: BRAND_PAIR_COUNT }, (_, index) => [
+        {
+          node: <BrandLogoMark key={`brand-symbol-${index}`} />,
+          href: INSTAGRAM_URL,
+          ariaLabel: "Total Living en Instagram",
+        },
+        {
+          node: <BrandLetterT key={`brand-t-${index}`} />,
+          href: INSTAGRAM_URL,
+          ariaLabel: "Total Living en Instagram",
+        },
+      ]).flat(),
     [],
   );
 
   return (
-    <div
-      aria-hidden
-      className="brand-marquee__outer pointer-events-none relative z-10 -mt-1 mb-6 flex w-full justify-center sm:-mt-2 sm:mb-8"
-    >
-      <div className="brand-marquee brand-marquee__window pointer-events-auto">
+    <div className="brand-marquee__outer relative z-10 -mt-1 mb-6 flex w-full justify-center sm:-mt-2 sm:mb-8">
+      <div className="brand-marquee brand-marquee__window">
         <LogoLoop
           logos={logos}
           speed={72}

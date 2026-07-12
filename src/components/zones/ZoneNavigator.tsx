@@ -1,19 +1,42 @@
 "use client";
 
+import { LineSidebar } from "@/components/ui/LineSidebar";
 import type { ZoneCatalogEntry } from "@/types/zone";
 import { cn } from "@/lib/utils";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 interface ZoneNavigatorProps {
   zones: ZoneCatalogEntry[];
 }
 
 function shortZoneName(name: string): string {
-  return name.replace(/^Zona\s+/i, "").split(" / ")[0] ?? name;
+  // Quita "Zona " y usa el tramo principal (antes de " / ").
+  const base = name.replace(/^Zona\s+/i, "").trim();
+  const primary = (base.split(" / ")[0] ?? base).trim();
+  return primary || name;
 }
 
 export function ZoneNavigator({ zones }: ZoneNavigatorProps) {
   const [activeSlug, setActiveSlug] = useState<string>("intro");
+
+  const navItems = useMemo(
+    () => [
+      { slug: "intro", label: "Inicio", targetId: "zonas-intro" },
+      ...zones.map((zone) => ({
+        slug: zone.slug,
+        label: shortZoneName(zone.name),
+        targetId: `zona-${zone.slug}`,
+      })),
+    ],
+    [zones],
+  );
+
+  const labels = useMemo(() => navItems.map((item) => item.label), [navItems]);
+
+  const activeIndex = useMemo(() => {
+    const index = navItems.findIndex((item) => item.slug === activeSlug);
+    return index >= 0 ? index : 0;
+  }, [activeSlug, navItems]);
 
   useEffect(() => {
     const scrollRoot = document.querySelector("main.snap-y");
@@ -66,68 +89,60 @@ export function ZoneNavigator({ zones }: ZoneNavigatorProps) {
     }
   }, []);
 
+  const handleDesktopClick = useCallback(
+    (index: number) => {
+      const item = navItems[index];
+      if (!item) return;
+      setActiveSlug(item.slug);
+      scrollTo(item.targetId);
+    },
+    [navItems, scrollTo],
+  );
+
   return (
     <>
-      <nav
-        aria-label="Navegación de zonas"
-        className="pointer-events-none fixed right-4 top-1/2 z-40 hidden -translate-y-1/2 lg:block xl:right-8"
-      >
-        <ul className="pointer-events-auto space-y-1 rounded-2xl border border-white/10 bg-tl-black/45 p-2 backdrop-blur-md">
-          <li>
-            <button
-              type="button"
-              onClick={() => scrollTo("zonas-intro")}
-              className={cn(
-                "flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left transition-colors",
-                activeSlug === "intro"
-                  ? "bg-tl-gold/15 text-tl-gold"
-                  : "text-tl-beige/50 hover:bg-white/[0.04] hover:text-tl-beige/80",
-              )}
-            >
-              <span className="font-outfit text-[9px] font-light tabular-nums tracking-[0.12em]">
-                00
-              </span>
-              <span className="h-px w-4 bg-current opacity-40" />
-              <span className="font-outfit text-[10px] font-light uppercase tracking-[0.14em]">
-                Inicio
-              </span>
-            </button>
-          </li>
-          {zones.map((zone) => (
-            <li key={zone.slug}>
-              <button
-                type="button"
-                onClick={() => scrollTo(`zona-${zone.slug}`)}
-                className={cn(
-                  "flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left transition-colors",
-                  activeSlug === zone.slug
-                    ? "bg-tl-gold/15 text-tl-gold"
-                    : "text-tl-beige/50 hover:bg-white/[0.04] hover:text-tl-beige/80",
-                )}
-              >
-                <span className="font-outfit text-[9px] font-light tabular-nums tracking-[0.12em]">
-                  {String(zone.id).padStart(2, "0")}
-                </span>
-                <span className="h-px w-4 bg-current opacity-40" />
-                <span className="max-w-[7rem] truncate font-outfit text-[10px] font-light uppercase tracking-[0.12em]">
-                  {shortZoneName(zone.name)}
-                </span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      </nav>
+      {/* Desktop: LineSidebar en card oscuro — solo lg+ */}
+      <div className="pointer-events-none fixed right-3 top-1/2 z-40 hidden max-h-[min(82dvh,40rem)] w-[min(17.5rem,22vw)] -translate-y-1/2 lg:block xl:right-5 xl:w-[min(19rem,24vw)]">
+        <div className="pointer-events-auto max-h-[min(82dvh,40rem)] overflow-y-auto overscroll-contain rounded-2xl border border-white/12 bg-black/55 px-3.5 py-4 shadow-[0_16px_48px_rgba(0,0,0,0.45)] backdrop-blur-md [scrollbar-width:thin] xl:px-4 xl:py-5">
+          <LineSidebar
+            items={labels}
+            activeIndex={activeIndex}
+            accentColor="#d6b585"
+            textColor="rgba(242, 236, 224, 0.62)"
+            markerColor="rgba(214, 181, 133, 0.4)"
+            showIndex
+            showMarker
+            proximityRadius={90}
+            maxShift={10}
+            falloff="smooth"
+            markerLength={36}
+            markerGap={6}
+            tickScale={0.4}
+            scaleTick
+            itemGap={12}
+            fontSize={0.72}
+            smoothing={90}
+            alignEnd
+            onItemClick={handleDesktopClick}
+            className="tl-zones-line-sidebar w-full"
+          />
+        </div>
+      </div>
 
-      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-tl-black/80 backdrop-blur-md lg:hidden">
+      {/* Móvil: chips horizontales (sin LineSidebar) */}
+      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 border-t border-tl-gold/15 bg-tl-black/92 lg:hidden">
         <div className="pointer-events-auto flex gap-1 overflow-x-auto px-3 py-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <button
             type="button"
-            onClick={() => scrollTo("zonas-intro")}
+            onClick={() => {
+              setActiveSlug("intro");
+              scrollTo("zonas-intro");
+            }}
             className={cn(
               "shrink-0 rounded-full border px-3.5 py-2 font-outfit text-[10px] font-light uppercase tracking-[0.14em] transition-colors",
               activeSlug === "intro"
-                ? "border-tl-gold bg-tl-gold/15 text-tl-gold"
-                : "border-white/15 text-tl-beige/60",
+                ? "border-tl-gold bg-tl-gold/20 text-tl-gold"
+                : "border-white/20 bg-tl-black/40 text-tl-beige/70",
             )}
           >
             Inicio
@@ -136,12 +151,15 @@ export function ZoneNavigator({ zones }: ZoneNavigatorProps) {
             <button
               key={zone.slug}
               type="button"
-              onClick={() => scrollTo(`zona-${zone.slug}`)}
+              onClick={() => {
+                setActiveSlug(zone.slug);
+                scrollTo(`zona-${zone.slug}`);
+              }}
               className={cn(
                 "shrink-0 rounded-full border px-3.5 py-2 font-outfit text-[10px] font-light uppercase tracking-[0.14em] transition-colors",
                 activeSlug === zone.slug
-                  ? "border-tl-gold bg-tl-gold/15 text-tl-gold"
-                  : "border-white/15 text-tl-beige/60",
+                  ? "border-tl-gold bg-tl-gold/20 text-tl-gold"
+                  : "border-white/20 bg-tl-black/40 text-tl-beige/70",
               )}
             >
               {shortZoneName(zone.name)}

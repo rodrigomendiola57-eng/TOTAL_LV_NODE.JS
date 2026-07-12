@@ -315,7 +315,9 @@ export function HomeExpertiseSection({
 }) {
   const reducedMotion = useReducedMotion();
   const liteMotion = useLiteMotion();
-  const disableMotion = reducedMotion || liteMotion;
+  // Animaciones de UI ligeras en móvil; el fondo WebGL solo se apaga con reduced-motion.
+  const disableMotion = Boolean(reducedMotion) || liteMotion;
+  const silkReducedMotion = Boolean(reducedMotion);
 
   const services: Service[] =
     servicesInput?.map((service) => ({
@@ -333,9 +335,9 @@ export function HomeExpertiseSection({
 
   return (
     <section className="home-scroll-section relative w-full overflow-hidden">
-      <HomeExpertiseSilkBackdrop reducedMotion={disableMotion} />
+      <HomeExpertiseSilkBackdrop reducedMotion={silkReducedMotion} />
 
-      <div className="relative z-10 mx-auto w-full max-w-6xl px-4 pb-14 pt-2 sm:px-6 sm:pb-20 lg:pb-24">
+      <div className="relative z-10 mx-auto w-full max-w-6xl px-4 pb-14 pt-14 sm:px-6 sm:pb-20 sm:pt-16 md:pt-20 lg:pb-24 lg:pt-24">
       <FadeInUp reducedMotion={disableMotion} className="w-full">
         <div className="flex flex-col gap-4 border-b border-white/[0.08] pb-7 md:flex-row md:items-end md:justify-between md:gap-8 md:pb-8 lg:gap-10 xl:gap-14">
           <h2 className="text-fluid-h2 shrink-0 font-cormorant font-light leading-tight text-tl-beige md:max-w-[55%] lg:max-w-[52%] xl:max-w-[48%]">

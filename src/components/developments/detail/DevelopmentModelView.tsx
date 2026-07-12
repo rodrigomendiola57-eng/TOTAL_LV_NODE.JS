@@ -1,5 +1,6 @@
 import { DevelopmentFloorPlans } from "@/components/developments/detail/DevelopmentFloorPlans";
 import { DevelopmentModelGallery } from "@/components/developments/detail/DevelopmentModelGallery";
+import { MatterportTourEmbed } from "@/components/developments/detail/MatterportTourEmbed";
 import { SectionHeading } from "@/components/developments/detail/SectionHeading";
 import { developmentWhatsAppUrl } from "@/components/developments/development-status";
 import { formatPrice } from "@/lib/format-price";
@@ -14,6 +15,7 @@ import {
   ArrowLeft,
   Bath,
   BedDouble,
+  Box,
   Car,
   Check,
   Maximize2,
@@ -31,7 +33,17 @@ export function DevelopmentModelView({
   development,
   model,
 }: DevelopmentModelViewProps) {
-  const images = model.gallery ?? development.gallery;
+  // Galería del modelo; si está vacía, portada + galería del desarrollo.
+  const images = (() => {
+    const own = (model.gallery ?? []).filter(Boolean);
+    if (own.length > 0) return own;
+    const fallback: string[] = [];
+    if (model.image) fallback.push(model.image);
+    for (const url of development.gallery ?? []) {
+      if (url && !fallback.includes(url)) fallback.push(url);
+    }
+    return fallback;
+  })();
   const waUrl = developmentWhatsAppUrl(
     `${development.name} — modelo ${model.name}`,
     development.zone,
@@ -192,6 +204,16 @@ export function DevelopmentModelView({
               <MessageCircle className="h-4 w-4" />
               Solicitar información
             </a>
+
+            {model.tour?.enabled && model.tour.id ? (
+              <a
+                href="#recorrido-3d"
+                className="mt-3 inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-tl-gold/40 px-6 py-3 font-outfit text-xs font-light uppercase tracking-[0.16em] text-tl-gold transition-colors hover:border-tl-gold hover:bg-tl-gold/10"
+              >
+                <Box className="h-4 w-4" />
+                Ver recorrido 3D
+              </a>
+            ) : null}
           </div>
         </div>
       </div>
@@ -208,6 +230,20 @@ export function DevelopmentModelView({
           />
           <div className="mx-auto mt-10 w-full max-w-6xl px-4 sm:px-6">
             <DevelopmentFloorPlans plans={model.floorPlans} />
+          </div>
+        </section>
+      ) : null}
+
+      {model.tour?.enabled && model.tour.id ? (
+        <section
+          id="recorrido-3d"
+          className="scroll-mt-24 border-t border-white/[0.06] py-14 sm:py-20"
+        >
+          <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
+            <MatterportTourEmbed
+              modelId={model.tour.id}
+              title={model.tour.title || `Recorrido 3D — ${model.name}`}
+            />
           </div>
         </section>
       ) : null}

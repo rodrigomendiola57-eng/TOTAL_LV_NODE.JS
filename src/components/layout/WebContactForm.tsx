@@ -36,8 +36,28 @@ export function WebContactForm({
       onSubmit={form.handleSubmit}
       autoComplete="on"
       name="total-living-contact-compact"
-      className={cn(isPage ? "space-y-4" : "mt-6 space-y-3", className)}
+      className={cn(
+        "relative",
+        isPage ? "space-y-4" : "mt-6 space-y-3",
+        className,
+      )}
     >
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -left-[9999px] top-auto h-0 w-0 overflow-hidden opacity-0"
+      >
+        <label htmlFor="tl-contact-website-compact">Sitio web</label>
+        <input
+          id="tl-contact-website-compact"
+          name="website"
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+          value={form.website}
+          onChange={(event) => form.setWebsite(event.target.value)}
+        />
+      </div>
+
       {propertyLabel ? (
         <div className="rounded-xl border border-tl-gold/20 bg-tl-gold/10 px-4 py-3">
           <p className="font-outfit text-[10px] font-light uppercase tracking-[0.14em] text-tl-gold/85">

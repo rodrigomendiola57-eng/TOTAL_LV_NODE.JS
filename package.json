@@ -9,7 +9,9 @@
     "build": "next build",
     "build:gh-pages": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "audit:deps": "npm audit --omit=dev",
+    "audit:security": "powershell -ExecutionPolicy Bypass -File scripts/security-audit.ps1"
   },
   "dependencies": {
     "@googlemaps/markerclusterer": "^2.6.2",
@@ -22,6 +24,7 @@
     "leaflet.markercluster": "^1.5.3",
     "lucide-react": "^1.23.0",
     "next": "16.2.10",
+    "ogl": "^1.0.11",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-hook-form": "^7.81.0",

@@ -1,5 +1,6 @@
 "use client";
 
+import { ContactChannelCarousel } from "@/components/contact/ContactChannelCarousel";
 import { ContactChannelList } from "@/components/contact/ContactChannelList";
 import { ContactForm } from "@/components/contact/ContactForm";
 import { ContactReassurance } from "@/components/contact/ContactReassurance";
@@ -33,6 +34,23 @@ export function ContactView({ propertyContext = null }: ContactViewProps) {
     ? `Me interesa la propiedad "${propertyContext.title}". Me gustaría recibir más información.`
     : "";
 
+  const propertyBanner = propertyContext ? (
+    <div className="rounded-2xl border border-tl-gold/22 bg-tl-gold/10 p-4 sm:p-5 md:p-6">
+      <p className={contactLabel}>Propiedad de interés</p>
+      <p className={cn("mt-2", contactBody)}>{propertyContext.title}</p>
+      <Link
+        href={`/propiedades/${propertyContext.id}`}
+        className={cn(
+          "mt-3 inline-flex min-h-11 items-center gap-1 text-tl-gold transition-opacity hover:opacity-80",
+          contactButton,
+        )}
+      >
+        Ver ficha
+        <ArrowUpRight className="h-4 w-4" />
+      </Link>
+    </div>
+  ) : null;
+
   return (
     <main className="relative isolate flex min-h-dvh flex-1 flex-col overflow-x-hidden bg-[#1a1a18] font-outfit">
       <div aria-hidden className="pointer-events-none absolute inset-0">
@@ -44,7 +62,36 @@ export function ContactView({ propertyContext = null }: ContactViewProps) {
 
       <section className={contactSectionShell}>
         <div className={cn(ABOUT_CONTAINER, "max-w-6xl xl:max-w-7xl")}>
-          <div className={contactMainGrid}>
+          {/* ——— Móvil / tablet: título → carrusel → formulario ——— */}
+          <div className="flex flex-col gap-7 sm:gap-8 xl:hidden">
+            <Reveal>
+              <div>
+                <p className={contactEyebrow}>{CONTACT_PAGE.hero.eyebrow}</p>
+                <h1 className={cn("mt-3 sm:mt-4", contactTitle)}>
+                  {CONTACT_PAGE.hero.title}
+                </h1>
+              </div>
+            </Reveal>
+
+            <Reveal delay={0.04}>
+              <ContactChannelCarousel channels={CONTACT_PAGE.channels} />
+            </Reveal>
+
+            {propertyBanner ? (
+              <Reveal delay={0.06}>{propertyBanner}</Reveal>
+            ) : null}
+
+            <Reveal delay={0.08}>
+              <ContactForm
+                interestedIn={propertyContext?.id ?? null}
+                propertyLabel={propertyContext?.title}
+                defaultMessage={defaultMessage}
+              />
+            </Reveal>
+          </div>
+
+          {/* ——— Desktop xl+: layout original (info + form) ——— */}
+          <div className={cn(contactMainGrid, "hidden xl:grid")}>
             <div className={contactFormColumn}>
               <Reveal delay={0.02}>
                 <ContactForm
@@ -76,23 +123,8 @@ export function ContactView({ propertyContext = null }: ContactViewProps) {
                 <ContactReassurance />
               </Reveal>
 
-              {propertyContext ? (
-                <Reveal delay={0.1}>
-                  <div className="rounded-2xl border border-tl-gold/22 bg-tl-gold/10 p-4 sm:p-5 md:p-6">
-                    <p className={contactLabel}>Propiedad de interés</p>
-                    <p className={cn("mt-2", contactBody)}>{propertyContext.title}</p>
-                    <Link
-                      href={`/propiedades/${propertyContext.id}`}
-                      className={cn(
-                        "mt-3 inline-flex min-h-11 items-center gap-1 text-tl-gold transition-opacity hover:opacity-80",
-                        contactButton,
-                      )}
-                    >
-                      Ver ficha
-                      <ArrowUpRight className="h-4 w-4" />
-                    </Link>
-                  </div>
-                </Reveal>
+              {propertyBanner ? (
+                <Reveal delay={0.1}>{propertyBanner}</Reveal>
               ) : null}
             </div>
           </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  ACCEPTED_IMAGE_ACCEPT_ATTR,
   ACCEPTED_IMAGE_EXTENSIONS,
   ACCEPTED_IMAGE_TYPES,
   createPhotoDraftFromFile,
@@ -199,10 +200,10 @@ export function PropertyPhotoManager({
         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-tl-gold/30 bg-tl-black/80 text-tl-gold">
           <Upload className="h-6 w-6" />
         </div>
-        <p className="mt-4 font-cormorant text-2xl text-tl-beige">
+        <p className="mt-4 font-outfit text-2xl font-extralight text-tl-beige">
           Arrastra tus fotografías aquí
         </p>
-        <p className="mt-2 font-outfit font-light text-sm text-tl-beige/60">
+        <p className="mt-2 font-outfit text-sm font-light text-tl-beige/60">
           JPG, PNG, WEBP, GIF, HEIC, AVIF y más · hasta{" "}
           {formatFileSize(MAX_PHOTO_SIZE_BYTES)} por archivo
         </p>
@@ -217,7 +218,7 @@ export function PropertyPhotoManager({
         <input
           ref={inputRef}
           type="file"
-          accept={ACCEPTED_IMAGE_EXTENSIONS}
+          accept={ACCEPTED_IMAGE_ACCEPT_ATTR}
           multiple
           className="hidden"
           onChange={(event) => {

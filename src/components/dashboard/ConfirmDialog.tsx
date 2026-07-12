@@ -37,8 +37,8 @@ export function ConfirmDialog({
         aria-modal="true"
         className="relative w-full max-w-md rounded-2xl border border-tl-gold/25 bg-tl-black p-6 shadow-2xl"
       >
-        <h3 className="font-cormorant text-2xl text-tl-beige">{title}</h3>
-        <p className="mt-3 font-outfit font-light text-sm leading-relaxed text-tl-beige/70">
+        <h3 className="font-outfit text-2xl font-extralight text-tl-beige">{title}</h3>
+        <p className="mt-3 font-outfit text-sm font-light leading-relaxed text-tl-beige/70">
           {description}
         </p>
         <div className="mt-6 flex flex-wrap justify-end gap-3">

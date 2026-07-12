@@ -1,8 +1,9 @@
 "use client";
 
+import { DevelopmentLightbox } from "@/components/developments/detail/DevelopmentLightbox";
 import { cn } from "@/lib/utils";
-import { ChevronLeft, ChevronRight, Maximize2, X } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { ChevronLeft, ChevronRight, Maximize2 } from "lucide-react";
+import { useCallback, useState } from "react";
 
 interface DevelopmentModelGalleryProps {
   images: string[];
@@ -22,21 +23,7 @@ export function DevelopmentModelGallery({
     () => setIndex((i) => (i - 1 + total) % total),
     [total],
   );
-
-  useEffect(() => {
-    if (!isOpen) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setIsOpen(false);
-      if (e.key === "ArrowRight") next();
-      if (e.key === "ArrowLeft") prev();
-    };
-    window.addEventListener("keydown", onKey);
-    document.body.style.overflow = "hidden";
-    return () => {
-      window.removeEventListener("keydown", onKey);
-      document.body.style.overflow = "";
-    };
-  }, [isOpen, next, prev]);
+  const close = useCallback(() => setIsOpen(false), []);
 
   if (total === 0) return null;
 
@@ -106,53 +93,14 @@ export function DevelopmentModelGallery({
       ) : null}
 
       {isOpen ? (
-        <div
-          className="fixed inset-0 z-[120] flex items-center justify-center bg-tl-black/95 p-4 backdrop-blur-sm"
-          onClick={() => setIsOpen(false)}
-        >
-          <button
-            type="button"
-            aria-label="Cerrar"
-            onClick={() => setIsOpen(false)}
-            className="absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full border border-white/15 text-tl-beige/80 transition-colors hover:border-tl-gold/60 hover:text-tl-gold"
-          >
-            <X className="h-5 w-5" />
-          </button>
-          <button
-            type="button"
-            aria-label="Anterior"
-            onClick={(e) => {
-              e.stopPropagation();
-              prev();
-            }}
-            className="absolute left-3 flex h-12 w-12 items-center justify-center rounded-full border border-white/15 text-tl-beige/80 transition-colors hover:border-tl-gold/60 hover:text-tl-gold sm:left-6"
-          >
-            <ChevronLeft className="h-6 w-6" />
-          </button>
-          <figure
-            className="max-h-[85vh] w-full max-w-5xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div
-              className="mx-auto aspect-[3/2] w-full rounded-2xl bg-contain bg-center bg-no-repeat"
-              style={{ backgroundImage: `url('${images[index]}')` }}
-            />
-            <figcaption className="mt-4 text-center font-outfit text-xs font-light uppercase tracking-[0.18em] text-tl-beige/55">
-              {name} · {index + 1} / {total}
-            </figcaption>
-          </figure>
-          <button
-            type="button"
-            aria-label="Siguiente"
-            onClick={(e) => {
-              e.stopPropagation();
-              next();
-            }}
-            className="absolute right-3 flex h-12 w-12 items-center justify-center rounded-full border border-white/15 text-tl-beige/80 transition-colors hover:border-tl-gold/60 hover:text-tl-gold sm:right-6"
-          >
-            <ChevronRight className="h-6 w-6" />
-          </button>
-        </div>
+        <DevelopmentLightbox
+          src={images[index]}
+          alt={`${name} — foto ${index + 1}`}
+          caption={`${name} · ${index + 1} / ${total}`}
+          onClose={close}
+          onPrev={total > 1 ? prev : undefined}
+          onNext={total > 1 ? next : undefined}
+        />
       ) : null}
     </div>
   );

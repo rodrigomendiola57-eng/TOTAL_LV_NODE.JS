@@ -1,3 +1,4 @@
+import { getPropertyWhatsAppShareUrl } from "@/lib/property-share";
 import type { Property } from "@/types/property";
 import { formatPropertyBathrooms, formatPropertyLocation } from "@/types/property";
 import type { LucideIcon } from "lucide-react";
@@ -48,10 +49,7 @@ export function getPropertyMapsUrl(property: Property): string {
 }
 
 export function getPropertyWhatsAppUrl(property: Property): string {
-  const text = encodeURIComponent(
-    `Hola, me interesa la propiedad "${property.title}" (${formatPropertyLocation(property)}).`,
-  );
-  return `https://wa.me/?text=${text}`;
+  return getPropertyWhatsAppShareUrl(property);
 }
 
 function formatArea(value: string): string | null {

@@ -7,19 +7,22 @@ import { ZoneScrollContext } from "@/components/zones/zone-scroll-context";
 import { useZonePropertyCounts } from "@/hooks/useZonePropertyCounts";
 import { HERO_CONTENT_OFFSET } from "@/lib/site-nav";
 import type { ZoneCatalogEntry } from "@/types/zone";
+import type { ZonesPageContent } from "@/types/zones-page";
 import { cn } from "@/lib/utils";
 import { ChevronDown } from "lucide-react";
 import { useRef } from "react";
 
 interface ZonesViewProps {
   zones: ZoneCatalogEntry[];
+  page: ZonesPageContent;
 }
 
-export function ZonesView({ zones }: ZonesViewProps) {
+export function ZonesView({ zones, page }: ZonesViewProps) {
   const scrollRef = useRef<HTMLElement>(null);
   const { counts: propertyCounts, isLoading: countsLoading } =
     useZonePropertyCounts();
   const totalProperties = Object.values(propertyCounts).reduce((a, b) => a + b, 0);
+  const heroImage = page.hero_image_url || page.hero_image_external_url;
 
   return (
     <ZoneScrollContext.Provider value={scrollRef}>
@@ -33,10 +36,11 @@ export function ZonesView({ zones }: ZonesViewProps) {
         >
           <div
             className="absolute inset-0 bg-cover bg-center"
-            style={{
-              backgroundImage:
-                "url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070&auto=format&fit=crop')",
-            }}
+            style={
+              heroImage
+                ? { backgroundImage: `url('${heroImage}')` }
+                : { backgroundColor: "#1a1a18" }
+            }
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/30 to-black/65" />
 
@@ -46,27 +50,25 @@ export function ZonesView({ zones }: ZonesViewProps) {
               HERO_CONTENT_OFFSET,
             )}
           >
-            <ZoneReveal delay={0.1}>
+            <ZoneReveal delay={0.02}>
               <p className="font-outfit text-[10px] font-light uppercase tracking-[0.32em] text-tl-gold/90 sm:text-xs sm:tracking-[0.36em]">
-                Total Living · Zonas
+                {page.hero_eyebrow}
               </p>
             </ZoneReveal>
 
-            <ZoneReveal delay={0.2} y={48}>
+            <ZoneReveal delay={0.06} y={28}>
               <h1 className="mt-4 max-w-3xl font-cormorant text-[clamp(2.75rem,8vw,5.5rem)] font-light leading-[0.92] text-tl-beige">
-                Ubicaciones estratégicas en Querétaro
+                {page.hero_title}
               </h1>
             </ZoneReveal>
 
-            <ZoneReveal delay={0.32} y={32}>
+            <ZoneReveal delay={0.1} y={20}>
               <p className="mt-5 max-w-2xl font-outfit text-sm font-extralight leading-relaxed tracking-[0.02em] text-tl-beige/75 sm:text-base">
-                Explora las {zones.length} zonas principales donde concentramos
-                nuestro portafolio. Cada región con su propio perfil de
-                plusvalía, estilo de vida y oportunidades inmobiliarias.
+                {page.hero_subtitle}
               </p>
             </ZoneReveal>
 
-            <ZoneReveal delay={0.44} y={28}>
+            <ZoneReveal delay={0.14} y={16}>
               <div className="mt-10 flex flex-wrap gap-x-10 gap-y-4 border-t border-white/10 pt-8">
                 <div>
                   <span className="font-cormorant text-4xl font-light leading-none text-tl-gold">
@@ -88,10 +90,14 @@ export function ZonesView({ zones }: ZonesViewProps) {
             </ZoneReveal>
           </div>
 
-          <ZoneReveal delay={0.6} y={16} className="absolute bottom-8 left-1/2 z-10 -translate-x-1/2 pb-[env(safe-area-inset-bottom,0px)]">
+          <ZoneReveal
+            delay={0.18}
+            y={12}
+            className="absolute bottom-8 left-1/2 z-10 -translate-x-1/2 pb-[env(safe-area-inset-bottom,0px)]"
+          >
             <div className="flex flex-col items-center gap-2">
               <span className="font-outfit text-[10px] font-light uppercase tracking-[0.22em] text-tl-beige/45">
-                Desplázate
+                {page.scroll_hint || "Desplázate"}
               </span>
               <ChevronDown
                 className="h-5 w-5 animate-bounce text-tl-gold/60"

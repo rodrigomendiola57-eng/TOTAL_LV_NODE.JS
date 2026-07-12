@@ -1,4 +1,4 @@
-import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
+import { DashboardShell } from "@/components/dashboard/DashboardShell";
 
 export default function DashboardLayout({
   children,
@@ -6,11 +6,8 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="min-h-screen bg-[#0a0a0a]">
-      <DashboardSidebar />
-      <div className="pl-64">
-        <main className="min-h-screen p-6 lg:p-8">{children}</main>
-      </div>
+    <div className="min-h-screen bg-[#0a0a0a] font-outfit font-light tracking-[0.02em] antialiased">
+      <DashboardShell>{children}</DashboardShell>
     </div>
   );
 }

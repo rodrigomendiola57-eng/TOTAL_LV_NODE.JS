@@ -77,6 +77,16 @@ Así, si la key se filtra, no sirve para Places/Geocoding ni otros productos.
 
 > Si usas la misma key que tu otra app, crea **otra key** para Total Living con referrers distintos. No compartas keys entre productos.
 
+### Checklist de seguridad de la key (Fase 2 seguridad)
+
+- [ ] HTTP referrers: solo tus dominios (`localhost` + prod), con `/*` al final
+- [ ] Restricción de API: **solo** Maps JavaScript API
+- [ ] Presupuesto / alertas en Billing de GCP
+- [ ] Key solo en `.env` / `.env.local` (nunca en el repo)
+- [ ] Si la key se filtró: rotar en Cloud Console y actualizar `.env`
+
+Media uploads y proxy: ver [MEDIA_SECURITY.md](./MEDIA_SECURITY.md).
+
 ## Paso D — Variable de entorno en este repo
 
 En este proyecto puedes ponerla en **`.env`** (el mismo archivo de Django) o en **`.env.local`**.
