@@ -212,4 +212,5 @@ Los mapas del sitio usan **Google Maps** (catálogo, detalle, desarrollos, picke
 - **Fase 3 (catálogo + resto):** [docs/GOOGLE_MAPS_FASE3.md](docs/GOOGLE_MAPS_FASE3.md)
 - Variable: `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` en `.env`
 - **Media / uploads (seguridad):** [docs/MEDIA_SECURITY.md](docs/MEDIA_SECURITY.md)
+- **S3 / R2 (imágenes + PDF):** [docs/S3_MEDIA.md](docs/S3_MEDIA.md)
 - **Fase 3 (CSP, edge rate limit, alertas):** [docs/SECURITY_FASE3.md](docs/SECURITY_FASE3.md)

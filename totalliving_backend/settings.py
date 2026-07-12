@@ -265,12 +265,73 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-# Media — fotos de perfil de asesores, etc.
+# Media — fotos, PDFs de ficha técnica, etc.
 
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
-# True: Django sirve /media/ (dev + proxy Next). En prod con nginx/S3 → False.
+# True: Django sirve /media/ (dev + proxy Next). Con S3 se fuerza False.
 MEDIA_SERVE_FROM_DJANGO = env.bool("MEDIA_SERVE_FROM_DJANGO", default=True)
+
+# --- S3 / Cloudflare R2 (django-storages) — docs/S3_MEDIA.md ---
+# Activo si AWS_STORAGE_BUCKET_NAME está definido.
+AWS_STORAGE_BUCKET_NAME = (env("AWS_STORAGE_BUCKET_NAME", default="") or "").strip()
+USE_S3 = bool(AWS_STORAGE_BUCKET_NAME)
+
+if USE_S3:
+    AWS_ACCESS_KEY_ID = env("AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = env("AWS_SECRET_ACCESS_KEY")
+    AWS_S3_REGION_NAME = env("AWS_S3_REGION_NAME", default="us-east-1")
+    AWS_S3_ENDPOINT_URL = (env("AWS_S3_ENDPOINT_URL", default="") or "").strip() or None
+    AWS_S3_CUSTOM_DOMAIN = (env("AWS_S3_CUSTOM_DOMAIN", default="") or "").strip() or None
+    AWS_LOCATION = (env("AWS_LOCATION", default="media") or "media").strip()
+    AWS_QUERYSTRING_AUTH = env.bool("AWS_QUERYSTRING_AUTH", default=False)
+    AWS_S3_FILE_OVERWRITE = False
+    # Buckets modernos: sin ACL por objeto; usa política del bucket (lectura pública).
+    AWS_DEFAULT_ACL = None
+    AWS_S3_OBJECT_PARAMETERS = {
+        "CacheControl": "max-age=86400, public",
+    }
+
+    _s3_options = {
+        "access_key": AWS_ACCESS_KEY_ID,
+        "secret_key": AWS_SECRET_ACCESS_KEY,
+        "bucket_name": AWS_STORAGE_BUCKET_NAME,
+        "region_name": AWS_S3_REGION_NAME,
+        "default_acl": None,
+        "querystring_auth": AWS_QUERYSTRING_AUTH,
+        "file_overwrite": False,
+        "location": AWS_LOCATION,
+        "object_parameters": AWS_S3_OBJECT_PARAMETERS,
+    }
+    if AWS_S3_ENDPOINT_URL:
+        _s3_options["endpoint_url"] = AWS_S3_ENDPOINT_URL
+    if AWS_S3_CUSTOM_DOMAIN:
+        _s3_options["custom_domain"] = AWS_S3_CUSTOM_DOMAIN
+
+    STORAGES = {
+        "default": {
+            "BACKEND": "storages.backends.s3.S3Storage",
+            "OPTIONS": _s3_options,
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
+    }
+
+    # URL pública de media (CDN / dominio custom / URL del bucket).
+    _media_url = (env("MEDIA_URL", default="") or "").strip()
+    if _media_url:
+        MEDIA_URL = _media_url if _media_url.endswith("/") else f"{_media_url}/"
+    elif AWS_S3_CUSTOM_DOMAIN:
+        MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_LOCATION}/"
+    elif not AWS_S3_ENDPOINT_URL:
+        MEDIA_URL = (
+            f"https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}"
+            f".amazonaws.com/{AWS_LOCATION}/"
+        )
+    # Con R2 sin custom domain, django-storages arma la URL vía endpoint.
+
+    MEDIA_SERVE_FROM_DJANGO = False
 
 # EasyBroker — sincronización de inventario
 EASYBROKER_API_KEY = env("EASYBROKER_API_KEY")

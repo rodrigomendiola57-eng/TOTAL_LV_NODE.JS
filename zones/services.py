@@ -4,17 +4,10 @@ from __future__ import annotations
 
 from django.db import transaction
 
+from totalliving_backend.media_urls import absolute_media_url
+
 from .models import Zone, ZonesPage
 from .seed_data import ZONE_SEED
-
-
-def absolute_media_url(request, file_field) -> str | None:
-    if not file_field:
-        return None
-    url = file_field.url
-    if request is None:
-        return url
-    return request.build_absolute_uri(url)
 
 
 def resolve_image_url(request, file_field, external_url: str = "") -> str:

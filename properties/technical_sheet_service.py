@@ -7,6 +7,8 @@ from rest_framework import status
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from totalliving_backend.media_urls import absolute_media_url
+
 from .document_validators import validate_technical_sheet_pdf
 from .models import Property
 
@@ -14,7 +16,7 @@ from .models import Property
 def _build_sheet_url(property_obj: Property, request: Request) -> str | None:
     if not property_obj.technical_sheet:
         return None
-    return request.build_absolute_uri(property_obj.technical_sheet.url)
+    return absolute_media_url(request, property_obj.technical_sheet)
 
 
 def get_technical_sheet(property_obj: Property, request: Request) -> Response:

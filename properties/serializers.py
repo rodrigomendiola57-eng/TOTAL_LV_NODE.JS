@@ -9,6 +9,8 @@ from rest_framework import serializers
 from rest_framework_gis.fields import GeometryField
 from rest_framework_gis.serializers import GeoFeatureModelSerializer
 
+from totalliving_backend.media_urls import absolute_media_url
+
 from .models import Amenity, Property
 
 
@@ -112,19 +114,13 @@ class PropertySerializer(GeoFeatureModelSerializer):
         if cover is None or not cover.image:
             return None
 
-        request = self.context.get("request")
-        if request is not None:
-            return request.build_absolute_uri(cover.image.url)
-        return cover.image.url
+        return absolute_media_url(self.context.get("request"), cover.image)
 
     def get_technical_sheet_url(self, obj: Property) -> str | None:
         if not obj.technical_sheet:
             return None
 
-        request = self.context.get("request")
-        if request is not None:
-            return request.build_absolute_uri(obj.technical_sheet.url)
-        return obj.technical_sheet.url
+        return absolute_media_url(self.context.get("request"), obj.technical_sheet)
 
     def create(self, validated_data: dict) -> Property:
         if "location" in validated_data:

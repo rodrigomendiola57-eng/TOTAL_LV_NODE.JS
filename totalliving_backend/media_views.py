@@ -12,10 +12,12 @@ from django.views.decorators.http import require_GET
 @require_GET
 def serve_media(request, path: str):
     """
-    Sirve archivos bajo MEDIA_ROOT.
-    Activo si DEBUG=True o MEDIA_SERVE_FROM_DJANGO=True (túnel / Next proxy).
-    En producción con nginx/S3, deja MEDIA_SERVE_FROM_DJANGO=False.
+    Sirve archivos bajo MEDIA_ROOT (dev / proxy Next).
+    Con S3/R2 activo no sirve disco local: las URLs deben ir al bucket.
     """
+    if getattr(settings, "USE_S3", False):
+        raise Http404()
+
     if not (
         settings.DEBUG
         or getattr(settings, "MEDIA_SERVE_FROM_DJANGO", False)

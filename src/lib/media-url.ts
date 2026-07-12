@@ -1,6 +1,8 @@
 /**
  * Reescribe URLs de media servidas desde Django en localhost para que funcionen
  * en el celular vía ngrok (Safari no puede cargar http://127.0.0.1 desde HTTPS).
+ *
+ * URLs absolutas de S3/R2/CDN (https://…) se dejan igual — ver docs/S3_MEDIA.md.
  */
 function getPublicMediaOrigin(): string | null {
   const explicit = process.env.NEXT_PUBLIC_MEDIA_ORIGIN?.replace(/\/$/, "");

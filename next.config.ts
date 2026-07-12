@@ -126,6 +126,34 @@ const nextConfig: NextConfig = {
         hostname: "images.unsplash.com",
         pathname: "/**",
       },
+      // S3 / CloudFront / R2 (docs/S3_MEDIA.md)
+      {
+        protocol: "https",
+        hostname: "*.amazonaws.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "*.r2.dev",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "*.cloudflarestorage.com",
+        pathname: "/**",
+      },
+      ...(process.env.NEXT_PUBLIC_MEDIA_CDN_HOST
+        ? [
+            {
+              protocol: "https" as const,
+              hostname: process.env.NEXT_PUBLIC_MEDIA_CDN_HOST.replace(
+                /^https?:\/\//,
+                "",
+              ).replace(/\/$/, ""),
+              pathname: "/**",
+            },
+          ]
+        : []),
     ],
   },
   // headers() no aplica con output: "export" (GitHub Pages).

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from rest_framework import serializers
 
+from totalliving_backend.media_urls import absolute_media_url as _absolute_media_url
 from .models import (
     HomeAboutSlide,
     HomeCityHighlight,
@@ -11,15 +12,6 @@ from .models import (
     HomeExpertiseService,
     HomePage,
 )
-
-
-def _absolute_media_url(request, file_field) -> str | None:
-    if not file_field:
-        return None
-    url = file_field.url
-    if request is not None:
-        return request.build_absolute_uri(url)
-    return url
 
 
 class HomeAboutSlideSerializer(serializers.ModelSerializer):

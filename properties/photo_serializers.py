@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from rest_framework import serializers
 
+from totalliving_backend.media_urls import absolute_media_url
+
 from .models import PropertyPhoto
 from .photo_validators import validate_property_image
 
@@ -17,12 +19,9 @@ class PropertyPhotoSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "url", "created_at")
 
     def get_url(self, obj: PropertyPhoto) -> str:
-        request = self.context.get("request")
         if not obj.image:
             return ""
-        if request is not None:
-            return request.build_absolute_uri(obj.image.url)
-        return obj.image.url
+        return absolute_media_url(self.context.get("request"), obj.image) or ""
 
 
 class PropertyPhotoUploadSerializer(serializers.ModelSerializer):

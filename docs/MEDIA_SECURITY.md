@@ -28,9 +28,11 @@ location /media/ {
 
 ### S3 / Cloudflare R2
 
-1. Bucket privado o público solo lectura.
-2. Django: `django-storages` + `DEFAULT_FILE_STORAGE` (cuando lo configures).
-3. URLs firmadas o CDN; el proxy Next `/api/media` deja de ser necesario si las URLs absolutas apuntan al bucket.
+Guía completa paso a paso: **[S3_MEDIA.md](./S3_MEDIA.md)**.
+
+1. Define `AWS_STORAGE_BUCKET_NAME` (+ keys) → Django usa `STORAGES` S3.
+2. Política GetObject pública en `media/*` (o CloudFront / R2 public).
+3. URLs absolutas al bucket/CDN; el proxy Next `/api/media` deja de ser necesario.
 
 ## Path traversal
 
