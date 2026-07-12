@@ -75,10 +75,22 @@ class LeadSerializer(serializers.ModelSerializer[Lead]):
 
 
 class LeadCreateSerializer(serializers.ModelSerializer[Lead]):
-    initial_message = serializers.CharField(required=False, allow_blank=True, write_only=True)
+    initial_message = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        write_only=True,
+        max_length=4000,
+    )
     channel = serializers.ChoiceField(
         choices=[(LeadChannel.WEB, LeadChannel.WEB.label)],
         default=LeadChannel.WEB,
+    )
+    # Honeypot: los bots lo rellenan; humanos no lo ven.
+    website = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        write_only=True,
+        max_length=200,
     )
 
     class Meta:
@@ -92,16 +104,18 @@ class LeadCreateSerializer(serializers.ModelSerializer[Lead]):
             "interested_in",
             "status",
             "initial_message",
+            "website",
             "created_at",
             "updated_at",
         )
-        read_only_fields = ("id", "created_at", "updated_at")
+        read_only_fields = ("id", "status", "created_at", "updated_at")
 
     def validate(self, attrs: dict) -> dict:
         phone = (attrs.get("phone") or "").strip()
         email = (attrs.get("email") or "").strip().lower()
         attrs["phone"] = phone
         attrs["email"] = email
+        attrs.pop("website", None)
 
         if not phone and not email:
             raise serializers.ValidationError(

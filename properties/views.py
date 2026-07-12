@@ -6,7 +6,6 @@ from django.db.models import Prefetch, Q, QuerySet
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.parsers import FormParser, MultiPartParser
-from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from .models import Amenity, Property, PropertyPhoto
@@ -33,7 +32,7 @@ ORDERING_ALIASES = {
     "price-desc": ("-price", "id"),
 }
 
-SIMILAR_PROPERTIES_LIMIT = 3
+SIMILAR_PROPERTIES_LIMIT = 5
 
 
 def _photos_prefetch() -> Prefetch:
@@ -72,6 +71,16 @@ def _collect_similar_properties(property_obj: Property) -> list[Property]:
             .order_by("-created_at"),
         )
 
+    if len(selected) < SIMILAR_PROPERTIES_LIMIT:
+        extend_from(
+            base.filter(state=property_obj.state)
+            .exclude(city=property_obj.city)
+            .order_by("-created_at"),
+        )
+
+    if len(selected) < SIMILAR_PROPERTIES_LIMIT:
+        extend_from(base.order_by("-created_at"))
+
     return selected[:SIMILAR_PROPERTIES_LIMIT]
 
 
@@ -79,7 +88,6 @@ class AmenityViewSet(viewsets.ReadOnlyModelViewSet):
     """Catálogo público de amenidades activas para formularios y filtros."""
 
     serializer_class = AmenitySerializer
-    permission_classes = [AllowAny]
     pagination_class = None
 
     def get_queryset(self) -> QuerySet[Amenity]:
@@ -104,8 +112,6 @@ class PropertyViewSet(viewsets.ModelViewSet):
     """
 
     serializer_class = PropertySerializer
-    permission_classes = [AllowAny]
-
     def get_serializer_class(self):
         if (
             self.action == "list"
@@ -223,6 +229,10 @@ class PropertyViewSet(viewsets.ModelViewSet):
         parser_classes=[MultiPartParser, FormParser],
     )
     def technical_sheet(self, request, pk=None):
+        """
+        GET público a propósito: la ficha se descarga en la ficha pública.
+        POST/DELETE: solo staff (IsStaffOrReadOnly). Upload valida magic %PDF-.
+        """
         property_obj = self.get_object()
         if request.method == "GET":
             return get_technical_sheet(property_obj, request)

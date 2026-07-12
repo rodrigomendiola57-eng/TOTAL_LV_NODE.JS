@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from django.db import models
+from django.db.models import F
 from django.utils import timezone
 
 from properties.models import Property
@@ -116,10 +117,17 @@ class Lead(models.Model):
         self.last_message_preview = preview[:280]
         self.updated_at = timezone.now()
         if inbound:
-            self.unread_count += 1
-        self.save(
-            update_fields=["last_message_preview", "updated_at", "unread_count"],
-        )
+            # Atómico: evita perder conteos con mark_read concurrente.
+            type(self).objects.filter(pk=self.pk).update(
+                last_message_preview=self.last_message_preview,
+                updated_at=self.updated_at,
+                unread_count=F("unread_count") + 1,
+            )
+            self.refresh_from_db(fields=["unread_count", "updated_at", "last_message_preview"])
+        else:
+            self.save(
+                update_fields=["last_message_preview", "updated_at"],
+            )
 
 
 class LeadMessage(models.Model):

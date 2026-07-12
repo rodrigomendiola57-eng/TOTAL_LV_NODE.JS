@@ -13,20 +13,57 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 env = environ.Env(
     DEBUG=(bool, False),
-    ALLOWED_HOSTS=(list, ["localhost", "127.0.0.1", ".ngrok-free.dev", ".ngrok-free.app"]),
+    # Sin ngrok por defecto (A4). En DEBUG se añaden abajo para tunnels.
+    ALLOWED_HOSTS=(list, ["localhost", "127.0.0.1"]),
     EASYBROKER_API_KEY=(str, ""),
     EASYBROKER_API_BASE_URL=(str, "https://api.easybroker.com/v1"),
 )
 
 environ.Env.read_env(BASE_DIR / ".env")
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env("SECRET_KEY", default="django-insecure-dev-only-change-in-production")
-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env("DEBUG")
 
-ALLOWED_HOSTS = env("ALLOWED_HOSTS")
+# SECURITY WARNING: keep the secret key used in production secret!
+# En producción (DEBUG=False) SECRET_KEY es obligatorio (sin default débil).
+if DEBUG:
+    SECRET_KEY = env(
+        "SECRET_KEY",
+        default="django-insecure-dev-only-change-in-production",
+    )
+else:
+    SECRET_KEY = env("SECRET_KEY")
+
+ALLOWED_HOSTS = list(env("ALLOWED_HOSTS"))
+
+
+def _host_looks_like_ngrok(host: str) -> bool:
+    h = (host or "").lower().strip()
+    if not h:
+        return False
+    markers = (
+        "ngrok-free.dev",
+        "ngrok-free.app",
+        "ngrok.io",
+        "ngrok.app",
+    )
+    bare = h.lstrip(".")
+    return any(bare == m or bare.endswith("." + m) or m in bare for m in markers)
+
+
+# Dev: tunnels ngrok convenientes. Prod: nunca (aunque vengan en .env).
+if DEBUG:
+    for _extra in (".ngrok-free.dev", ".ngrok-free.app", ".ngrok.io"):
+        if _extra not in ALLOWED_HOSTS:
+            ALLOWED_HOSTS.append(_extra)
+else:
+    ALLOWED_HOSTS = [h for h in ALLOWED_HOSTS if not _host_looks_like_ngrok(h)]
+    if not ALLOWED_HOSTS:
+        from django.core.exceptions import ImproperlyConfigured
+
+        raise ImproperlyConfigured(
+            "DEBUG=False requiere ALLOWED_HOSTS explícitos (sin comodines ngrok).",
+        )
 
 
 # Application definition
@@ -42,14 +79,18 @@ INSTALLED_APPS = [
     "django.contrib.gis",
     # Terceros
     "rest_framework",
+    "rest_framework.authtoken",
     "rest_framework_gis",
     "corsheaders",
     "django_filters",
   # Apps del proyecto
+    "accounts",
     "properties",
     "crm",
     "site_content",
     "developments",
+    "zones",
+    "about",
 ]
 
 MIDDLEWARE = [
@@ -62,6 +103,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "accounts.middleware.AdminIPRestrictMiddleware",
 ]
 
 # Permite peticiones del frontend Next.js en desarrollo y ngrok.
@@ -75,18 +117,73 @@ CORS_ALLOWED_ORIGIN_REGEXES = [
     r"^https://.*\.ngrok\.io$",
 ]
 
+# Token del panel: misma ventana que la cookie Next (7 días).
+AUTH_TOKEN_TTL_SECONDS = env.int("AUTH_TOKEN_TTL_SECONDS", default=60 * 60 * 24 * 7)
+
+# Django Admin — path configurable + allowlist IP opcional (Fase 1).
+ADMIN_URL = env("ADMIN_URL", default="admin/")
+if not str(ADMIN_URL).endswith("/"):
+    ADMIN_URL = f"{ADMIN_URL}/"
+ADMIN_ALLOWED_IPS = env.list("ADMIN_ALLOWED_IPS", default=[])
+
+# Proxies que pueden fijar X-Real-IP / X-Forwarded-For (Next → Django).
+# Vacío no es recomendable en prod: sin peer de confianza no se lee XFF.
+TRUSTED_PROXY_IPS = env.list(
+    "TRUSTED_PROXY_IPS",
+    default=["127.0.0.1", "::1"],
+)
+
+# Cache compartido entre workers (A1). Redis si hay URL; en prod sin Redis
+# DatabaseCache; en DEBUG LocMem basta.
+REDIS_URL = (env("REDIS_URL", default="") or "").strip()
+if REDIS_URL:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": REDIS_URL,
+        }
+    }
+elif not DEBUG:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+            "LOCATION": "django_cache_table",
+        }
+    }
+else:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "totalliving-dev",
+        }
+    }
+
 REST_FRAMEWORK = {
-    # El panel admin aún no tiene autenticación propia; la API debe ser
-    # coherente en lectura y escritura hasta integrar login.
-    "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.AllowAny",
+    # Lectura pública; escritura del panel solo staff (IsStaffOrReadOnly).
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "accounts.authentication.ExpiringTokenAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
     ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "accounts.permissions.IsStaffOrReadOnly",
+    ],
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "240/hour",
+        "user": "2000/hour",
+        "auth_login": "8/minute",
+        "lead_create": "12/hour",
+    },
     "DEFAULT_PAGINATION_CLASS": "totalliving_backend.pagination.StandardResultsSetPagination",
     "PAGE_SIZE": 12,
     "DEFAULT_FILTER_BACKENDS": [
         "django_filters.rest_framework.DjangoFilterBackend",
     ],
 }
+
 
 ROOT_URLCONF = "totalliving_backend.urls"
 
@@ -116,11 +213,16 @@ DATABASES = {
         "ENGINE": "django.contrib.gis.db.backends.postgis",
         "NAME": env("DB_NAME", default="totalliving_db"),
         "USER": env("DB_USER", default="postgres"),
-        "PASSWORD": env("DB_PASSWORD", default="postgres"),
+        "PASSWORD": (
+            env("DB_PASSWORD")
+            if not DEBUG
+            else env("DB_PASSWORD", default="postgres")
+        ),
         "HOST": env("DB_HOST", default="localhost"),
         "PORT": env("DB_PORT", default="5432"),
     }
 }
+
 
 # GeoDjango — librerías nativas (opcional en Windows vía OSGeo4W)
 if env("GDAL_LIBRARY_PATH", default=None):
@@ -167,8 +269,51 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
+# True: Django sirve /media/ (dev + proxy Next). En prod con nginx/S3 → False.
+MEDIA_SERVE_FROM_DJANGO = env.bool("MEDIA_SERVE_FROM_DJANGO", default=True)
 
 # EasyBroker — sincronización de inventario
 EASYBROKER_API_KEY = env("EASYBROKER_API_KEY")
 EASYBROKER_API_BASE_URL = env("EASYBROKER_API_BASE_URL")
+
+# Alertas de seguridad (Fase 3) — ver docs/SECURITY_FASE3.md
+SECURITY_ALERT_WEBHOOK_URL = env("SECURITY_ALERT_WEBHOOK_URL", default="")
+SECURITY_LOGIN_FAIL_ALERT_THRESHOLD = env.int(
+    "SECURITY_LOGIN_FAIL_ALERT_THRESHOLD",
+    default=5,
+)
+SECURITY_LEAD_SPIKE_THRESHOLD = env.int("SECURITY_LEAD_SPIKE_THRESHOLD", default=20)
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "loggers": {
+        "totalliving.security": {
+            "handlers": ["console"],
+            "level": "WARNING",
+            "propagate": False,
+        },
+    },
+}
+
+# --- Producción HTTPS / cookies (solo si DEBUG=False) ---
+if not DEBUG:
+    SECURE_SSL_REDIRECT = env.bool("SECURE_SSL_REDIRECT", default=True)
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = env.int("SECURE_HSTS_SECONDS", default=31_536_000)
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
+    CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
+    # Prod: siempre sin regex ngrok. Orígenes solo los de env (explícitos).
+    CORS_ALLOWED_ORIGIN_REGEXES = []
+    CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS", default=[])
 

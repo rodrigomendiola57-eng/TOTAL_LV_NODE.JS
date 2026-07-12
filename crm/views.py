@@ -9,6 +9,9 @@ from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
+from accounts.permissions import IsStaffUser
+from accounts.security_alerts import maybe_alert_lead_spike
+from accounts.throttles import LeadCreateThrottle
 from .models import Lead, LeadChannel
 from .serializers import (
     LeadCreateSerializer,
@@ -30,8 +33,18 @@ class LeadViewSet(
     queryset = Lead.objects.select_related("interested_in", "assigned_agent").filter(
         channel=LeadChannel.WEB,
     )
-    permission_classes = [AllowAny]
     pagination_class = None
+
+    def get_permissions(self):
+        # Formulario público de contacto puede crear leads.
+        if self.action == "create":
+            return [AllowAny()]
+        return [IsStaffUser()]
+
+    def get_throttles(self):
+        if self.action == "create":
+            return [LeadCreateThrottle()]
+        return super().get_throttles()
 
     def get_serializer_class(self):
         if self.action == "create":
@@ -39,6 +52,30 @@ class LeadViewSet(
         if self.action in {"partial_update", "update"}:
             return LeadUpdateSerializer
         return LeadSerializer
+
+    def create(self, request, *args, **kwargs):
+        # Honeypot: respuesta falsa sin persistir (bots que rellenan "website").
+        honeypot = (request.data.get("website") or "").strip()
+        if honeypot:
+            now = timezone.now().isoformat()
+            return Response(
+                {
+                    "id": 0,
+                    "name": str(request.data.get("name") or "")[:120],
+                    "phone": "",
+                    "email": "",
+                    "channel": LeadChannel.WEB,
+                    "interested_in": None,
+                    "status": "Nuevo",
+                    "created_at": now,
+                    "updated_at": now,
+                },
+                status=status.HTTP_201_CREATED,
+            )
+        response = super().create(request, *args, **kwargs)
+        if response.status_code == status.HTTP_201_CREATED:
+            maybe_alert_lead_spike()
+        return response
 
     def get_queryset(self):
         queryset = super().get_queryset()

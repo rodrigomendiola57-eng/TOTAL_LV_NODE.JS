@@ -14,6 +14,58 @@ from .models import Property, PropertyPhoto
 from .photo_serializers import PropertyPhotoSerializer, PropertyPhotoUploadSerializer
 
 
+def _as_non_negative_int(value, field_name: str) -> int:
+    """Convierte id/order a int ≥ 0; lanza ValueError si no es numérico válido."""
+    if isinstance(value, bool) or value is None:
+        raise ValueError(field_name)
+    if isinstance(value, int):
+        number = value
+    elif isinstance(value, str):
+        cleaned = value.strip()
+        if not cleaned.isdigit():
+            raise ValueError(field_name)
+        number = int(cleaned)
+    else:
+        raise ValueError(field_name)
+    if number < 0:
+        raise ValueError(field_name)
+    return number
+
+
+def parse_photo_reorder_items(
+    items,
+    cover_id,
+) -> tuple[list[tuple[int, int]], int | None]:
+    """
+    Valida payload de reorder. Lanza ValueError con mensaje legible.
+    Devuelve ([(photo_id, order), ...], cover_id|None).
+    """
+    if not isinstance(items, list) or not items:
+        raise ValueError("Envía `photos` como lista de {id, order}.")
+
+    parsed: list[tuple[int, int]] = []
+    for item in items:
+        if not isinstance(item, dict):
+            raise ValueError("Cada ítem de `photos` debe ser un objeto {id, order}.")
+        try:
+            photo_id = _as_non_negative_int(item.get("id"), "id")
+            order = _as_non_negative_int(item.get("order"), "order")
+        except ValueError as exc:
+            raise ValueError(
+                "Cada foto necesita `id` y `order` enteros no negativos.",
+            ) from exc
+        parsed.append((photo_id, order))
+
+    parsed_cover: int | None = None
+    if cover_id is not None:
+        try:
+            parsed_cover = _as_non_negative_int(cover_id, "cover_id")
+        except ValueError as exc:
+            raise ValueError("`cover_id` debe ser un entero no negativo.") from exc
+
+    return parsed, parsed_cover
+
+
 def ensure_cover(property_obj: Property) -> None:
     photos = PropertyPhoto.objects.filter(property=property_obj).order_by("order", "id")
     if not photos.exists():
@@ -109,31 +161,25 @@ def delete_property_photo(
 
 
 def reorder_property_photos(property_obj: Property, request: Request) -> Response:
-    items = request.data.get("photos")
-
-    if not isinstance(items, list) or not items:
-        return Response(
-            {"detail": "Envía `photos` como lista de {id, order}."},
-            status=status.HTTP_400_BAD_REQUEST,
+    try:
+        parsed, parsed_cover = parse_photo_reorder_items(
+            request.data.get("photos"),
+            request.data.get("cover_id"),
         )
-
-    cover_id = request.data.get("cover_id")
+    except ValueError as exc:
+        return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
     with transaction.atomic():
-        for item in items:
-            photo_id = item.get("id")
-            order = item.get("order")
-            if photo_id is None or order is None:
-                continue
+        for photo_id, order in parsed:
             PropertyPhoto.objects.filter(
                 pk=photo_id,
                 property=property_obj,
             ).update(order=order)
 
-        if cover_id is not None:
+        if parsed_cover is not None:
             PropertyPhoto.objects.filter(property=property_obj).update(is_cover=False)
             PropertyPhoto.objects.filter(
-                pk=cover_id,
+                pk=parsed_cover,
                 property=property_obj,
             ).update(is_cover=True)
 

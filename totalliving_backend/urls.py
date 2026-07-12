@@ -15,17 +15,21 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.conf import settings
-from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import include, path
+from django.urls import include, path, re_path
+
+from totalliving_backend.media_views import serve_media
+
+admin_path = getattr(settings, "ADMIN_URL", "admin/")
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    path(admin_path, admin.site.urls),
+    path("api/", include("accounts.urls")),
     path("api/", include("properties.urls")),
     path("api/", include("crm.urls")),
     path("api/", include("site_content.urls")),
     path("api/", include("developments.urls")),
+    path("api/", include("zones.urls")),
+    path("api/", include("about.urls")),
+    re_path(r"^media/(?P<path>.*)$", serve_media, name="serve-media"),
 ]
-
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
