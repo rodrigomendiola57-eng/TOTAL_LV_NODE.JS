@@ -12,7 +12,7 @@ from rest_framework.response import Response
 from accounts.permissions import IsStaffUser
 from accounts.security_alerts import maybe_alert_lead_spike
 from accounts.throttles import LeadCreateThrottle
-from .models import Lead, LeadChannel
+from .models import Lead, LeadChannel, LeadStatus
 from .serializers import (
     LeadCreateSerializer,
     LeadMessageCreateSerializer,
@@ -96,6 +96,17 @@ class LeadViewSet(
             )
 
         return queryset
+
+    @action(detail=False, methods=["get"], url_path="stats")
+    def stats(self, request):
+        """Conteos ligeros para el resumen del dashboard (sin listar leads)."""
+        qs = Lead.objects.filter(channel=LeadChannel.WEB)
+        return Response(
+            {
+                "total": qs.count(),
+                "active": qs.exclude(status=LeadStatus.CERRADO).count(),
+            },
+        )
 
     @action(detail=True, methods=["get"])
     def messages(self, request, pk=None):

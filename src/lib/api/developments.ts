@@ -313,6 +313,22 @@ export async function listDevelopmentsApi(options?: {
   return developmentsFetch<DevelopmentApiModel[]>(`/developments/${query}`);
 }
 
+/** Conteo ligero para el home del dashboard (sin listar desarrollos). */
+export async function getDevelopmentsCountApi(): Promise<number> {
+  try {
+    const response = await fetch(`${getApiBaseUrl()}/developments/stats/`, {
+      method: "GET",
+      headers: { Accept: "application/json" },
+      next: { revalidate: 20, tags: ["dashboard-developments"] },
+    });
+    if (!response.ok) return 0;
+    const data = (await response.json()) as { total?: number };
+    return Number(data.total) || 0;
+  } catch {
+    return 0;
+  }
+}
+
 export async function getDevelopmentBySlugApi(
   slug: string,
 ): Promise<DevelopmentApiModel> {

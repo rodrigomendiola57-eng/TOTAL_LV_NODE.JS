@@ -123,3 +123,19 @@ body {
     transform: translateX(-50%);
   }
 }
+
+/* Login: recuadros glass + autofill sin fondo blanco del navegador */
+.login-field {
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+.login-field:-webkit-autofill,
+.login-field:-webkit-autofill:hover,
+.login-field:-webkit-autofill:focus {
+  -webkit-text-fill-color: #f2ece0;
+  caret-color: #f2ece0;
+  border-color: rgba(242, 236, 224, 0.25);
+  /* Chrome pinta blanco en autofill; se neutraliza con inset del mismo tono glass */
+  box-shadow: 0 0 0 1000px rgba(26, 26, 22, 0.55) inset;
+  transition: background-color 99999s ease-in-out 0s;
+}

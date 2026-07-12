@@ -50,6 +50,33 @@ export async function getLeads(filters?: LeadFilters): Promise<Lead[]> {
   return crmFetch<Lead[]>(`/leads/${buildQuery(filters)}`);
 }
 
+/** Conteos ligeros del CRM (evita listar todos los leads). */
+export async function getLeadStats(init?: {
+  headers?: HeadersInit;
+}): Promise<{ total: number; active: number }> {
+  try {
+    const response = await fetch(`${getApiBaseUrl()}/leads/stats/`, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        ...(init?.headers ?? {}),
+      },
+      next: { revalidate: 20, tags: ["dashboard-leads"] },
+    });
+    if (!response.ok) return { total: 0, active: 0 };
+    const data = (await response.json()) as {
+      total?: number;
+      active?: number;
+    };
+    return {
+      total: Number(data.total) || 0,
+      active: Number(data.active) || 0,
+    };
+  } catch {
+    return { total: 0, active: 0 };
+  }
+}
+
 export async function getLeadMessages(leadId: number): Promise<LeadMessage[]> {
   return crmFetch<LeadMessage[]>(`/leads/${leadId}/messages/`);
 }

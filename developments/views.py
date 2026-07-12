@@ -132,6 +132,11 @@ class DevelopmentViewSet(viewsets.ModelViewSet):
             return DevelopmentWriteSerializer
         return DevelopmentDetailSerializer
 
+    @action(detail=False, methods=["get"], url_path="stats")
+    def stats(self, request):
+        """Conteo ligero para el resumen del dashboard (sin prefetch ni serializers)."""
+        return Response({"total": Development.objects.count()})
+
     def create(self, request, *args, **kwargs):
         write = DevelopmentWriteSerializer(data=request.data)
         write.is_valid(raise_exception=True)

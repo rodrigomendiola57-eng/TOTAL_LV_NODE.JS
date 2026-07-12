@@ -1,41 +1,28 @@
 import { getPropertyStats } from "@/lib/api";
-import { listDevelopmentsApi } from "@/lib/api/developments";
-import { getApiBaseUrl } from "@/lib/api-base-url";
+import { getLeadStats } from "@/lib/api/crm";
+import { getDevelopmentsCountApi } from "@/lib/api/developments";
+import { getDashboardAuthHeaders } from "@/lib/auth/server-token";
 import { Building2, MessagesSquare, Star, TrendingUp } from "lucide-react";
 import Link from "next/link";
+import { Suspense } from "react";
 
 export const revalidate = 20;
 
-async function getActiveLeadCount(): Promise<number> {
-  try {
-    const response = await fetch(`${getApiBaseUrl()}/leads/`, {
-      next: { revalidate: 20 },
-      headers: { Accept: "application/json" },
-    });
-    if (!response.ok) return 0;
-    const leads = (await response.json()) as Array<{ status: string }>;
-    return Array.isArray(leads)
-      ? leads.filter((lead) => lead.status !== "Cerrado").length
-      : 0;
-  } catch {
-    return 0;
-  }
-}
+const CARD_CLASS =
+  "group rounded-2xl border border-tl-gold/15 bg-[#0a0a0a] p-4 transition-colors active:border-tl-gold/40 sm:p-5 sm:hover:border-tl-gold/30";
+const GRID_CLASS = "grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4";
 
-async function getDevelopmentsCount(): Promise<number> {
-  try {
-    const rows = await listDevelopmentsApi();
-    return rows.length;
-  } catch {
-    return 0;
-  }
-}
-
-export default async function DashboardHomePage() {
-  const [propertyStats, activeLeads, developmentsCount] = await Promise.all([
+/**
+ * Cuadros de métricas: bloque async aislado para que el shell del dashboard
+ * (encabezado + accesos rápidos) pinte de inmediato mientras estos 3 GETs a
+ * Django se resuelven en streaming dentro del <Suspense>.
+ */
+async function StatsGrid() {
+  const authHeaders = await getDashboardAuthHeaders();
+  const [propertyStats, leadStats, developmentsCount] = await Promise.all([
     getPropertyStats(),
-    getActiveLeadCount(),
-    getDevelopmentsCount(),
+    getLeadStats({ headers: authHeaders }),
+    getDevelopmentsCountApi(),
   ]);
 
   const stats = [
@@ -59,12 +46,46 @@ export default async function DashboardHomePage() {
     },
     {
       label: "Leads activos",
-      value: activeLeads,
+      value: leadStats.active,
       icon: MessagesSquare,
       href: "/dashboard/crm",
     },
   ];
 
+  return (
+    <div className={GRID_CLASS}>
+      {stats.map((stat) => (
+        <Link key={stat.label} href={stat.href} prefetch className={CARD_CLASS}>
+          <div className="flex items-start justify-between gap-2">
+            <p className="font-outfit text-[9px] font-light uppercase leading-snug tracking-[0.14em] text-tl-beige/45 sm:text-[10px] sm:tracking-[0.16em]">
+              {stat.label}
+            </p>
+            <stat.icon className="mt-0.5 h-4 w-4 shrink-0 text-tl-gold/80 transition-colors group-hover:text-tl-gold" />
+          </div>
+          <p className="mt-3 font-outfit text-3xl font-extralight text-tl-beige sm:mt-4 sm:text-4xl">
+            {stat.value}
+          </p>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+/** Skeleton con la misma rejilla/altura que StatsGrid (sin salto de layout). */
+function StatsGridSkeleton() {
+  return (
+    <div className={GRID_CLASS} aria-hidden>
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div
+          key={i}
+          className="h-[7.25rem] animate-pulse rounded-2xl border border-tl-gold/15 bg-[#0a0a0a] sm:h-[7.75rem]"
+        />
+      ))}
+    </div>
+  );
+}
+
+export default function DashboardHomePage() {
   return (
     <div className="space-y-6 sm:space-y-8">
       <header>
@@ -80,26 +101,9 @@ export default async function DashboardHomePage() {
         </p>
       </header>
 
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
-        {stats.map((stat) => (
-          <Link
-            key={stat.label}
-            href={stat.href}
-            prefetch
-            className="group rounded-2xl border border-tl-gold/15 bg-[#0a0a0a] p-4 transition-colors active:border-tl-gold/40 sm:p-5 sm:hover:border-tl-gold/30"
-          >
-            <div className="flex items-start justify-between gap-2">
-              <p className="font-outfit text-[9px] font-light uppercase leading-snug tracking-[0.14em] text-tl-beige/45 sm:text-[10px] sm:tracking-[0.16em]">
-                {stat.label}
-              </p>
-              <stat.icon className="mt-0.5 h-4 w-4 shrink-0 text-tl-gold/80 transition-colors group-hover:text-tl-gold" />
-            </div>
-            <p className="mt-3 font-outfit text-3xl font-extralight text-tl-beige sm:mt-4 sm:text-4xl">
-              {stat.value}
-            </p>
-          </Link>
-        ))}
-      </div>
+      <Suspense fallback={<StatsGridSkeleton />}>
+        <StatsGrid />
+      </Suspense>
 
       <section className="rounded-2xl border border-tl-gold/15 bg-[#0a0a0a] p-4 sm:p-6">
         <p className="font-outfit text-[10px] font-extralight uppercase tracking-[0.18em] text-tl-gold">

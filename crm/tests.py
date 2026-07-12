@@ -59,6 +59,31 @@ class LeadPermissionTests(TestCase):
         response = self.client.get("/api/leads/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_staff_can_get_lead_stats(self):
+        Lead.objects.create(
+            name="Cerrado",
+            email="c@example.com",
+            phone="5550002222",
+            status="Cerrado",
+        )
+        user = User.objects.create_user(
+            username="staff-stats",
+            password="test-pass-123",
+            is_staff=True,
+        )
+        self.client.force_authenticate(user=user)
+        response = self.client.get("/api/leads/stats/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["total"], 2)
+        self.assertEqual(response.data["active"], 1)
+
+    def test_anon_cannot_get_lead_stats(self):
+        response = self.client.get("/api/leads/stats/")
+        self.assertIn(
+            response.status_code,
+            (status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN),
+        )
+
 
 class LeadUnreadCountTests(TestCase):
     def test_touch_from_message_increments_with_f_expression(self):
