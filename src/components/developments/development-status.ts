@@ -1,4 +1,5 @@
 import type { DevelopmentStatus } from "@/types/development";
+import { getSiteWhatsAppUrl } from "@/lib/whatsapp";
 
 /** Clases de la píldora de estatus, dentro de la paleta Total Living. */
 export function developmentStatusClasses(status: DevelopmentStatus): string {
@@ -14,8 +15,7 @@ export function developmentStatusClasses(status: DevelopmentStatus): string {
 }
 
 export function developmentWhatsAppUrl(name: string, zone: string): string {
-  const text = encodeURIComponent(
+  return getSiteWhatsAppUrl(
     `Hola, me interesa el desarrollo "${name}" en ${zone}. ¿Me pueden dar más información?`,
   );
-  return `https://wa.me/?text=${text}`;
 }

@@ -58,6 +58,7 @@ export function mapTeamMemberApi(row: TeamMemberApiModel): TeamMember {
 export function mapAboutPageToPublic(
   page: AboutPageContent,
   teamRows: TeamMemberApiModel[],
+  locale: "es" | "en" = "es",
 ): AboutPublicContent {
   const missionImage =
     resolveMediaUrl(page.mission_image_url) ||
@@ -93,11 +94,18 @@ export function mapAboutPageToPublic(
     orgChart: (page.org_chart as OrgChartNode) || COMPANY_PROFILE.orgChart,
     sectionNav: page.section_nav?.length
       ? page.section_nav
-      : COMPANY_PROFILE.sectionNav,
-    teamEyebrow: page.team_eyebrow || "Equipo Total Living",
-    teamTitle: page.team_title || "El equipo detrás de cada decisión",
-    orgEyebrow: page.org_eyebrow || "Organigrama",
-    orgTitle: page.org_title || "Estructura organizacional",
+      : (locale === "en"
+          ? [
+              { id: "filosofia", label: "Philosophy" },
+              { id: "valores", label: "Values" },
+              { id: "mision-vision", label: "Mission & Vision" },
+              { id: "equipo", label: "Team" },
+            ]
+          : COMPANY_PROFILE.sectionNav),
+    teamEyebrow: page.team_eyebrow || (locale === "en" ? "Total Living Team" : "Equipo Total Living"),
+    teamTitle: page.team_title || (locale === "en" ? "The team behind every decision" : "El equipo detrás de cada decisión"),
+    orgEyebrow: page.org_eyebrow || (locale === "en" ? "Organization Chart" : "Organigrama"),
+    orgTitle: page.org_title || (locale === "en" ? "Organizational structure" : "Estructura organizacional"),
     cta: {
       eyebrow: page.cta_eyebrow,
       title: page.cta_title,

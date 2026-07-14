@@ -12,6 +12,7 @@ from .models import (
     HomeCityHighlight,
     HomeExpertisePillar,
     HomeExpertiseService,
+    HomeJournalPost,
     HomePage,
 )
 from .serializers import (
@@ -23,14 +24,20 @@ from .serializers import (
     HomeExpertisePillarWriteSerializer,
     HomeExpertiseServiceSerializer,
     HomeExpertiseServiceWriteSerializer,
+    HomeJournalPostSerializer,
+    HomeJournalPostWriteSerializer,
     HomePageDetailSerializer,
     HomePageUpdateSerializer,
 )
 from .services import (
     ensure_home_content_seeded,
+    resolve_home_payload,
     upload_about_slide_image,
     upload_city_image,
     upload_hero_background,
+    upload_hero_video,
+    upload_journal_image,
+    upload_journal_video,
 )
 
 
@@ -47,6 +54,14 @@ class HomePageViewSet(viewsets.ViewSet):
         home = self._get_home()
 
         if request.method == "GET":
+            lang = str(request.query_params.get("lang", "es")).lower()
+            if lang in ("all", "raw", "edit"):
+                serializer = HomePageDetailSerializer(home, context={"request": request})
+                return Response(serializer.data)
+            if lang == "en":
+                serializer = HomePageDetailSerializer(home, context={"request": request})
+                resolved = resolve_home_payload(home, "en", serializer.data)
+                return Response({**serializer.data, **resolved, "content_en": {}})
             serializer = HomePageDetailSerializer(home, context={"request": request})
             return Response(serializer.data)
 
@@ -76,6 +91,25 @@ class HomePageViewSet(viewsets.ViewSet):
 
         home = self._get_home()
         upload_hero_background(home, upload)
+        serializer = HomePageDetailSerializer(home, context={"request": request})
+        return Response(serializer.data)
+
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="current/hero-video",
+        parser_classes=[MultiPartParser, FormParser],
+    )
+    def upload_hero_video(self, request):
+        upload = request.FILES.get("file") or request.FILES.get("video")
+        if not upload:
+            return Response(
+                {"detail": "Envía el archivo en el campo 'file' o 'video'."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        home = self._get_home()
+        upload_hero_video(home, upload)
         serializer = HomePageDetailSerializer(home, context={"request": request})
         return Response(serializer.data)
 
@@ -263,3 +297,105 @@ class HomeExpertisePillarViewSet(viewsets.ModelViewSet):
         write.is_valid(raise_exception=True)
         write.save()
         return Response(HomeExpertisePillarSerializer(instance).data)
+
+
+class HomeJournalPostViewSet(viewsets.ModelViewSet):
+    parser_classes = [JSONParser, MultiPartParser, FormParser]
+    http_method_names = ["get", "post", "patch", "delete", "head", "options"]
+
+    def get_queryset(self):
+        home = ensure_home_content_seeded()
+        return HomeJournalPost.objects.filter(home_page=home)
+
+    def get_serializer_class(self):
+        if self.action in {"create", "partial_update", "update"}:
+            return HomeJournalPostWriteSerializer
+        return HomeJournalPostSerializer
+
+    def perform_create(self, serializer):
+        home = ensure_home_content_seeded()
+        serializer.save(home_page=home)
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["request"] = self.request
+        return context
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        return Response(
+            HomeJournalPostSerializer(
+                queryset,
+                many=True,
+                context={"request": request},
+            ).data,
+        )
+
+    def retrieve(self, request, *args, **kwargs):
+        return Response(
+            HomeJournalPostSerializer(
+                self.get_object(),
+                context={"request": request},
+            ).data,
+        )
+
+    def create(self, request, *args, **kwargs):
+        write = HomeJournalPostWriteSerializer(data=request.data)
+        write.is_valid(raise_exception=True)
+        self.perform_create(write)
+        post = write.instance
+        return Response(
+            HomeJournalPostSerializer(post, context={"request": request}).data,
+            status=status.HTTP_201_CREATED,
+        )
+
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        write = HomeJournalPostWriteSerializer(
+            instance,
+            data=request.data,
+            partial=True,
+        )
+        write.is_valid(raise_exception=True)
+        write.save()
+        return Response(
+            HomeJournalPostSerializer(instance, context={"request": request}).data,
+        )
+
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="image",
+        parser_classes=[MultiPartParser, FormParser],
+    )
+    def upload_image(self, request, pk=None):
+        upload = request.FILES.get("file") or request.FILES.get("image")
+        if not upload:
+            return Response(
+                {"detail": "Envía el archivo en el campo 'file' o 'image'."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        post = self.get_object()
+        upload_journal_image(post, upload)
+        return Response(
+            HomeJournalPostSerializer(post, context={"request": request}).data,
+        )
+
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="video",
+        parser_classes=[MultiPartParser, FormParser],
+    )
+    def upload_video(self, request, pk=None):
+        upload = request.FILES.get("file") or request.FILES.get("video")
+        if not upload:
+            return Response(
+                {"detail": "Envía el archivo en el campo 'file' o 'video'."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        post = self.get_object()
+        upload_journal_video(post, upload)
+        return Response(
+            HomeJournalPostSerializer(post, context={"request": request}).data,
+        )

@@ -29,9 +29,10 @@ export const INICIO_SECTIONS: {
     description: "Bloque inmersivo de Querétaro.",
   },
   {
-    id: "expertise",
-    label: "Asesoría",
-    description: "Servicios, pilares y encabezados.",
+    id: "journal",
+    label: "Novedades",
+    description:
+      "Feed social: agrega cards de foto o video (S3).",
   },
 ];
 

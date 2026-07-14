@@ -17,6 +17,12 @@ class HomePage(models.Model):
         blank=True,
         null=True,
     )
+    # Video de portada (S3 cuando AWS_STORAGE_BUCKET_NAME está definido)
+    hero_video = models.FileField(
+        upload_to="home/hero/video/",
+        blank=True,
+        null=True,
+    )
 
     # About teaser
     about_eyebrow = models.CharField(max_length=80)
@@ -49,6 +55,7 @@ class HomePage(models.Model):
     # Expertise section headers
     expertise_title = models.CharField(max_length=200)
     expertise_subtitle = models.TextField()
+    content_en = models.JSONField(default=dict, blank=True)
 
     is_published = models.BooleanField(default=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -165,3 +172,43 @@ class HomeExpertisePillar(models.Model):
 
     def __str__(self) -> str:
         return self.title
+
+
+class HomeJournalPost(models.Model):
+    """Posts del feed / novedades del inicio (texto, imagen o video → S3)."""
+
+    KIND_TEXT = "text"
+    KIND_IMAGE = "image"
+    KIND_VIDEO = "video"
+    KIND_CHOICES = [
+        (KIND_TEXT, "Texto"),
+        (KIND_IMAGE, "Imagen"),
+        (KIND_VIDEO, "Video"),
+    ]
+
+    home_page = models.ForeignKey(
+        HomePage,
+        on_delete=models.CASCADE,
+        related_name="journal_posts",
+    )
+    kind = models.CharField(max_length=10, choices=KIND_CHOICES, default=KIND_TEXT)
+    category = models.CharField(max_length=80)
+    title = models.CharField(max_length=200)
+    body = models.TextField()
+    date_label = models.CharField(max_length=40, blank=True, default="")
+    image = models.ImageField(upload_to="home/journal/", blank=True, null=True)
+    video = models.FileField(
+        upload_to="home/journal/video/",
+        blank=True,
+        null=True,
+    )
+    order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["order", "id"]
+        verbose_name = "Post del feed (inicio)"
+        verbose_name_plural = "Posts del feed (inicio)"
+
+    def __str__(self) -> str:
+        return f"[{self.kind}] {self.title[:48]}"

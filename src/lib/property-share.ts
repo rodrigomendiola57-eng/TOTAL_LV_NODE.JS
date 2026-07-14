@@ -1,6 +1,7 @@
 import { formatPrice } from "@/lib/format-price";
 import { resolveMediaUrl } from "@/lib/media-url";
 import { absoluteSiteUrl } from "@/lib/site-url";
+import { getSiteWhatsAppUrl } from "@/lib/whatsapp";
 import type { Property } from "@/types/property";
 import { formatPropertyLocation } from "@/types/property";
 
@@ -70,10 +71,9 @@ export function buildPropertyShareEmail(property: Property): {
 
 export function getPropertyWhatsAppShareUrl(property: Property): string {
   const url = getPropertyShareUrl(property);
-  const text = encodeURIComponent(
+  return getSiteWhatsAppUrl(
     buildPropertyShareText(property, { url, includeUrl: true }),
   );
-  return `https://wa.me/?text=${text}`;
 }
 
 export function getPropertyFacebookShareUrl(property: Property): string {

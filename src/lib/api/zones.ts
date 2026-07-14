@@ -20,6 +20,7 @@ export interface ZoneApiModel {
   is_published: boolean;
   order: number;
   updated_at?: string;
+  content_en?: Record<string, any>;
 }
 
 export type ZoneWritePayload = {
@@ -31,6 +32,7 @@ export type ZoneWritePayload = {
   image_external_url?: string;
   is_published?: boolean;
   order?: number;
+  content_en?: Record<string, any>;
 };
 
 async function parseError(response: Response): Promise<string> {
@@ -70,8 +72,12 @@ export function mapZoneApiToCatalog(row: ZoneApiModel): ZoneCatalogEntry {
 export async function listZonesApi(options?: {
   all?: boolean;
   revalidate?: number | false;
+  lang?: "es" | "en";
 }): Promise<ZoneApiModel[]> {
-  const query = options?.all ? "?all=1" : "";
+  const queryParams = [];
+  if (options?.all) queryParams.push("all=1");
+  if (options?.lang && options.lang !== "es") queryParams.push(`lang=${options.lang}`);
+  const query = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
   const response = await fetch(`${getApiBaseUrl()}/zones/${query}`, {
     ...(options?.revalidate === false
       ? { cache: "no-store" as const }
@@ -87,7 +93,11 @@ export async function listZonesApi(options?: {
 }
 
 export async function listZoneCatalog(
-  options?: { all?: boolean; revalidate?: number | false },
+  options?: {
+    all?: boolean;
+    revalidate?: number | false;
+    lang?: "es" | "en";
+  },
 ): Promise<ZoneCatalogEntry[]> {
   const rows = await listZonesApi(options);
   return rows.map(mapZoneApiToCatalog);
@@ -160,8 +170,11 @@ export async function uploadZoneImageApi(
 
 export async function getZonesPageContent(options?: {
   revalidate?: number | false;
+  lang?: "es" | "en" | "edit";
 }): Promise<ZonesPageContent> {
-  const response = await fetch(`${getApiBaseUrl()}/zones-page/current/`, {
+  const lang = options?.lang ?? "es";
+  const query = lang === "es" ? "" : `?lang=${lang}`;
+  const response = await fetch(`${getApiBaseUrl()}/zones-page/current/${query}`, {
     ...(options?.revalidate === false
       ? { cache: "no-store" as const }
       : { next: { revalidate: options?.revalidate ?? 30 } }),

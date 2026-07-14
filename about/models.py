@@ -58,6 +58,7 @@ class AboutPage(models.Model):
     cta_secondary_url = models.CharField(max_length=200, blank=True)
 
     section_nav = models.JSONField(default=list, blank=True)
+    content_en = models.JSONField(default=dict, blank=True)
 
     is_published = models.BooleanField(default=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -99,6 +100,7 @@ class TeamMember(models.Model):
 
     # [{ "platform": "linkedin"|"instagram"|..., "url": "..." }]
     socials = models.JSONField(default=list, blank=True)
+    content_en = models.JSONField(default=dict, blank=True)
 
     is_published = models.BooleanField(default=True)
     order = models.PositiveIntegerField(default=0)

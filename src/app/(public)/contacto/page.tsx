@@ -1,19 +1,37 @@
 import { ContactView } from "@/components/contact/ContactView";
 import { getPropertyById } from "@/lib/api";
+import { getPublicContactPageContent } from "@/lib/api/contact";
+import {
+  LOCALE_COOKIE,
+  normalizeLocale,
+} from "@/lib/i18n/locales";
 import type { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "Contacto | Total Living",
-  description:
-    "Contáctanos para asesoría inmobiliaria en Querétaro. Envía tu consulta y un asesor Total Living te responderá con estrategia y acompañamiento.",
-};
+import { cookies } from "next/headers";
 
 interface ContactoPageProps {
   searchParams: Promise<{ propiedad?: string }>;
 }
 
+async function getLocaleFromCookies() {
+  const cookieStore = await cookies();
+  return normalizeLocale(cookieStore.get(LOCALE_COOKIE)?.value);
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocaleFromCookies();
+  const content = await getPublicContactPageContent(locale);
+  return {
+    title: content.seo.title,
+    description: content.seo.description,
+  };
+}
+
 export default async function ContactoPage({ searchParams }: ContactoPageProps) {
-  const params = await searchParams;
+  const locale = await getLocaleFromCookies();
+  const [params, content] = await Promise.all([
+    searchParams,
+    getPublicContactPageContent(locale),
+  ]);
   const propertyId = params.propiedad?.trim();
 
   let propertyContext: { id: number; title: string } | null = null;
@@ -28,5 +46,7 @@ export default async function ContactoPage({ searchParams }: ContactoPageProps) 
     }
   }
 
-  return <ContactView propertyContext={propertyContext} />;
+  return (
+    <ContactView content={content} propertyContext={propertyContext} />
+  );
 }

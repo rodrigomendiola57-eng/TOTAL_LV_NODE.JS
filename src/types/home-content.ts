@@ -46,6 +46,21 @@ export interface HomeExpertisePillar {
   is_active: boolean;
 }
 
+export type HomeJournalKind = "text" | "image" | "video";
+
+export interface HomeJournalPost {
+  id: number;
+  kind: HomeJournalKind;
+  category: string;
+  title: string;
+  body: string;
+  date_label: string;
+  order: number;
+  is_active: boolean;
+  image_url: string | null;
+  video_url: string | null;
+}
+
 export interface HomePageContent {
   id: number;
   is_published: boolean;
@@ -54,6 +69,7 @@ export interface HomePageContent {
   hero_title: string;
   hero_subtitle: string;
   hero_background_url: string | null;
+  hero_video_url: string | null;
   about_eyebrow: string;
   about_title: string;
   about_body: string;
@@ -80,6 +96,8 @@ export interface HomePageContent {
   expertise_subtitle: string;
   expertise_services: HomeExpertiseService[];
   expertise_pillars: HomeExpertisePillar[];
+  journal_posts: HomeJournalPost[];
+  content_en?: Record<string, unknown>;
 }
 
 export type HomePageUpdatePayload = Partial<
@@ -111,6 +129,7 @@ export type HomePageUpdatePayload = Partial<
     | "contact_cta_url"
     | "expertise_title"
     | "expertise_subtitle"
+    | "content_en"
   >
 >;
 
@@ -141,9 +160,30 @@ export type HomeExpertisePillarWritePayload = Omit<
   "id"
 >;
 
+export type HomeJournalPostWritePayload = Omit<
+  HomeJournalPost,
+  "id" | "image_url" | "video_url"
+>;
+
 export type InicioSectionId =
   | "hero"
   | "about"
   | "featured"
   | "city"
-  | "expertise";
+  | "journal";
+
+/** Soft-cap de cards en Novedades (home + dashboard). */
+export const HOME_JOURNAL_MAX = 12;
+
+/**
+ * Índice 0-based de la card inicial del carrusel (punto medio).
+ * 4→1 (card 2), 5→2 (card 3), 6→2 (card 3), 7→3 (card 4).
+ */
+export function getJournalCarouselStartIndex(count: number): number {
+  if (count <= 0) return 0;
+  return Math.floor((count - 1) / 2);
+}
+
+/** Tipos editables en el panel: foto o video (con portada opcional). */
+export type HomeJournalMediaKind = Extract<HomeJournalKind, "image" | "video">;
+

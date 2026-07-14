@@ -30,18 +30,37 @@ interface TeamMemberFormProps {
   initial?: TeamMemberApiModel | null;
   onSaved: (row: TeamMemberApiModel) => void;
   onCancel: () => void;
+  editLocale: "es" | "en";
+  setEditLocale: (locale: "es" | "en") => void;
 }
 
-export function TeamMemberForm({
-  initial,
-  onSaved,
-  onCancel,
-}: TeamMemberFormProps) {
+export function TeamMemberForm({ initial, onSaved, onCancel, editLocale, setEditLocale }: TeamMemberFormProps) {
   const isEdit = Boolean(initial);
-  const [name, setName] = useState(initial?.name ?? "");
-  const [role, setRole] = useState(initial?.role ?? "");
-  const [department, setDepartment] = useState(initial?.department ?? "");
-  const [bio, setBio] = useState(initial?.bio ?? "");
+  // Spanish states
+  const [esName, setEsName] = useState<string>(initial?.name ?? "");
+  const [esRole, setEsRole] = useState<string>(initial?.role ?? "");
+  const [esDepartment, setEsDepartment] = useState<string>(initial?.department ?? "");
+  const [esBio, setEsBio] = useState<string>(initial?.bio ?? "");
+
+  // English states
+  const enPack = (initial?.content_en ?? {}) as Record<string, any>;
+  const [enName, setEnName] = useState<string>(enPack.name ?? "");
+  const [enRole, setEnRole] = useState<string>(enPack.role ?? "");
+  const [enDepartment, setEnDepartment] = useState<string>(enPack.department ?? "");
+  const [enBio, setEnBio] = useState<string>(enPack.bio ?? "");
+
+  // Computed references depending on locale
+  const name = editLocale === "es" ? esName : enName;
+  const setName = editLocale === "es" ? setEsName : setEnName;
+  
+  const role = editLocale === "es" ? esRole : enRole;
+  const setRole = editLocale === "es" ? setEsRole : setEnRole;
+
+  const department = editLocale === "es" ? esDepartment : enDepartment;
+  const setDepartment = editLocale === "es" ? setEsDepartment : setEnDepartment;
+
+  const bio = editLocale === "es" ? esBio : enBio;
+  const setBio = editLocale === "es" ? setEsBio : setEnBio;
   const [order, setOrder] = useState(String(initial?.order ?? 0));
   const [isPublished, setIsPublished] = useState(initial?.is_published ?? true);
   const [socials, setSocials] = useState<TeamSocialLink[]>(
@@ -92,21 +111,27 @@ export function TeamMemberForm({
     setSaving(true);
     setError(null);
 
-    const trimmedName = name.trim();
+    const trimmedName = esName.trim();
     if (!trimmedName) {
-      setError("Escribe el nombre del asesor.");
+      setError("Escribe el nombre del asesor en Español.");
       setSaving(false);
       return;
     }
 
     const payload: TeamMemberWritePayload = {
-      name: trimmedName,
-      role: role.trim(),
-      department: department.trim(),
-      bio: bio.trim(),
+      name: esName.trim(),
+      role: esRole.trim(),
+      department: esDepartment.trim(),
+      bio: esBio.trim(),
       socials: socials.filter((item) => item.url.trim()),
       is_published: isPublished,
       order: Number(order) || 0,
+      content_en: {
+        name: enName.trim(),
+        role: enRole.trim(),
+        department: enDepartment.trim(),
+        bio: enBio.trim(),
+      }
     };
 
     try {
@@ -130,6 +155,34 @@ export function TeamMemberForm({
 
   return (
     <form onSubmit={(event) => void handleSubmit(event)} className="space-y-7">
+      <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-tl-gold/15 bg-[#0a0a0a] p-4">
+        <span className="text-[10px] uppercase tracking-[0.2em] text-tl-gold/80">
+          Idioma de edición del asesor
+        </span>
+        <button
+          type="button"
+          onClick={() => setEditLocale("es")}
+          className={`rounded-full px-4 py-2 text-[10px] uppercase tracking-[0.2em] ${
+            editLocale === "es"
+              ? "bg-tl-gold text-tl-black"
+              : "border border-white/10 text-tl-beige/80 hover:border-tl-gold"
+          }`}
+        >
+          Español
+        </button>
+        <button
+          type="button"
+          onClick={() => setEditLocale("en")}
+          className={`rounded-full px-4 py-2 text-[10px] uppercase tracking-[0.2em] ${
+            editLocale === "en"
+              ? "bg-tl-gold text-tl-black"
+              : "border border-white/10 text-tl-beige/80 hover:border-tl-gold"
+          }`}
+        >
+          English
+        </button>
+      </div>
+
       <div className="space-y-5">
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block sm:col-span-2">
@@ -138,7 +191,7 @@ export function TeamMemberForm({
               className={fieldClass}
               value={name}
               onChange={(e) => setName(e.target.value)}
-              required
+              required={editLocale === "es"}
             />
           </label>
           <label className="block">
@@ -147,7 +200,7 @@ export function TeamMemberForm({
               className={fieldClass}
               value={role}
               onChange={(e) => setRole(e.target.value)}
-              required
+              required={editLocale === "es"}
             />
           </label>
           <label className="block">

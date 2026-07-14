@@ -8,8 +8,9 @@ import type { Property } from "@/types/property";
 import { formatPropertyBathrooms } from "@/types/property";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const FALLBACK_IMAGE =
   "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=2070&auto=format&fit=crop";
@@ -28,6 +29,8 @@ export function FeaturedCatalogCarousel({
 }: FeaturedCatalogCarouselProps) {
   const reducedMotion = useReducedMotion();
   const [activeIndex, setActiveIndex] = useState(0);
+  const [inView, setInView] = useState(true);
+  const sectionRef = useRef<HTMLElement>(null);
   const count = properties.length;
 
   const goTo = useCallback(
@@ -42,10 +45,23 @@ export function FeaturedCatalogCarousel({
   const goPrev = useCallback(() => goTo(activeIndex - 1), [activeIndex, goTo]);
 
   useEffect(() => {
-    if (count <= 1 || reducedMotion) return;
+    if (count <= 1 || reducedMotion || !inView) return;
     const timer = window.setInterval(goNext, 7000);
     return () => window.clearInterval(timer);
-  }, [count, goNext, reducedMotion]);
+  }, [count, goNext, reducedMotion, inView]);
+
+  // Pausa el autoplay cuando el carrusel no está en viewport (ahorra
+  // main-thread y evita cambios de slide/descargas invisibles).
+  useEffect(() => {
+    const node = sectionRef.current;
+    if (!node) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      { threshold: 0.15 },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
 
   if (count === 0) return null;
 
@@ -55,6 +71,8 @@ export function FeaturedCatalogCarousel({
 
   return (
     <section
+      ref={sectionRef}
+      data-tl-media-hero
       className={cn(
         "relative min-h-[min(70svh,36rem)] overflow-hidden sm:min-h-[min(76dvh,720px)]",
         HERO_CONTENT_OFFSET,
@@ -71,9 +89,13 @@ export function FeaturedCatalogCarousel({
           transition={{ duration: reducedMotion ? 0.2 : 0.65, ease: fadeEase }}
           className="absolute inset-0"
         >
-          <div
-            className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: `url('${imageUrl}')` }}
+          <Image
+            src={imageUrl}
+            alt={property.title}
+            fill
+            priority={activeIndex === 0}
+            sizes="100vw"
+            className="object-cover object-center"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-black/45" />
         </motion.div>

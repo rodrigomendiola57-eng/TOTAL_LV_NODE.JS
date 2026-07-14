@@ -3,6 +3,7 @@
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   type CSSProperties,
@@ -121,18 +122,42 @@ export function LineSidebar({
     rafRef.current = requestAnimationFrame(runFrame);
   }, [runFrame]);
 
+  // Reinicia buffers y arranca la animación cuando montan / cambian los ítems.
+  useLayoutEffect(() => {
+    // Reinicio limpio del bucle: cancela cualquier frame previo y libera el
+    // ref. Imprescindible porque en dev (StrictMode) los refs sobreviven al
+    // ciclo montaje→desmontaje→remontaje; si `rafRef` quedara con un id ya
+    // cancelado, la guarda de `startLoop` bloquearía el bucle para siempre.
+    if (rafRef.current != null) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+
+    const count = items.length;
+    targetsRef.current = Array.from({ length: count }, () => 0);
+    currentRef.current = Array.from({ length: count }, () => 0);
+    itemRefs.current = itemRefs.current.slice(0, count);
+
+    for (let i = 0; i < count; i++) {
+      const el = itemRefs.current[i];
+      el?.style.setProperty("--effect", "0");
+    }
+
+    startLoop();
+  }, [items, startLoop]);
+
   const handlePointerMove = useCallback(
     (e: PointerEvent<HTMLUListElement>) => {
       const list = listRef.current;
       if (!list) return;
-      const rect = list.getBoundingClientRect();
-      const pointerY = e.clientY - rect.top;
+      const pointerY = e.clientY;
       const ease = FALLOFF_CURVES[falloff] ?? FALLOFF_CURVES.linear;
       const els = itemRefs.current;
       for (let i = 0; i < els.length; i++) {
         const el = els[i];
         if (!el) continue;
-        const center = el.offsetTop + el.offsetHeight / 2;
+        const itemRect = el.getBoundingClientRect();
+        const center = itemRect.top + itemRect.height / 2;
         const distance = Math.abs(pointerY - center);
         targetsRef.current[i] = ease(
           Math.max(0, 1 - distance / proximityRadius),
@@ -162,7 +187,10 @@ export function LineSidebar({
 
   useEffect(
     () => () => {
-      if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
+      if (rafRef.current != null) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
     },
     [],
   );

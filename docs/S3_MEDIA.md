@@ -18,9 +18,10 @@ Código: `totalliving_backend/settings.py` (`USE_S3` + `STORAGES`).
 | Desarrollos / modelos | covers, gallery, plans | `media/developments/...` |
 | Zonas | `Zone.image`, page hero | `media/zones/...` |
 | Nosotros / agentes | fotos equipo | `media/agents/...` o about |
-| Home CMS | slides / city images | `media/...` (site_content) |
+| Home CMS | slides / city / **hero video** / **journal** | `media/home/...` |
+| Videos hero + feed | `HomePage.hero_video`, `HomeJournalPost.video` | `media/home/hero/video/`, `media/home/journal/video/` |
 
-Validaciones actuales (SVG bloqueado, magic `%PDF-`, tamaños) **siguen
+Validaciones actuales (SVG bloqueado, magic `%PDF-`, tamaños; **videos** MP4/WebM/MOV hasta 120 MB) **siguen
 aplicando** antes de subir.
 
 ---

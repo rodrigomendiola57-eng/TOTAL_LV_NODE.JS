@@ -31,5 +31,7 @@ urlpatterns = [
     path("api/", include("developments.urls")),
     path("api/", include("zones.urls")),
     path("api/", include("about.urls")),
+    path("api/", include("asesoria.urls")),
+    path("api/", include("contact.urls")),
     re_path(r"^media/(?P<path>.*)$", serve_media, name="serve-media"),
 ]

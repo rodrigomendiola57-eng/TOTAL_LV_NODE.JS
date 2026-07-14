@@ -17,26 +17,30 @@ import {
 } from "@/components/contact/contact-typography";
 import { Reveal } from "@/components/ui/Reveal";
 import { ABOUT_CONTAINER } from "@/lib/about-layout";
-import { CONTACT_PAGE } from "@/lib/data/contact-page";
+import type { ContactPageContent } from "@/lib/data/contact-page";
 import { cn } from "@/lib/utils";
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 
 interface ContactViewProps {
+  content: ContactPageContent;
   propertyContext?: {
     id: number;
     title: string;
   } | null;
 }
 
-export function ContactView({ propertyContext = null }: ContactViewProps) {
+export function ContactView({
+  content,
+  propertyContext = null,
+}: ContactViewProps) {
   const defaultMessage = propertyContext
     ? `Me interesa la propiedad "${propertyContext.title}". Me gustaría recibir más información.`
     : "";
 
   const propertyBanner = propertyContext ? (
     <div className="rounded-2xl border border-tl-gold/22 bg-tl-gold/10 p-4 sm:p-5 md:p-6">
-      <p className={contactLabel}>Propiedad de interés</p>
+      <p className={contactLabel}>{content.property.bannerLabel}</p>
       <p className={cn("mt-2", contactBody)}>{propertyContext.title}</p>
       <Link
         href={`/propiedades/${propertyContext.id}`}
@@ -45,7 +49,7 @@ export function ContactView({ propertyContext = null }: ContactViewProps) {
           contactButton,
         )}
       >
-        Ver ficha
+        {content.property.bannerCta}
         <ArrowUpRight className="h-4 w-4" />
       </Link>
     </div>
@@ -62,19 +66,27 @@ export function ContactView({ propertyContext = null }: ContactViewProps) {
 
       <section className={contactSectionShell}>
         <div className={cn(ABOUT_CONTAINER, "max-w-6xl xl:max-w-7xl")}>
-          {/* ——— Móvil / tablet: título → carrusel → formulario ——— */}
           <div className="flex flex-col gap-7 sm:gap-8 xl:hidden">
             <Reveal>
               <div>
-                <p className={contactEyebrow}>{CONTACT_PAGE.hero.eyebrow}</p>
-                <h1 className={cn("mt-3 sm:mt-4", contactTitle)}>
-                  {CONTACT_PAGE.hero.title}
-                </h1>
+                {content.hero.eyebrow.trim() ? (
+                  <p className={contactEyebrow}>{content.hero.eyebrow}</p>
+                ) : null}
+                {content.hero.title.trim() ? (
+                  <h1
+                    className={cn(
+                      content.hero.eyebrow.trim() ? "mt-3 sm:mt-4" : "",
+                      contactTitle,
+                    )}
+                  >
+                    {content.hero.title}
+                  </h1>
+                ) : null}
               </div>
             </Reveal>
 
             <Reveal delay={0.04}>
-              <ContactChannelCarousel channels={CONTACT_PAGE.channels} />
+              <ContactChannelCarousel channels={content.channels} />
             </Reveal>
 
             {propertyBanner ? (
@@ -83,6 +95,8 @@ export function ContactView({ propertyContext = null }: ContactViewProps) {
 
             <Reveal delay={0.08}>
               <ContactForm
+                copy={content.form}
+                propertyFormLabel={content.property.formLabel}
                 interestedIn={propertyContext?.id ?? null}
                 propertyLabel={propertyContext?.title}
                 defaultMessage={defaultMessage}
@@ -90,11 +104,12 @@ export function ContactView({ propertyContext = null }: ContactViewProps) {
             </Reveal>
           </div>
 
-          {/* ——— Desktop xl+: layout original (info + form) ——— */}
           <div className={cn(contactMainGrid, "hidden xl:grid")}>
             <div className={contactFormColumn}>
               <Reveal delay={0.02}>
                 <ContactForm
+                  copy={content.form}
+                  propertyFormLabel={content.property.formLabel}
                   interestedIn={propertyContext?.id ?? null}
                   propertyLabel={propertyContext?.title}
                   defaultMessage={defaultMessage}
@@ -105,22 +120,45 @@ export function ContactView({ propertyContext = null }: ContactViewProps) {
             <div className={contactInfoColumn}>
               <Reveal>
                 <div className="max-w-2xl xl:max-w-none">
-                  <p className={contactEyebrow}>{CONTACT_PAGE.hero.eyebrow}</p>
-                  <h1 className={cn("mt-3 sm:mt-4", contactTitle)}>
-                    {CONTACT_PAGE.hero.title}
-                  </h1>
-                  <p className={cn("mt-4 max-w-xl sm:mt-5", contactBody)}>
-                    {CONTACT_PAGE.hero.description}
-                  </p>
+                  {content.hero.eyebrow.trim() ? (
+                    <p className={contactEyebrow}>{content.hero.eyebrow}</p>
+                  ) : null}
+                  {content.hero.title.trim() ? (
+                    <h1
+                      className={cn(
+                        content.hero.eyebrow.trim() ? "mt-3 sm:mt-4" : "",
+                        contactTitle,
+                      )}
+                    >
+                      {content.hero.title}
+                    </h1>
+                  ) : null}
+                  {content.hero.description.trim() ? (
+                    <p
+                      className={cn(
+                        "max-w-xl",
+                        content.hero.title.trim() || content.hero.eyebrow.trim()
+                          ? "mt-4 sm:mt-5"
+                          : "",
+                        contactBody,
+                      )}
+                    >
+                      {content.hero.description}
+                    </p>
+                  ) : null}
                 </div>
               </Reveal>
 
               <Reveal delay={0.05}>
-                <ContactChannelList channels={CONTACT_PAGE.channels} />
+                <ContactChannelList channels={content.channels} />
               </Reveal>
 
               <Reveal delay={0.08}>
-                <ContactReassurance />
+                <ContactReassurance
+                  title={content.reassurance.title}
+                  items={content.reassurance.items}
+                  footer={content.reassurance.footer}
+                />
               </Reveal>
 
               {propertyBanner ? (

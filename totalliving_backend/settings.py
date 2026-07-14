@@ -91,6 +91,8 @@ INSTALLED_APPS = [
     "developments",
     "zones",
     "about",
+    "asesoria",
+    "contact",
 ]
 
 MIDDLEWARE = [

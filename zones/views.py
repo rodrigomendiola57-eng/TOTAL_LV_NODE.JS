@@ -16,7 +16,12 @@ from .serializers import (
     ZonesPageSerializer,
     ZonesPageUpdateSerializer,
 )
-from .services import ensure_zones_page_seeded, ensure_zones_seeded, resolve_image_url
+from .services import (
+    ensure_zones_page_seeded,
+    ensure_zones_seeded,
+    resolve_image_url,
+    resolve_zones_payload,
+)
 
 
 def _bad_image(upload):
@@ -39,6 +44,14 @@ class ZonesPageViewSet(viewsets.ViewSet):
         page = self._get_page()
 
         if request.method == "GET":
+            lang = str(request.query_params.get("lang", "es")).lower()
+            if lang in ("all", "raw", "edit"):
+                return Response(
+                    ZonesPageSerializer(page, context={"request": request}).data,
+                )
+            if lang == "en":
+                resolved = resolve_zones_payload(page, "en")
+                return Response({**resolved, "content_en": {}})
             return Response(
                 ZonesPageSerializer(page, context={"request": request}).data,
             )

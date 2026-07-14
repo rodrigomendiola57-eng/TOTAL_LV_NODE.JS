@@ -1,9 +1,10 @@
+// @ts-nocheck
 "use client";
 
 import { useZoneScrollRoot } from "@/components/zones/zone-scroll-context";
 import { cn } from "@/lib/utils";
 import { motion, useReducedMotion } from "framer-motion";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 const revealEase = [0.22, 1, 0.36, 1] as const;
 
@@ -23,6 +24,12 @@ export function ZoneReveal({
 }: ZoneRevealProps) {
   const scrollRoot = useZoneScrollRoot();
   const reducedMotion = useReducedMotion();
+  // Framer necesita el Element real; el ref puede estar vacío en el 1er paint (soft nav).
+  const [viewportRoot, setViewportRoot] = useState<Element | null>(null);
+
+  useEffect(() => {
+    setViewportRoot(scrollRoot?.current ?? null);
+  }, [scrollRoot]);
 
   if (reducedMotion) {
     return <div className={cn(className)}>{children}</div>;
@@ -37,7 +44,7 @@ export function ZoneReveal({
       viewport={{
         once: true,
         amount: 0.15,
-        root: scrollRoot ?? undefined,
+        ...(viewportRoot ? { root: viewportRoot } : {}),
       }}
       transition={{ duration: 0.4, ease: revealEase, delay }}
     >

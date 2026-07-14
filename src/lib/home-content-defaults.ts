@@ -9,6 +9,7 @@ export const HOME_CONTENT_FALLBACK: HomePageContent = {
   hero_title: "Total Living",
   hero_subtitle: "Estrategia Real detrás de cada Propiedad",
   hero_background_url: null,
+  hero_video_url: null,
   about_eyebrow: "Quiénes somos",
   about_title: "Estrategia Real detrás de cada Propiedad",
   about_body:
@@ -54,4 +55,5 @@ export const HOME_CONTENT_FALLBACK: HomePageContent = {
     "Un solo equipo para asesorarte, analizar el mercado y ejecutar con el estándar premium que tu patrimonio merece.",
   expertise_services: [],
   expertise_pillars: [],
+  journal_posts: [],
 };

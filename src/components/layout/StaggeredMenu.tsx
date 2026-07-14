@@ -474,18 +474,29 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
     if (!closeOnClickAway || !menuOpen) return;
     const handleClickOutside = (event: MouseEvent) => {
       const targetNode = event.target as Node;
-      if (
-        panelRef.current &&
-        !panelRef.current.contains(targetNode) &&
-        toggleBtnRef.current &&
-        !toggleBtnRef.current.contains(targetNode)
-      ) {
+      const clickedOutsidePanel =
+        panelRef.current != null && !panelRef.current.contains(targetNode);
+      const clickedToggle =
+        toggleBtnRef.current != null &&
+        toggleBtnRef.current.contains(targetNode);
+
+      // Sin header interno (solo overlay), no hay toggleBtnRef: basta el panel.
+      if (clickedOutsidePanel && !clickedToggle) {
         closeMenu();
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [closeOnClickAway, menuOpen, closeMenu]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") closeMenu();
+    }
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [menuOpen, closeMenu]);
 
   const preLayerColors = (() => {
     const raw = colors && colors.length ? colors.slice(0, 4) : ["#4A4E38", "#D6B585"];

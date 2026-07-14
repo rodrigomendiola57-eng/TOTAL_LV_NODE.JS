@@ -67,7 +67,10 @@ export function DevelopmentsView({
       {heroDevelopments.length > 0 ? (
         <FeaturedDevelopmentsCarousel developments={heroDevelopments} />
       ) : (
-        <section className="relative min-h-[min(60vh,32rem)] overflow-hidden sm:min-h-[min(82vh,760px)]">
+        <section
+          data-tl-media-hero
+          className="relative min-h-[min(60vh,32rem)] overflow-hidden sm:min-h-[min(82vh,760px)]"
+        >
           <div
             className="absolute inset-0 bg-cover bg-center"
             style={{ backgroundImage: `url('${heroImage}')` }}

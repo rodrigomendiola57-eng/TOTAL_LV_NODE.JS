@@ -8,6 +8,7 @@ export interface ZonesPageContent {
   hero_image_url: string;
   hero_image_external_url: string;
   scroll_hint: string;
+  content_en?: Record<string, unknown>;
   is_published: boolean;
   updated_at: string;
 }
@@ -20,6 +21,7 @@ export type ZonesPageUpdatePayload = Partial<
     | "hero_subtitle"
     | "hero_image_external_url"
     | "scroll_hint"
+    | "content_en"
     | "is_published"
   >
 >;

@@ -20,6 +20,7 @@ export function TeamCatalogManager() {
   const [mode, setMode] = useState<"list" | "create" | "edit">("list");
   const [editing, setEditing] = useState<TeamMemberApiModel | null>(null);
   const [query, setQuery] = useState("");
+  const [editLocale, setEditLocale] = useState<"es" | "en">("es");
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -118,6 +119,8 @@ export function TeamCatalogManager() {
             initial={editing}
             onSaved={handleSaved}
             onCancel={backToList}
+            editLocale={editLocale}
+            setEditLocale={setEditLocale}
           />
         </div>
       </div>
@@ -164,6 +167,34 @@ export function TeamCatalogManager() {
         </div>
       </div>
 
+      <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-tl-gold/15 bg-[#0a0a0a] p-4">
+        <span className="text-[10px] uppercase tracking-[0.2em] text-tl-gold/80">
+          Idioma de visualización
+        </span>
+        <button
+          type="button"
+          onClick={() => setEditLocale("es")}
+          className={`rounded-full px-4 py-2 text-[10px] uppercase tracking-[0.2em] ${
+            editLocale === "es"
+              ? "bg-tl-gold text-tl-black"
+              : "border border-white/10 text-tl-beige/80 hover:border-tl-gold"
+          }`}
+        >
+          Español
+        </button>
+        <button
+          type="button"
+          onClick={() => setEditLocale("en")}
+          className={`rounded-full px-4 py-2 text-[10px] uppercase tracking-[0.2em] ${
+            editLocale === "en"
+              ? "bg-tl-gold text-tl-black"
+              : "border border-white/10 text-tl-beige/80 hover:border-tl-gold"
+          }`}
+        >
+          English
+        </button>
+      </div>
+
       <input
         value={query}
         onChange={(event) => setQuery(event.target.value)}
@@ -201,6 +232,10 @@ export function TeamCatalogManager() {
               row.photo_external_url ||
               row.photo_url;
 
+            const enPack = (row.content_en ?? {}) as Record<string, any>;
+            const displayName = editLocale === "en" ? (enPack.name || row.name) : row.name;
+            const displayRole = editLocale === "en" ? (enPack.role || row.role) : row.role;
+
             return (
               <article
                 key={row.id}
@@ -237,10 +272,10 @@ export function TeamCatalogManager() {
                     </div>
                     <div className="absolute inset-x-0 bottom-0 p-4">
                       <p className="font-outfit text-[10px] uppercase tracking-[0.16em] text-tl-gold/85">
-                        {row.role}
+                        {displayRole}
                       </p>
                       <h3 className="mt-1 font-outfit text-2xl font-extralight leading-tight text-tl-beige">
-                        {row.name}
+                        {displayName}
                       </h3>
                     </div>
                   </div>

@@ -76,18 +76,13 @@ export function ContactChannelCarousel({
           const isExternal =
             channel.href.startsWith("http") || channel.href.startsWith("mailto:");
 
-          return (
-            <Link
-              key={channel.id}
-              data-channel-card
-              href={channel.href}
-              target={isExternal ? "_blank" : undefined}
-              rel={isExternal ? "noopener noreferrer" : undefined}
-              className={cn(
-                "flex w-[min(78vw,17.5rem)] shrink-0 snap-center flex-col gap-2.5 rounded-2xl border border-white/10 bg-black/25 px-4 py-4",
-                "transition-colors active:border-tl-gold/35 active:bg-black/35",
-              )}
-            >
+          const cardClass = cn(
+            "flex w-[min(78vw,17.5rem)] shrink-0 snap-center flex-col gap-2.5 rounded-2xl border border-white/10 bg-black/25 px-4 py-4",
+            "transition-colors active:border-tl-gold/35 active:bg-black/35",
+          );
+
+          const body = (
+            <>
               <p
                 className={cn(
                   contactLabel,
@@ -107,6 +102,32 @@ export function ContactChannelCarousel({
               <p className={cn(contactHint, "text-sm line-clamp-1 sm:text-[0.9375rem]")}>
                 {channel.hint}
               </p>
+            </>
+          );
+
+          if (isExternal) {
+            return (
+              <a
+                key={channel.id}
+                data-channel-card
+                href={channel.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={cardClass}
+              >
+                {body}
+              </a>
+            );
+          }
+
+          return (
+            <Link
+              key={channel.id}
+              data-channel-card
+              href={channel.href}
+              className={cardClass}
+            >
+              {body}
             </Link>
           );
         })}

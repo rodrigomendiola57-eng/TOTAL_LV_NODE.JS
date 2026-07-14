@@ -26,6 +26,7 @@ class ZonesPage(models.Model):
     )
     hero_image_external_url = models.URLField(max_length=500, blank=True)
     scroll_hint = models.CharField(max_length=40, default="Desplázate")
+    content_en = models.JSONField(default=dict, blank=True)
 
     is_published = models.BooleanField(default=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -70,6 +71,7 @@ class Zone(models.Model):
     )
     image_external_url = models.URLField(max_length=500, blank=True)
 
+    content_en = models.JSONField(default=dict, blank=True)
     is_published = models.BooleanField(default=True)
     order = models.PositiveIntegerField(default=0)
 

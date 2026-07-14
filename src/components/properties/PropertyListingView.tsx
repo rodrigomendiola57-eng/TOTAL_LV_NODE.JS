@@ -173,7 +173,10 @@ export function PropertyListingView({
       {hasFeaturedHero ? (
         <FeaturedCatalogCarousel properties={featuredProperties!} />
       ) : (
-        <section className="relative min-h-[min(52vh,28rem)] overflow-hidden sm:min-h-[min(78vh,720px)]">
+        <section
+          data-tl-media-hero
+          className="relative min-h-[min(52vh,28rem)] overflow-hidden sm:min-h-[min(78vh,720px)]"
+        >
 
           <div
 
@@ -227,14 +230,14 @@ export function PropertyListingView({
       )}
 
       {hasFeaturedHero ? (
-        <section className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
+        <section className="mx-auto w-full max-w-6xl px-4 py-8 text-center sm:px-6 sm:py-12 lg:py-14">
           <p className="font-outfit text-[10px] font-light uppercase tracking-[0.28em] text-tl-gold/90 sm:text-xs sm:tracking-[0.32em]">
             Total Living
           </p>
           <h1 className="mt-2 font-outfit text-3xl font-extralight tracking-[0.02em] text-tl-beige sm:mt-3 sm:text-5xl lg:text-6xl">
             {config.title}
           </h1>
-          <p className="mt-3 max-w-2xl font-outfit text-sm font-light leading-relaxed tracking-[0.02em] text-tl-beige/75 sm:mt-4 sm:text-base">
+          <p className="mx-auto mt-3 max-w-2xl font-outfit text-sm font-light leading-relaxed tracking-[0.02em] text-tl-beige/75 sm:mt-4 sm:text-base">
             {config.subtitle}
           </p>
         </section>

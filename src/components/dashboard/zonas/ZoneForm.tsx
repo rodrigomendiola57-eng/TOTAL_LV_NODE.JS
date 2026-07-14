@@ -36,18 +36,39 @@ interface ZoneFormProps {
   initial?: ZoneApiModel | null;
   onSaved: (row: ZoneApiModel) => void;
   onCancel: () => void;
+  editLocale: "es" | "en";
+  setEditLocale: (locale: "es" | "en") => void;
 }
 
-export function ZoneForm({ initial, onSaved, onCancel }: ZoneFormProps) {
+export function ZoneForm({ initial, onSaved, onCancel, editLocale, setEditLocale }: ZoneFormProps) {
   const isEdit = Boolean(initial);
-  const [name, setName] = useState(initial?.name ?? "");
-  const [growthLabel, setGrowthLabel] = useState<ZoneGrowthLabel>(
+  // Spanish states
+  const [esName, setEsName] = useState<string>(initial?.name ?? "");
+  const [esGrowthLabel, setEsGrowthLabel] = useState<ZoneGrowthLabel>(
     initial?.growth_label ?? "Crecimiento medio",
   );
-  const [description, setDescription] = useState(initial?.description ?? "");
-  const [subZonesText, setSubZonesText] = useState(
+  const [esDescription, setEsDescription] = useState<string>(initial?.description ?? "");
+  const [esSubZonesText, setEsSubZonesText] = useState<string>(
     (initial?.sub_zones ?? []).join("\n"),
   );
+
+  // English states
+  const enPack = (initial?.content_en ?? {}) as Record<string, any>;
+  const [enName, setEnName] = useState<string>(enPack.name ?? "");
+  const [enDescription, setEnDescription] = useState<string>(enPack.description ?? "");
+  const [enSubZonesText, setEnSubZonesText] = useState<string>(
+    ((enPack.sub_zones as string[]) ?? []).join("\n"),
+  );
+
+  // Computed references depending on locale
+  const name = editLocale === "es" ? esName : enName;
+  const setName = editLocale === "es" ? setEsName : setEnName;
+  const growthLabel = esGrowthLabel;
+  const setGrowthLabel = setEsGrowthLabel;
+  const description = editLocale === "es" ? esDescription : enDescription;
+  const setDescription = editLocale === "es" ? setEsDescription : setEnDescription;
+  const subZonesText = editLocale === "es" ? esSubZonesText : enSubZonesText;
+  const setSubZonesText = editLocale === "es" ? setEsSubZonesText : setEnSubZonesText;
   const [order, setOrder] = useState(String(initial?.order ?? 0));
   const [isPublished, setIsPublished] = useState(initial?.is_published ?? true);
   const [pendingImage, setPendingImage] = useState<File | null>(null);
@@ -87,23 +108,31 @@ export function ZoneForm({ initial, onSaved, onCancel }: ZoneFormProps) {
     setSaving(true);
     setError(null);
 
-    const trimmedName = name.trim();
+    const trimmedName = esName.trim();
     if (!trimmedName) {
-      setError("Escribe el nombre de la zona.");
+      setError("Escribe el nombre de la zona en Español.");
       setSaving(false);
       return;
     }
 
     const payload: ZoneWritePayload = {
-      name: trimmedName,
-      growth_label: growthLabel,
-      description: description.trim(),
-      sub_zones: subZonesText
+      name: esName.trim(),
+      growth_label: esGrowthLabel,
+      description: esDescription.trim(),
+      sub_zones: esSubZonesText
         .split("\n")
         .map((line) => line.trim())
         .filter(Boolean),
       is_published: isPublished,
       order: Number(order) || 0,
+      content_en: {
+        name: enName.trim(),
+        description: enDescription.trim(),
+        sub_zones: enSubZonesText
+          .split("\n")
+          .map((line) => line.trim())
+          .filter(Boolean),
+      }
     };
 
     try {
@@ -127,6 +156,34 @@ export function ZoneForm({ initial, onSaved, onCancel }: ZoneFormProps) {
 
   return (
     <form onSubmit={(event) => void handleSubmit(event)} className="space-y-7">
+      <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-tl-gold/15 bg-[#0a0a0a] p-4">
+        <span className="text-[10px] uppercase tracking-[0.2em] text-tl-gold/80">
+          Idioma de edición de la zona
+        </span>
+        <button
+          type="button"
+          onClick={() => setEditLocale("es")}
+          className={`rounded-full px-4 py-2 text-[10px] uppercase tracking-[0.2em] ${
+            editLocale === "es"
+              ? "bg-tl-gold text-tl-black"
+              : "border border-white/10 text-tl-beige/80 hover:border-tl-gold"
+          }`}
+        >
+          Español
+        </button>
+        <button
+          type="button"
+          onClick={() => setEditLocale("en")}
+          className={`rounded-full px-4 py-2 text-[10px] uppercase tracking-[0.2em] ${
+            editLocale === "en"
+              ? "bg-tl-gold text-tl-black"
+              : "border border-white/10 text-tl-beige/80 hover:border-tl-gold"
+          }`}
+        >
+          English
+        </button>
+      </div>
+
       <div className="space-y-5">
         <div>
           <label className={labelClass} htmlFor="zone-name">
@@ -139,7 +196,7 @@ export function ZoneForm({ initial, onSaved, onCancel }: ZoneFormProps) {
             onChange={(event) => setName(event.target.value)}
             placeholder="Ej. Zona Juriquilla / Jurica"
             className={fieldClass}
-            required
+            required={editLocale === "es"}
           />
           <datalist id="zone-name-suggestions">
             {SUGGESTED_ZONE_NAMES.map((zoneName) => (
@@ -202,7 +259,7 @@ export function ZoneForm({ initial, onSaved, onCancel }: ZoneFormProps) {
             value={description}
             onChange={(event) => setDescription(event.target.value)}
             className={cn(fieldClass, "resize-y leading-relaxed")}
-            required
+            required={editLocale === "es"}
           />
         </div>
 

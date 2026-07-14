@@ -69,7 +69,27 @@ export function hasPendingTextChanges(
     );
   });
 
+  const journalChanged = content.journal_posts.some((post) => {
+    const original = baseline.journal_posts.find((item) => item.id === post.id);
+    if (!original) return true;
+    return (
+      original.kind !== post.kind ||
+      original.category !== post.category ||
+      original.title !== post.title ||
+      original.body !== post.body ||
+      original.date_label !== post.date_label ||
+      original.order !== post.order ||
+      original.is_active !== post.is_active
+    );
+  });
+
   return (
-    homeChanged || cityChanged || slidesChanged || servicesChanged || pillarsChanged
+    homeChanged ||
+    cityChanged ||
+    slidesChanged ||
+    servicesChanged ||
+    pillarsChanged ||
+    journalChanged ||
+    content.journal_posts.length !== baseline.journal_posts.length
   );
 }

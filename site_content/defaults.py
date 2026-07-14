@@ -179,3 +179,37 @@ ABOUT_SLIDES_DEFAULTS: list[dict[str, Any]] = [
         "order": 3,
     },
 ]
+
+# Feed / novedades (sin archivos de video en seed; se suben desde el panel → S3)
+JOURNAL_POSTS_DEFAULTS: list[dict[str, Any]] = [
+    {
+        "kind": "text",
+        "category": "Equipo",
+        "title": "Formación continua",
+        "body": (
+            "En la Notaría 31-69 el equipo Total Living reforzó aspectos "
+            "notariales, jurídicos y fiscales. Sube el video desde el panel."
+        ),
+        "date_label": "Hoy",
+        "order": 0,
+    },
+    {
+        "kind": "image",
+        "category": "En el mercado",
+        "title": "Residencia en preventa",
+        "body": "Acabados de lujo · Querétaro. Sube la foto desde el panel.",
+        "date_label": "2 d",
+        "order": 1,
+    },
+    {
+        "kind": "text",
+        "category": "Promoción",
+        "title": "1 mes de renta gratis",
+        "body": (
+            "Departamentos amueblados con amenidades. Vigencia limitada "
+            "este trimestre."
+        ),
+        "date_label": "4 d",
+        "order": 2,
+    },
+]

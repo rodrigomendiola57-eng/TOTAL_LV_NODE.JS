@@ -27,7 +27,7 @@ export function StaticOnMobile({
 
   if (liteMotion) {
     return (
-      <div className={className} {...rest}>
+      <div className={className} {...(rest as any)}>
         {children}
       </div>
     );

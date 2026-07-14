@@ -1,10 +1,10 @@
-﻿"use client";
+// @ts-nocheck
+"use client";
 
 /**
  * Ballpit — React Bits (inspired by Kevin Levron / soju22).
  * Vendored for Total Living login background.
  */
-// @ts-nocheck
 
 import { useEffect, useRef } from "react";
 import {

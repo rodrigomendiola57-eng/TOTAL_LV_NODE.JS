@@ -44,7 +44,10 @@ export function DevelopmentDetailView({
       <AboutSilkBackdrop />
 
       <div className="relative z-10 flex flex-1 flex-col">
-        <section className="relative min-h-[min(92svh,52rem)] overflow-hidden sm:min-h-[min(72vh,40rem)]">
+    <section
+      data-tl-media-hero
+      className="relative min-h-[min(92svh,52rem)] overflow-hidden sm:min-h-[min(72vh,40rem)]"
+    >
           <div
             className="absolute inset-0 bg-cover bg-center"
             style={{ backgroundImage: `url('${development.coverImage}')` }}

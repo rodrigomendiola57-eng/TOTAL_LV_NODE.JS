@@ -9,7 +9,7 @@ import {
 } from "@/lib/api/about";
 import type { AboutPageContent } from "@/types/about-page";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 const fieldClass =
   "w-full rounded-xl border border-tl-gold/20 bg-[#0a0a0a] px-3 py-2.5 font-outfit text-sm font-light text-tl-beige outline-none focus:border-tl-gold/50";
@@ -22,12 +22,15 @@ export function AboutTextsManager() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [savedAt, setSavedAt] = useState<string | null>(null);
+  const [editLocale, setEditLocale] = useState<"es" | "en">("es");
 
   useEffect(() => {
     let cancelled = false;
-    getAboutPageContent({ revalidate: false })
+    getAboutPageContent({ revalidate: false, lang: "edit" })
       .then((data) => {
-        if (!cancelled) setContent(data);
+        if (!cancelled) {
+          setContent(data);
+        }
       })
       .catch((err: unknown) => {
         if (!cancelled) {
@@ -42,11 +45,68 @@ export function AboutTextsManager() {
     };
   }, []);
 
-  function setField<K extends keyof AboutPageContent>(
+  const previewContent = useMemo(() => {
+    if (!content) return null;
+    if (editLocale === "es") return content;
+    const enPack = (content.content_en ?? {}) as Partial<AboutPageContent>;
+    return {
+      ...content,
+      philosophy_title: enPack.philosophy_title ?? content.philosophy_title,
+      philosophy_subtitle: enPack.philosophy_subtitle ?? content.philosophy_subtitle,
+      philosophy_intro_lines: enPack.philosophy_intro_lines ?? content.philosophy_intro_lines,
+      philosophy_method_closing: enPack.philosophy_method_closing ?? content.philosophy_method_closing,
+      philosophy_pillars: enPack.philosophy_pillars ?? content.philosophy_pillars,
+      values: enPack.values ?? content.values,
+      mission_title: enPack.mission_title ?? content.mission_title,
+      mission_statement: enPack.mission_statement ?? content.mission_statement,
+      vision_title: enPack.vision_title ?? content.vision_title,
+      vision_statement: enPack.vision_statement ?? content.vision_statement,
+      team_eyebrow: enPack.team_eyebrow ?? content.team_eyebrow,
+      team_title: enPack.team_title ?? content.team_title,
+      org_eyebrow: enPack.org_eyebrow ?? content.org_eyebrow,
+      org_title: enPack.org_title ?? content.org_title,
+      cta_eyebrow: enPack.cta_eyebrow ?? content.cta_eyebrow,
+      cta_title: enPack.cta_title ?? content.cta_title,
+      cta_body: enPack.cta_body ?? content.cta_body,
+      cta_primary_label: enPack.cta_primary_label ?? content.cta_primary_label,
+      cta_secondary_label: enPack.cta_secondary_label ?? content.cta_secondary_label,
+    };
+  }, [content, editLocale]);
+
+  function patchContent<K extends keyof AboutPageContent>(
     key: K,
     value: AboutPageContent[K],
   ) {
-    setContent((current) => (current ? { ...current, [key]: value } : current));
+    setContent((current) => {
+      if (!current) return current;
+
+      const alwaysRootKeys: Array<keyof AboutPageContent> = [
+        "is_published",
+        "philosophy_pillars",
+        "values",
+        "section_nav",
+        "org_chart",
+        "cta_primary_url",
+        "cta_secondary_url",
+        "mission_image_external_url",
+        "vision_image_external_url",
+      ];
+
+      if (editLocale === "en" && !alwaysRootKeys.includes(key)) {
+        return {
+          ...current,
+          content_en: {
+            ...current.content_en,
+            [key]: value,
+          },
+        };
+      }
+
+      return {
+        ...current,
+        [key]: value,
+      };
+    });
   }
 
   async function handleSave() {
@@ -80,6 +140,7 @@ export function AboutTextsManager() {
         cta_secondary_label: content.cta_secondary_label,
         cta_secondary_url: content.cta_secondary_url,
         section_nav: content.section_nav,
+        content_en: content.content_en ?? {},
         is_published: content.is_published,
       });
       setContent(updated);
@@ -127,7 +188,7 @@ export function AboutTextsManager() {
     );
   }
 
-  if (!content) {
+  if (!content || !previewContent) {
     return (
       <p className="font-outfit text-sm text-red-300/80">
         {error ?? "No se pudieron cargar los textos."}
@@ -178,6 +239,34 @@ export function AboutTextsManager() {
         </p>
       ) : null}
 
+      <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-tl-gold/15 bg-[#0a0a0a] p-4">
+        <span className="text-[10px] uppercase tracking-[0.2em] text-tl-gold/80">
+          Idioma de edición
+        </span>
+        <button
+          type="button"
+          onClick={() => setEditLocale("es")}
+          className={`rounded-full px-4 py-2 text-[10px] uppercase tracking-[0.2em] ${
+            editLocale === "es"
+              ? "bg-tl-gold text-tl-black"
+              : "border border-white/10 text-tl-beige/80 hover:border-tl-gold"
+          }`}
+        >
+          Español
+        </button>
+        <button
+          type="button"
+          onClick={() => setEditLocale("en")}
+          className={`rounded-full px-4 py-2 text-[10px] uppercase tracking-[0.2em] ${
+            editLocale === "en"
+              ? "bg-tl-gold text-tl-black"
+              : "border border-white/10 text-tl-beige/80 hover:border-tl-gold"
+          }`}
+        >
+          English
+        </button>
+      </div>
+
       <section className="space-y-4 rounded-2xl border border-tl-gold/15 bg-[#0a0a0a] p-5">
         <h3 className="font-outfit text-xl font-extralight text-tl-beige">
           Filosofía
@@ -187,25 +276,25 @@ export function AboutTextsManager() {
             <span className={labelClass}>Título</span>
             <input
               className={fieldClass}
-              value={content.philosophy_title}
-              onChange={(e) => setField("philosophy_title", e.target.value)}
+              value={previewContent.philosophy_title}
+              onChange={(e) => patchContent("philosophy_title", e.target.value)}
             />
           </label>
           <label className="block sm:col-span-2">
             <span className={labelClass}>Subtítulo</span>
             <input
               className={fieldClass}
-              value={content.philosophy_subtitle}
-              onChange={(e) => setField("philosophy_subtitle", e.target.value)}
+              value={previewContent.philosophy_subtitle}
+              onChange={(e) => patchContent("philosophy_subtitle", e.target.value)}
             />
           </label>
           <label className="block sm:col-span-2">
             <span className={labelClass}>Intro (una línea por renglón)</span>
             <textarea
               className={`${fieldClass} min-h-24`}
-              value={content.philosophy_intro_lines.join("\n")}
+              value={previewContent.philosophy_intro_lines.join("\n")}
               onChange={(e) =>
-                setField(
+                patchContent(
                   "philosophy_intro_lines",
                   e.target.value
                     .split("\n")
@@ -219,9 +308,9 @@ export function AboutTextsManager() {
             <span className={labelClass}>Cierre del método</span>
             <input
               className={fieldClass}
-              value={content.philosophy_method_closing}
+              value={previewContent.philosophy_method_closing}
               onChange={(e) =>
-                setField("philosophy_method_closing", e.target.value)
+                patchContent("philosophy_method_closing", e.target.value)
               }
             />
           </label>
@@ -229,7 +318,7 @@ export function AboutTextsManager() {
 
         <div className="space-y-3 border-t border-white/8 pt-4">
           <p className={labelClass}>Pilares TOTAL</p>
-          {content.philosophy_pillars.map((pillar, index) => (
+          {previewContent.philosophy_pillars.map((pillar, index) => (
             <div
               key={pillar.id || index}
               className="grid gap-3 rounded-xl border border-white/8 p-3 sm:grid-cols-[4rem_1fr_1fr]"
@@ -238,9 +327,9 @@ export function AboutTextsManager() {
                 className={fieldClass}
                 value={pillar.letter}
                 onChange={(e) => {
-                  const next = [...content.philosophy_pillars];
+                  const next = [...previewContent.philosophy_pillars];
                   next[index] = { ...pillar, letter: e.target.value };
-                  setField("philosophy_pillars", next);
+                  patchContent("philosophy_pillars", next);
                 }}
                 aria-label="Letra"
               />
@@ -248,9 +337,9 @@ export function AboutTextsManager() {
                 className={fieldClass}
                 value={pillar.title}
                 onChange={(e) => {
-                  const next = [...content.philosophy_pillars];
+                  const next = [...previewContent.philosophy_pillars];
                   next[index] = { ...pillar, title: e.target.value };
-                  setField("philosophy_pillars", next);
+                  patchContent("philosophy_pillars", next);
                 }}
                 placeholder="Título"
               />
@@ -258,9 +347,9 @@ export function AboutTextsManager() {
                 className={fieldClass}
                 value={pillar.description}
                 onChange={(e) => {
-                  const next = [...content.philosophy_pillars];
+                  const next = [...previewContent.philosophy_pillars];
                   next[index] = { ...pillar, description: e.target.value };
-                  setField("philosophy_pillars", next);
+                  patchContent("philosophy_pillars", next);
                 }}
                 placeholder="Descripción"
               />
@@ -273,7 +362,7 @@ export function AboutTextsManager() {
         <h3 className="font-outfit text-xl font-extralight text-tl-beige">
           Valores
         </h3>
-        {content.values.map((value, index) => (
+        {previewContent.values.map((value, index) => (
           <div
             key={value.id || index}
             className="grid gap-3 rounded-xl border border-white/8 p-3 sm:grid-cols-2"
@@ -284,9 +373,9 @@ export function AboutTextsManager() {
                 className={fieldClass}
                 value={value.title}
                 onChange={(e) => {
-                  const next = [...content.values];
+                  const next = [...previewContent.values];
                   next[index] = { ...value, title: e.target.value };
-                  setField("values", next);
+                  patchContent("values", next);
                 }}
               />
             </label>
@@ -296,9 +385,9 @@ export function AboutTextsManager() {
                 className={`${fieldClass} min-h-20`}
                 value={value.description}
                 onChange={(e) => {
-                  const next = [...content.values];
+                  const next = [...previewContent.values];
                   next[index] = { ...value, description: e.target.value };
-                  setField("values", next);
+                  patchContent("values", next);
                 }}
               />
             </label>
@@ -316,20 +405,20 @@ export function AboutTextsManager() {
               <span className={labelClass}>Título misión</span>
               <input
                 className={fieldClass}
-                value={content.mission_title}
-                onChange={(e) => setField("mission_title", e.target.value)}
+                value={previewContent.mission_title}
+                onChange={(e) => patchContent("mission_title", e.target.value)}
               />
             </label>
             <label className="block">
               <span className={labelClass}>Texto misión</span>
               <textarea
                 className={`${fieldClass} min-h-28`}
-                value={content.mission_statement}
-                onChange={(e) => setField("mission_statement", e.target.value)}
+                value={previewContent.mission_statement}
+                onChange={(e) => patchContent("mission_statement", e.target.value)}
               />
             </label>
             <ZoneImageDropzone
-              previewUrl={content.mission_image_url || null}
+              previewUrl={previewContent.mission_image_url || null}
               disabled={saving}
               onFile={(file) => void handleMissionUpload(file)}
               label="Imagen misión"
@@ -341,20 +430,20 @@ export function AboutTextsManager() {
               <span className={labelClass}>Título visión</span>
               <input
                 className={fieldClass}
-                value={content.vision_title}
-                onChange={(e) => setField("vision_title", e.target.value)}
+                value={previewContent.vision_title}
+                onChange={(e) => patchContent("vision_title", e.target.value)}
               />
             </label>
             <label className="block">
               <span className={labelClass}>Texto visión</span>
               <textarea
                 className={`${fieldClass} min-h-28`}
-                value={content.vision_statement}
-                onChange={(e) => setField("vision_statement", e.target.value)}
+                value={previewContent.vision_statement}
+                onChange={(e) => patchContent("vision_statement", e.target.value)}
               />
             </label>
             <ZoneImageDropzone
-              previewUrl={content.vision_image_url || null}
+              previewUrl={previewContent.vision_image_url || null}
               disabled={saving}
               onFile={(file) => void handleVisionUpload(file)}
               label="Imagen visión"
@@ -373,32 +462,32 @@ export function AboutTextsManager() {
             <span className={labelClass}>Eyebrow equipo</span>
             <input
               className={fieldClass}
-              value={content.team_eyebrow}
-              onChange={(e) => setField("team_eyebrow", e.target.value)}
+              value={previewContent.team_eyebrow}
+              onChange={(e) => patchContent("team_eyebrow", e.target.value)}
             />
           </label>
           <label className="block">
             <span className={labelClass}>Título equipo</span>
             <input
               className={fieldClass}
-              value={content.team_title}
-              onChange={(e) => setField("team_title", e.target.value)}
+              value={previewContent.team_title}
+              onChange={(e) => patchContent("team_title", e.target.value)}
             />
           </label>
           <label className="block">
             <span className={labelClass}>Eyebrow organigrama</span>
             <input
               className={fieldClass}
-              value={content.org_eyebrow}
-              onChange={(e) => setField("org_eyebrow", e.target.value)}
+              value={previewContent.org_eyebrow}
+              onChange={(e) => patchContent("org_eyebrow", e.target.value)}
             />
           </label>
           <label className="block">
             <span className={labelClass}>Título organigrama</span>
             <input
               className={fieldClass}
-              value={content.org_title}
-              onChange={(e) => setField("org_title", e.target.value)}
+              value={previewContent.org_title}
+              onChange={(e) => patchContent("org_title", e.target.value)}
             />
           </label>
         </div>
@@ -413,56 +502,56 @@ export function AboutTextsManager() {
             <span className={labelClass}>Eyebrow</span>
             <input
               className={fieldClass}
-              value={content.cta_eyebrow}
-              onChange={(e) => setField("cta_eyebrow", e.target.value)}
+              value={previewContent.cta_eyebrow}
+              onChange={(e) => patchContent("cta_eyebrow", e.target.value)}
             />
           </label>
           <label className="block sm:col-span-2">
             <span className={labelClass}>Título</span>
             <input
               className={fieldClass}
-              value={content.cta_title}
-              onChange={(e) => setField("cta_title", e.target.value)}
+              value={previewContent.cta_title}
+              onChange={(e) => patchContent("cta_title", e.target.value)}
             />
           </label>
           <label className="block sm:col-span-2">
             <span className={labelClass}>Texto</span>
             <textarea
               className={`${fieldClass} min-h-24`}
-              value={content.cta_body}
-              onChange={(e) => setField("cta_body", e.target.value)}
+              value={previewContent.cta_body}
+              onChange={(e) => patchContent("cta_body", e.target.value)}
             />
           </label>
           <label className="block">
             <span className={labelClass}>Botón primario</span>
             <input
               className={fieldClass}
-              value={content.cta_primary_label}
-              onChange={(e) => setField("cta_primary_label", e.target.value)}
+              value={previewContent.cta_primary_label}
+              onChange={(e) => patchContent("cta_primary_label", e.target.value)}
             />
           </label>
           <label className="block">
             <span className={labelClass}>URL primaria</span>
             <input
               className={fieldClass}
-              value={content.cta_primary_url}
-              onChange={(e) => setField("cta_primary_url", e.target.value)}
+              value={previewContent.cta_primary_url}
+              onChange={(e) => patchContent("cta_primary_url", e.target.value)}
             />
           </label>
           <label className="block">
             <span className={labelClass}>Botón secundario</span>
             <input
               className={fieldClass}
-              value={content.cta_secondary_label}
-              onChange={(e) => setField("cta_secondary_label", e.target.value)}
+              value={previewContent.cta_secondary_label}
+              onChange={(e) => patchContent("cta_secondary_label", e.target.value)}
             />
           </label>
           <label className="block">
             <span className={labelClass}>URL secundaria</span>
             <input
               className={fieldClass}
-              value={content.cta_secondary_url}
-              onChange={(e) => setField("cta_secondary_url", e.target.value)}
+              value={previewContent.cta_secondary_url}
+              onChange={(e) => patchContent("cta_secondary_url", e.target.value)}
             />
           </label>
         </div>

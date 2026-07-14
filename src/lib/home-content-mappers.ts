@@ -1,3 +1,4 @@
+import { ASESORIA_HERO_IMAGE } from "@/lib/hero-media";
 import type { HomeAboutSlide, HomePageContent } from "@/types/home-content";
 
 export interface AboutAlbumImage {
@@ -6,8 +7,8 @@ export interface AboutAlbumImage {
   alt: string;
 }
 
-const DEFAULT_HERO_BACKGROUND =
-  "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?q=80&w=2070&auto=format&fit=crop";
+/** Fallback del campo CMS; la portada visual de Inicio es video (ver HeroSection). */
+const DEFAULT_HERO_BACKGROUND = ASESORIA_HERO_IMAGE;
 
 const DEFAULT_ALBUM_IMAGES: AboutAlbumImage[] = [
   {

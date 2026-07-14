@@ -4,12 +4,14 @@ import { BrandLogoAnimated } from "@/components/layout/BrandLogoAnimated";
 import { cn } from "@/lib/utils";
 import {
   Building2,
+  BriefcaseBusiness,
   Home,
   Landmark,
   LayoutDashboard,
   MapPin,
   Menu,
   MessagesSquare,
+  Phone,
   Settings,
   Users,
   X,
@@ -38,6 +40,8 @@ const NAV_ITEMS: {
   { href: "/dashboard/desarrollos", label: "Desarrollos", icon: Landmark },
   { href: "/dashboard/zonas", label: "Zonas", icon: MapPin },
   { href: "/dashboard/nosotros", label: "Nosotros", icon: Users },
+  { href: "/dashboard/asesoria", label: "Asesoría", icon: BriefcaseBusiness },
+  { href: "/dashboard/contacto", label: "Contacto", icon: Phone },
   { href: "/dashboard/crm", label: "CRM", icon: MessagesSquare },
   { href: "/dashboard/configuracion", label: "Configuración", icon: Settings },
 ];

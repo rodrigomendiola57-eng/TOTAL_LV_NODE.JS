@@ -5,6 +5,7 @@ from .models import (
     HomeCityHighlight,
     HomeExpertisePillar,
     HomeExpertiseService,
+    HomeJournalPost,
     HomePage,
 )
 
@@ -30,6 +31,21 @@ class HomeExpertisePillarInline(admin.TabularInline):
     extra = 0
 
 
+class HomeJournalPostInline(admin.TabularInline):
+    model = HomeJournalPost
+    extra = 0
+    fields = [
+        "kind",
+        "category",
+        "title",
+        "date_label",
+        "order",
+        "is_active",
+        "image",
+        "video",
+    ]
+
+
 @admin.register(HomePage)
 class HomePageAdmin(admin.ModelAdmin):
     inlines = [
@@ -37,6 +53,7 @@ class HomePageAdmin(admin.ModelAdmin):
         HomeCityHighlightInline,
         HomeExpertiseServiceInline,
         HomeExpertisePillarInline,
+        HomeJournalPostInline,
     ]
     list_display = ["__str__", "is_published", "updated_at"]
 

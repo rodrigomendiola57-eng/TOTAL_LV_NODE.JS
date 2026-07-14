@@ -5,6 +5,7 @@ import type {
   TeamMemberApiModel,
   TeamMemberWritePayload,
 } from "@/types/about-page";
+export type { TeamMemberApiModel, TeamMemberWritePayload };
 
 async function parseError(response: Response): Promise<string> {
   try {
@@ -21,8 +22,11 @@ async function parseError(response: Response): Promise<string> {
 
 export async function getAboutPageContent(options?: {
   revalidate?: number | false;
+  lang?: "es" | "en" | "edit";
 }): Promise<AboutPageContent> {
-  const response = await fetch(`${getApiBaseUrl()}/about-page/current/`, {
+  const lang = options?.lang ?? "es";
+  const query = lang === "es" ? "" : `?lang=${lang}`;
+  const response = await fetch(`${getApiBaseUrl()}/about-page/current/${query}`, {
     ...(options?.revalidate === false
       ? { cache: "no-store" as const }
       : { next: { revalidate: options?.revalidate ?? 30 } }),
@@ -80,8 +84,12 @@ export async function uploadAboutVisionImage(
 export async function listTeamMembersApi(options?: {
   all?: boolean;
   revalidate?: number | false;
+  lang?: "es" | "en" | "edit";
 }): Promise<TeamMemberApiModel[]> {
-  const query = options?.all ? "?all=1" : "";
+  const queryParams = [];
+  if (options?.all) queryParams.push("all=1");
+  if (options?.lang && options.lang !== "es") queryParams.push(`lang=${options.lang}`);
+  const query = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
   const response = await fetch(`${getApiBaseUrl()}/team-members/${query}`, {
     ...(options?.revalidate === false
       ? { cache: "no-store" as const }

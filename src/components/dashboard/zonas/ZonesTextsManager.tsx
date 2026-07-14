@@ -8,7 +8,7 @@ import {
 } from "@/lib/api/zones";
 import type { ZonesPageContent } from "@/types/zones-page";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 const fieldClass =
   "w-full rounded-xl border border-tl-gold/20 bg-[#0a0a0a] px-3 py-2.5 font-outfit text-sm font-light text-tl-beige outline-none focus:border-tl-gold/50";
@@ -21,12 +21,15 @@ export function ZonesTextsManager() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [savedAt, setSavedAt] = useState<string | null>(null);
+  const [editLocale, setEditLocale] = useState<"es" | "en">("es");
 
   useEffect(() => {
     let cancelled = false;
-    getZonesPageContent({ revalidate: false })
+    getZonesPageContent({ revalidate: false, lang: "edit" })
       .then((data) => {
-        if (!cancelled) setContent(data);
+        if (!cancelled) {
+          setContent(data);
+        }
       })
       .catch((err: unknown) => {
         if (!cancelled) {
@@ -41,11 +44,46 @@ export function ZonesTextsManager() {
     };
   }, []);
 
-  function setField<K extends keyof ZonesPageContent>(
+  const previewContent = useMemo(() => {
+    if (!content) return null;
+    if (editLocale === "es") return content;
+    const enPack = (content.content_en ?? {}) as Partial<ZonesPageContent>;
+    return {
+      ...content,
+      hero_eyebrow: enPack.hero_eyebrow ?? content.hero_eyebrow,
+      hero_title: enPack.hero_title ?? content.hero_title,
+      hero_subtitle: enPack.hero_subtitle ?? content.hero_subtitle,
+      scroll_hint: enPack.scroll_hint ?? content.scroll_hint,
+    };
+  }, [content, editLocale]);
+
+  function patchContent<K extends keyof ZonesPageContent>(
     key: K,
     value: ZonesPageContent[K],
   ) {
-    setContent((current) => (current ? { ...current, [key]: value } : current));
+    setContent((current) => {
+      if (!current) return current;
+
+      const alwaysRootKeys: Array<keyof ZonesPageContent> = [
+        "is_published",
+        "hero_image_external_url",
+      ];
+
+      if (editLocale === "en" && !alwaysRootKeys.includes(key)) {
+        return {
+          ...current,
+          content_en: {
+            ...current.content_en,
+            [key]: value,
+          },
+        };
+      }
+
+      return {
+        ...current,
+        [key]: value,
+      };
+    });
   }
 
   async function handleSave() {
@@ -59,6 +97,7 @@ export function ZonesTextsManager() {
         hero_subtitle: content.hero_subtitle,
         hero_image_external_url: content.hero_image_external_url,
         scroll_hint: content.scroll_hint,
+        content_en: content.content_en ?? {},
         is_published: content.is_published,
       });
       setContent(updated);
@@ -91,7 +130,7 @@ export function ZonesTextsManager() {
     );
   }
 
-  if (!content) {
+  if (!content || !previewContent) {
     return (
       <p className="font-outfit text-sm text-red-300/80">
         {error ?? "No se pudieron cargar los textos."}
@@ -142,6 +181,34 @@ export function ZonesTextsManager() {
         </p>
       ) : null}
 
+      <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-tl-gold/15 bg-[#0a0a0a] p-4">
+        <span className="text-[10px] uppercase tracking-[0.2em] text-tl-gold/80">
+          Idioma de edición
+        </span>
+        <button
+          type="button"
+          onClick={() => setEditLocale("es")}
+          className={`rounded-full px-4 py-2 text-[10px] uppercase tracking-[0.2em] ${
+            editLocale === "es"
+              ? "bg-tl-gold text-tl-black"
+              : "border border-white/10 text-tl-beige/80 hover:border-tl-gold"
+          }`}
+        >
+          Español
+        </button>
+        <button
+          type="button"
+          onClick={() => setEditLocale("en")}
+          className={`rounded-full px-4 py-2 text-[10px] uppercase tracking-[0.2em] ${
+            editLocale === "en"
+              ? "bg-tl-gold text-tl-black"
+              : "border border-white/10 text-tl-beige/80 hover:border-tl-gold"
+          }`}
+        >
+          English
+        </button>
+      </div>
+
       <div className="rounded-2xl border border-white/8 bg-black/20 px-4 py-3 font-outfit text-sm font-light text-tl-beige/55">
         No editables aquí: <span className="text-tl-beige/80">N zonas premium</span>{" "}
         y <span className="text-tl-beige/80">N propiedades activas</span> — salen
@@ -154,32 +221,32 @@ export function ZonesTextsManager() {
             <span className={labelClass}>Eyebrow</span>
             <input
               className={fieldClass}
-              value={content.hero_eyebrow}
-              onChange={(e) => setField("hero_eyebrow", e.target.value)}
+              value={previewContent.hero_eyebrow}
+              onChange={(e) => patchContent("hero_eyebrow", e.target.value)}
             />
           </label>
           <label className="block sm:col-span-2">
             <span className={labelClass}>Título</span>
             <input
               className={fieldClass}
-              value={content.hero_title}
-              onChange={(e) => setField("hero_title", e.target.value)}
+              value={previewContent.hero_title}
+              onChange={(e) => patchContent("hero_title", e.target.value)}
             />
           </label>
           <label className="block sm:col-span-2">
             <span className={labelClass}>Párrafo de apoyo</span>
             <textarea
               className={`${fieldClass} min-h-28`}
-              value={content.hero_subtitle}
-              onChange={(e) => setField("hero_subtitle", e.target.value)}
+              value={previewContent.hero_subtitle}
+              onChange={(e) => patchContent("hero_subtitle", e.target.value)}
             />
           </label>
           <label className="block sm:col-span-2">
             <span className={labelClass}>Texto “Desplázate”</span>
             <input
               className={fieldClass}
-              value={content.scroll_hint}
-              onChange={(e) => setField("scroll_hint", e.target.value)}
+              value={previewContent.scroll_hint}
+              onChange={(e) => patchContent("scroll_hint", e.target.value)}
             />
           </label>
           <details className="sm:col-span-2">
@@ -190,9 +257,9 @@ export function ZonesTextsManager() {
               <span className={labelClass}>URL externa</span>
               <input
                 className={fieldClass}
-                value={content.hero_image_external_url}
+                value={previewContent.hero_image_external_url}
                 onChange={(e) =>
-                  setField("hero_image_external_url", e.target.value)
+                  patchContent("hero_image_external_url", e.target.value)
                 }
                 placeholder="https://..."
               />
@@ -202,7 +269,7 @@ export function ZonesTextsManager() {
 
         <div className="border-t border-white/8 pt-5">
           <ZoneImageDropzone
-            previewUrl={content.hero_image_url || null}
+            previewUrl={previewContent.hero_image_url || null}
             disabled={saving}
             onFile={(file) => void handleHeroUpload(file)}
             label="Imagen del intro"

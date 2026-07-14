@@ -2,10 +2,10 @@ import type { ComponentType, SVGProps } from "react";
 import {
   FacebookIcon,
   InstagramIcon,
-  LinkedinIcon,
+  TikTokIcon,
   WhatsAppIcon,
-  YoutubeIcon,
 } from "@/components/ui/SocialIcons";
+import { getSiteWhatsAppUrl } from "@/lib/whatsapp";
 
 export type SocialLink = {
   label: string;
@@ -13,11 +13,29 @@ export type SocialLink = {
   icon: ComponentType<SVGProps<SVGSVGElement>>;
 };
 
-/** Reemplazar href cuando estén las URLs oficiales de la marca. */
+/**
+ * Redes oficiales del sitio (Inicio, navbar móvil, footer).
+ * Solo: Facebook, Instagram, WhatsApp y TikTok.
+ */
 export const SOCIAL_LINKS: SocialLink[] = [
-  { label: "Instagram", href: "#", icon: InstagramIcon },
-  { label: "Facebook", href: "#", icon: FacebookIcon },
-  { label: "LinkedIn", href: "#", icon: LinkedinIcon },
-  { label: "YouTube", href: "#", icon: YoutubeIcon },
-  { label: "WhatsApp", href: "#", icon: WhatsAppIcon },
+  {
+    label: "Facebook",
+    href: "https://www.facebook.com/total.living.mx/",
+    icon: FacebookIcon,
+  },
+  {
+    label: "Instagram",
+    href: "https://www.instagram.com/total.living.mx/",
+    icon: InstagramIcon,
+  },
+  {
+    label: "WhatsApp",
+    href: getSiteWhatsAppUrl("Hola, me interesa conocer más sobre Total Living."),
+    icon: WhatsAppIcon,
+  },
+  {
+    label: "TikTok",
+    href: "https://www.tiktok.com/@total.living.mx",
+    icon: TikTokIcon,
+  },
 ];

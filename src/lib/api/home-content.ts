@@ -10,6 +10,8 @@ import type {
   HomeExpertisePillarWritePayload,
   HomeExpertiseService,
   HomeExpertiseServiceWritePayload,
+  HomeJournalPost,
+  HomeJournalPostWritePayload,
   HomePageContent,
   HomePageUpdatePayload,
 } from "@/types/home-content";
@@ -55,25 +57,45 @@ function normalizeCity(city: HomeCityHighlight): HomeCityHighlight {
   };
 }
 
+function normalizeJournalPost(post: HomeJournalPost): HomeJournalPost {
+  return {
+    ...post,
+    image_url: resolveMediaUrl(post.image_url) ?? post.image_url,
+    video_url: resolveMediaUrl(post.video_url) ?? post.video_url,
+  };
+}
+
 function normalizeHomeContent(data: HomePageContent): HomePageContent {
   return {
     ...data,
     hero_background_url:
       resolveMediaUrl(data.hero_background_url) ?? data.hero_background_url,
-    about_slides: data.about_slides.map(normalizeSlide),
+    hero_video_url:
+      resolveMediaUrl(data.hero_video_url) ?? data.hero_video_url ?? null,
+    about_slides: (data.about_slides ?? []).map(normalizeSlide),
     city_highlight: normalizeCity(data.city_highlight),
+    journal_posts: (data.journal_posts ?? []).map(normalizeJournalPost),
+    expertise_services: data.expertise_services ?? [],
+    expertise_pillars: data.expertise_pillars ?? [],
   };
 }
 
-export async function getHomeContent(): Promise<HomePageContent> {
-  const data = await homeFetch<HomePageContent>("/home/current/");
+export async function getHomeContent(options?: {
+  lang?: "es" | "en" | "edit";
+}): Promise<HomePageContent> {
+  const lang = options?.lang ?? "es";
+  const query = lang === "es" ? "" : `?lang=${lang}`;
+  const data = await homeFetch<HomePageContent>(`/home/current/${query}`);
   return normalizeHomeContent(data);
 }
 
 /** Carga del homepage público (servidor) con fallback si la API no responde. */
-export async function getPublicHomeContent(): Promise<HomePageContent> {
+export async function getPublicHomeContent(
+  locale: "es" | "en" = "es",
+): Promise<HomePageContent> {
   try {
-    const response = await fetch(`${getApiBaseUrl()}/home/current/`, {
+    const query = locale === "en" ? "?lang=en" : "";
+    const response = await fetch(`${getApiBaseUrl()}/home/current/${query}`, {
       method: "GET",
       headers: { Accept: "application/json" },
       // Cache corto: evita re-render completo en cada navegación al inicio.
@@ -108,6 +130,17 @@ export async function uploadHeroBackground(file: File): Promise<HomePageContent>
   formData.append("file", file);
 
   const data = await homeFetch<HomePageContent>("/home/current/hero-background/", {
+    method: "POST",
+    body: formData,
+  });
+  return normalizeHomeContent(data);
+}
+
+export async function uploadHeroVideo(file: File): Promise<HomePageContent> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const data = await homeFetch<HomePageContent>("/home/current/hero-video/", {
     method: "POST",
     body: formData,
   });
@@ -207,4 +240,57 @@ export async function updateExpertisePillar(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
+}
+
+export async function createJournalPost(
+  payload: HomeJournalPostWritePayload,
+): Promise<HomeJournalPost> {
+  const data = await homeFetch<HomeJournalPost>("/home/journal-posts/", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  return normalizeJournalPost(data);
+}
+
+export async function updateJournalPost(
+  id: number,
+  payload: Partial<HomeJournalPostWritePayload>,
+): Promise<HomeJournalPost> {
+  const data = await homeFetch<HomeJournalPost>(`/home/journal-posts/${id}/`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  return normalizeJournalPost(data);
+}
+
+export async function deleteJournalPost(id: number): Promise<void> {
+  await homeFetch<void>(`/home/journal-posts/${id}/`, { method: "DELETE" });
+}
+
+export async function uploadJournalPostImage(
+  id: number,
+  file: File,
+): Promise<HomeJournalPost> {
+  const formData = new FormData();
+  formData.append("file", file);
+  const data = await homeFetch<HomeJournalPost>(
+    `/home/journal-posts/${id}/image/`,
+    { method: "POST", body: formData },
+  );
+  return normalizeJournalPost(data);
+}
+
+export async function uploadJournalPostVideo(
+  id: number,
+  file: File,
+): Promise<HomeJournalPost> {
+  const formData = new FormData();
+  formData.append("file", file);
+  const data = await homeFetch<HomeJournalPost>(
+    `/home/journal-posts/${id}/video/`,
+    { method: "POST", body: formData },
+  );
+  return normalizeJournalPost(data);
 }

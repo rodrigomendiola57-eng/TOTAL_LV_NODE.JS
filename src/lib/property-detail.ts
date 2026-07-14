@@ -34,18 +34,42 @@ export function getCatalogBackHref(property: Property): string {
 }
 
 export function getPropertyMapsUrl(property: Property): string {
-  if (property.maps_link?.trim()) {
-    return property.maps_link;
+  if (property.latitude != null && property.longitude != null) {
+    return `https://www.google.com/maps/search/?api=1&query=${property.latitude},${property.longitude}`;
   }
 
-  if (property.latitude != null && property.longitude != null) {
-    return `https://www.google.com/maps?q=${property.latitude},${property.longitude}`;
+  const link = property.maps_link?.trim() ?? "";
+  if (link && isGoogleMapsUrl(link)) {
+    return link;
   }
 
   const query = encodeURIComponent(
     `${property.address}, ${property.city}, ${property.state}`,
   );
   return `https://www.google.com/maps/search/?api=1&query=${query}`;
+}
+
+function isGoogleMapsUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    const host = parsed.hostname.toLowerCase();
+    const path = parsed.pathname.toLowerCase();
+    if (host === "maps.google.com" || host.endsWith(".maps.google.com")) {
+      return true;
+    }
+    if (host === "maps.app.goo.gl" || host === "goo.gl") {
+      return true;
+    }
+    if (
+      (host === "www.google.com" || host === "google.com") &&
+      path.includes("/maps")
+    ) {
+      return true;
+    }
+    return false;
+  } catch {
+    return false;
+  }
 }
 
 export function getPropertyWhatsAppUrl(property: Property): string {

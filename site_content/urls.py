@@ -5,6 +5,7 @@ from .views import (
     HomeAboutSlideViewSet,
     HomeExpertisePillarViewSet,
     HomeExpertiseServiceViewSet,
+    HomeJournalPostViewSet,
     HomePageViewSet,
 )
 
@@ -20,6 +21,11 @@ router.register(
     r"home/expertise-pillars",
     HomeExpertisePillarViewSet,
     basename="home-expertise-pillars",
+)
+router.register(
+    r"home/journal-posts",
+    HomeJournalPostViewSet,
+    basename="home-journal-posts",
 )
 
 urlpatterns = [

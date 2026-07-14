@@ -30,5 +30,6 @@ export function buildHomeUpdatePayload(
     contact_cta_url: content.contact_cta_url,
     expertise_title: content.expertise_title,
     expertise_subtitle: content.expertise_subtitle,
+    content_en: content.content_en,
   };
 }

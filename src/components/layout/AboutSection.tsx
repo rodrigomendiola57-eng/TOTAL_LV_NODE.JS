@@ -26,18 +26,26 @@ function AboutSocialLinks({ label = "Síguenos" }: { label?: string }) {
       <p className="mb-4 font-outfit font-light text-[10px] uppercase tracking-[0.18em] text-tl-beige/45">
         {label}
       </p>
-      <ul className="flex flex-wrap items-center gap-3" role="list">
-        {SOCIAL_LINKS.map(({ label, href, icon: Icon }) => (
-          <li key={label}>
-            <a
-              href={href}
-              aria-label={label}
-              className="inline-flex h-12 w-12 items-center justify-center rounded-full border-2 border-white text-white transition-all hover:border-tl-gold hover:bg-white/5 hover:text-tl-gold"
-            >
-              <Icon className="h-5 w-5" />
-            </a>
-          </li>
-        ))}
+      <ul
+        className="flex flex-wrap items-center justify-center gap-3 lg:justify-start"
+        role="list"
+      >
+        {SOCIAL_LINKS.map(({ label, href, icon: Icon }) => {
+          const external = href.startsWith("http");
+          return (
+            <li key={label}>
+              <a
+                href={href}
+                target={external ? "_blank" : undefined}
+                rel={external ? "noopener noreferrer" : undefined}
+                aria-label={label}
+                className="inline-flex h-12 w-12 items-center justify-center rounded-full border-2 border-white text-white transition-all hover:border-tl-gold hover:bg-white/5 hover:text-tl-gold"
+              >
+                <Icon className="h-5 w-5" />
+              </a>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );
@@ -99,9 +107,9 @@ export function AboutSection({
             duration: isMobile ? 0.55 : 0.9,
             ease: revealEase,
           }}
-          className="max-w-xl"
+          className="mx-auto max-w-xl text-center lg:mx-0 lg:text-left"
         >
-          <div className="mb-4 h-px w-10 bg-tl-gold/70" />
+          <div className="mx-auto mb-4 h-px w-10 bg-tl-gold/70 lg:mx-0" />
           <p className="font-outfit font-light text-[10px] uppercase tracking-[0.2em] text-tl-gold sm:text-xs sm:tracking-[0.24em]">
             {eyebrow}
           </p>

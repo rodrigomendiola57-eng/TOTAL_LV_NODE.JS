@@ -2,22 +2,24 @@
 
 import {
   InicioField,
-  InicioTextarea,
   InicioTextInput,
 } from "@/components/dashboard/inicio/InicioField";
 import { InicioImageUpload } from "@/components/dashboard/inicio/InicioImageUpload";
+import { InicioVideoUpload } from "@/components/dashboard/inicio/InicioVideoUpload";
 import type { HomePageContent } from "@/types/home-content";
 
 interface HeroSectionFormProps {
   content: HomePageContent;
   onChange: (patch: Partial<HomePageContent>) => void;
   onUploadHeroBackground: (file: File) => Promise<void>;
+  onUploadHeroVideo: (file: File) => Promise<void>;
 }
 
 export function HeroSectionForm({
   content,
   onChange,
   onUploadHeroBackground,
+  onUploadHeroVideo,
 }: HeroSectionFormProps) {
   return (
     <div className="space-y-6">
@@ -42,11 +44,18 @@ export function HeroSectionForm({
         />
       </InicioField>
 
+      <InicioVideoUpload
+        label="Video de portada (hero)"
+        currentUrl={content.hero_video_url}
+        onUpload={onUploadHeroVideo}
+        hint="MP4 recomendado. Se guarda en S3 (home/hero/video/). Si no hay video, se usa el fallback local."
+      />
+
       <InicioImageUpload
-        label="Fondo del hero"
+        label="Poster / respaldo del hero"
         currentUrl={content.hero_background_url}
         onUpload={onUploadHeroBackground}
-        hint="JPG, PNG o WebP. Máximo 12 MB."
+        hint="JPG, PNG o WebP. Se muestra mientras carga el video o si falla."
       />
     </div>
   );

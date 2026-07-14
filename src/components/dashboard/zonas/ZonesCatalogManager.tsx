@@ -34,6 +34,7 @@ export function ZonesCatalogManager({
   const [mode, setMode] = useState<"list" | "create" | "edit">("list");
   const [editing, setEditing] = useState<ZoneApiModel | null>(null);
   const [query, setQuery] = useState("");
+  const [editLocale, setEditLocale] = useState<"es" | "en">("es");
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -143,6 +144,8 @@ export function ZonesCatalogManager({
             initial={editing}
             onSaved={handleSaved}
             onCancel={backToList}
+            editLocale={editLocale}
+            setEditLocale={setEditLocale}
           />
         </div>
       </div>
@@ -186,6 +189,34 @@ export function ZonesCatalogManager({
             Agregar zona
           </button>
         </div>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-tl-gold/15 bg-[#0a0a0a] p-4">
+        <span className="text-[10px] uppercase tracking-[0.2em] text-tl-gold/80">
+          Idioma de visualización
+        </span>
+        <button
+          type="button"
+          onClick={() => setEditLocale("es")}
+          className={`rounded-full px-4 py-2 text-[10px] uppercase tracking-[0.2em] ${
+            editLocale === "es"
+              ? "bg-tl-gold text-tl-black"
+              : "border border-white/10 text-tl-beige/80 hover:border-tl-gold"
+          }`}
+        >
+          Español
+        </button>
+        <button
+          type="button"
+          onClick={() => setEditLocale("en")}
+          className={`rounded-full px-4 py-2 text-[10px] uppercase tracking-[0.2em] ${
+            editLocale === "en"
+              ? "bg-tl-gold text-tl-black"
+              : "border border-white/10 text-tl-beige/80 hover:border-tl-gold"
+          }`}
+        >
+          English
+        </button>
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -237,6 +268,18 @@ export function ZonesCatalogManager({
               row.image_external_url ||
               row.image_url;
 
+            const enPack = (row.content_en ?? {}) as Record<string, any>;
+            const displayName = editLocale === "en" ? (enPack.name || row.name) : row.name;
+            
+            const growth_map_en: Record<string, string> = {
+              "Plusvalía premium": "Premium appreciation",
+              "Crecimiento alto": "High growth",
+              "Crecimiento medio": "Medium growth",
+              "Emergente": "Emerging",
+            };
+            const default_growth_en = growth_map_en[row.growth_label] ?? row.growth_label;
+            const displayGrowth = editLocale === "en" ? (enPack.growth_label || default_growth_en) : row.growth_label;
+
             return (
               <article
                 key={row.id}
@@ -276,10 +319,10 @@ export function ZonesCatalogManager({
                     </div>
                     <div className="absolute inset-x-0 bottom-0 p-4">
                       <p className="font-outfit text-[10px] uppercase tracking-[0.16em] text-tl-gold/85">
-                        {row.growth_label}
+                        {displayGrowth}
                       </p>
                       <h3 className="mt-1 line-clamp-2 font-outfit text-2xl font-extralight leading-tight text-tl-beige">
-                        {row.name}
+                        {displayName}
                       </h3>
                     </div>
                   </div>

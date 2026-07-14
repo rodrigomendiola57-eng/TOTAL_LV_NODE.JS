@@ -10,6 +10,7 @@ from .models import (
     HomeCityHighlight,
     HomeExpertisePillar,
     HomeExpertiseService,
+    HomeJournalPost,
     HomePage,
 )
 
@@ -102,12 +103,45 @@ class HomeExpertisePillarSerializer(serializers.ModelSerializer):
         read_only_fields = ["id"]
 
 
+class HomeJournalPostSerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField()
+    video_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = HomeJournalPost
+        fields = [
+            "id",
+            "kind",
+            "category",
+            "title",
+            "body",
+            "date_label",
+            "order",
+            "is_active",
+            "image_url",
+            "video_url",
+        ]
+        read_only_fields = ["id", "image_url", "video_url"]
+
+    def get_image_url(self, obj: HomeJournalPost) -> str | None:
+        if obj.image:
+            return _absolute_media_url(self.context.get("request"), obj.image)
+        return None
+
+    def get_video_url(self, obj: HomeJournalPost) -> str | None:
+        if obj.video:
+            return _absolute_media_url(self.context.get("request"), obj.video)
+        return None
+
+
 class HomePageDetailSerializer(serializers.ModelSerializer):
     hero_background_url = serializers.SerializerMethodField()
+    hero_video_url = serializers.SerializerMethodField()
     about_slides = HomeAboutSlideSerializer(many=True, read_only=True)
     city_highlight = HomeCityHighlightSerializer(read_only=True)
     expertise_services = HomeExpertiseServiceSerializer(many=True, read_only=True)
     expertise_pillars = HomeExpertisePillarSerializer(many=True, read_only=True)
+    journal_posts = HomeJournalPostSerializer(many=True, read_only=True)
 
     class Meta:
         model = HomePage
@@ -119,6 +153,7 @@ class HomePageDetailSerializer(serializers.ModelSerializer):
             "hero_title",
             "hero_subtitle",
             "hero_background_url",
+            "hero_video_url",
             "about_eyebrow",
             "about_title",
             "about_body",
@@ -145,12 +180,24 @@ class HomePageDetailSerializer(serializers.ModelSerializer):
             "expertise_subtitle",
             "expertise_services",
             "expertise_pillars",
+            "journal_posts",
+            "content_en",
         ]
-        read_only_fields = ["id", "updated_at", "hero_background_url"]
+        read_only_fields = [
+            "id",
+            "updated_at",
+            "hero_background_url",
+            "hero_video_url",
+        ]
 
     def get_hero_background_url(self, obj: HomePage) -> str | None:
         if obj.hero_background:
             return _absolute_media_url(self.context.get("request"), obj.hero_background)
+        return None
+
+    def get_hero_video_url(self, obj: HomePage) -> str | None:
+        if obj.hero_video:
+            return _absolute_media_url(self.context.get("request"), obj.hero_video)
         return None
 
 
@@ -184,7 +231,15 @@ class HomePageUpdateSerializer(serializers.ModelSerializer):
             "contact_cta_url",
             "expertise_title",
             "expertise_subtitle",
+            "content_en",
         ]
+
+    def validate_content_en(self, value):
+        if value is None:
+            return {}
+        if not isinstance(value, dict):
+            raise serializers.ValidationError("content_en debe ser un objeto.")
+        return value
 
 
 class HomeCityHighlightUpdateSerializer(serializers.ModelSerializer):
@@ -228,6 +283,20 @@ class HomeExpertisePillarWriteSerializer(serializers.ModelSerializer):
             "title",
             "description",
             "bento_class",
+            "order",
+            "is_active",
+        ]
+
+
+class HomeJournalPostWriteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HomeJournalPost
+        fields = [
+            "kind",
+            "category",
+            "title",
+            "body",
+            "date_label",
             "order",
             "is_active",
         ]

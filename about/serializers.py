@@ -72,6 +72,7 @@ class AboutPageSerializer(serializers.ModelSerializer):
             "cta_secondary_label",
             "cta_secondary_url",
             "section_nav",
+            "content_en",
             "is_published",
             "updated_at",
         )
@@ -128,6 +129,48 @@ class AboutPageUpdateSerializer(serializers.ModelSerializer):
             "cta_secondary_label",
             "cta_secondary_url",
             "section_nav",
+            "content_en",
+            "is_published",
+        )
+
+    def validate_content_en(self, value):
+        if value is None:
+            return {}
+        if not isinstance(value, dict):
+            raise serializers.ValidationError("content_en debe ser un objeto.")
+        return value
+
+
+class AboutPageUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AboutPage
+        fields = (
+            "philosophy_title",
+            "philosophy_subtitle",
+            "philosophy_intro_lines",
+            "philosophy_method_closing",
+            "philosophy_pillars",
+            "values",
+            "mission_title",
+            "mission_statement",
+            "vision_title",
+            "vision_statement",
+            "mission_image_external_url",
+            "vision_image_external_url",
+            "team_eyebrow",
+            "team_title",
+            "org_eyebrow",
+            "org_title",
+            "org_chart",
+            "cta_eyebrow",
+            "cta_title",
+            "cta_body",
+            "cta_primary_label",
+            "cta_primary_url",
+            "cta_secondary_label",
+            "cta_secondary_url",
+            "section_nav",
+            "content_en",
             "is_published",
         )
 
@@ -147,6 +190,7 @@ class TeamMemberSerializer(serializers.ModelSerializer):
             "photo_url",
             "photo_external_url",
             "socials",
+            "content_en",
             "is_published",
             "order",
             "updated_at",
@@ -156,6 +200,23 @@ class TeamMemberSerializer(serializers.ModelSerializer):
     def get_photo_url(self, obj: TeamMember) -> str:
         request = self.context.get("request")
         return resolve_image_url(request, obj.photo, obj.photo_external_url)
+
+    def to_representation(self, instance: TeamMember):
+        data = super().to_representation(instance)
+        request = self.context.get("request")
+        if request:
+            lang = str(request.query_params.get("lang", "es")).lower()
+            if lang == "en":
+                en_pack = instance.content_en if isinstance(instance.content_en, dict) else {}
+                if "role" in en_pack and isinstance(en_pack["role"], str) and en_pack["role"].strip():
+                    data["role"] = en_pack["role"]
+                if "department" in en_pack and isinstance(en_pack["department"], str) and en_pack["department"].strip():
+                    data["department"] = en_pack["department"]
+                if "bio" in en_pack and isinstance(en_pack["bio"], str) and en_pack["bio"].strip():
+                    data["bio"] = en_pack["bio"]
+                if "name" in en_pack and isinstance(en_pack["name"], str) and en_pack["name"].strip():
+                    data["name"] = en_pack["name"]
+        return data
 
 
 class TeamMemberWriteSerializer(serializers.ModelSerializer):
@@ -169,6 +230,7 @@ class TeamMemberWriteSerializer(serializers.ModelSerializer):
             "bio",
             "photo_external_url",
             "socials",
+            "content_en",
             "is_published",
             "order",
         )

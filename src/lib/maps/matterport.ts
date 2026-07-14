@@ -37,13 +37,19 @@ export function buildMatterportEmbedUrl(
     disableWheelZoom?: boolean;
     /** Móvil: forzar que el showcase se quede en el iframe (nt=0). */
     stayInFrame?: boolean;
+    /** Móvil: entrar directo al recorrido interactivo (qs=1), sin intro. */
+    quickStart?: boolean;
   },
 ): string {
   const params = new URLSearchParams({ m: modelId });
   if (options?.play !== false) params.set("play", "1");
   if (options?.disableWheelZoom !== false) params.set("wh", "0");
-  // Matterport: en móvil, nt=0 evita saltar a otra pestaña al reproducir.
+  // Matterport: nt=1 abre en pestaña nueva en móvil (comportamiento nativo);
+  // nt=0 fuerza que el showcase se quede dentro del iframe.
   if (options?.stayInFrame) params.set("nt", "0");
+  // qs=1: saltar la órbita de introducción y quedar interactivo de inmediato,
+  // clave en móvil para que el primer toque ya mueva el recorrido.
+  if (options?.quickStart) params.set("qs", "1");
   return `https://my.matterport.com/show/?${params.toString()}`;
 }
 

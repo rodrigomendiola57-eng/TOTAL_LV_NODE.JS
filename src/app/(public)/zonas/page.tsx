@@ -1,6 +1,8 @@
+import { cookies } from "next/headers";
 import { ZonesView } from "@/components/zones/ZonesView";
 import { getZonesPageContent, listZoneCatalog } from "@/lib/api/zones";
 import { getZoneCatalogFallback } from "@/lib/data/zones";
+import { LOCALE_COOKIE, normalizeLocale } from "@/lib/i18n/locales";
 import type { ZonesPageContent } from "@/types/zones-page";
 import type { Metadata } from "next";
 
@@ -28,13 +30,15 @@ export const metadata: Metadata = {
 };
 
 export default async function ZonasPage() {
+  const cookieStore = await cookies();
+  const locale = normalizeLocale(cookieStore.get(LOCALE_COOKIE)?.value);
   let zones = getZoneCatalogFallback();
   let page = FALLBACK_PAGE;
 
   try {
     const [fromApi, pageContent] = await Promise.all([
-      listZoneCatalog({ revalidate: 30 }),
-      getZonesPageContent({ revalidate: 30 }),
+      listZoneCatalog({ revalidate: 30, lang: locale === "en" ? "en" : "es" }),
+      getZonesPageContent({ revalidate: 30, lang: locale === "en" ? "en" : "es" }),
     ]);
     if (fromApi.length > 0) zones = fromApi;
     page = pageContent;

@@ -39,6 +39,7 @@ export interface AboutPageContent {
   cta_secondary_label: string;
   cta_secondary_url: string;
   section_nav: Array<{ id: string; label: string }>;
+  content_en?: Record<string, unknown>;
   is_published: boolean;
   updated_at?: string;
 }
@@ -60,6 +61,7 @@ export interface TeamMemberApiModel {
   photo_url: string;
   photo_external_url?: string;
   socials: TeamSocialLink[];
+  content_en?: Record<string, any>;
   is_published: boolean;
   order: number;
   updated_at?: string;
@@ -73,6 +75,7 @@ export type TeamMemberWritePayload = {
   bio?: string;
   photo_external_url?: string;
   socials?: TeamSocialLink[];
+  content_en?: Record<string, any>;
   is_published?: boolean;
   order?: number;
 };

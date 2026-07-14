@@ -11,6 +11,9 @@ interface InicioImageUploadProps {
   currentUrl?: string | null;
   onUpload: (file: File) => Promise<void>;
   hint?: string;
+  /** Clase de aspect ratio del preview (p. ej. aspect-[9/16]). */
+  aspectClass?: string;
+  buttonLabel?: string;
 }
 
 export function InicioImageUpload({
@@ -18,6 +21,8 @@ export function InicioImageUpload({
   currentUrl,
   onUpload,
   hint,
+  aspectClass = "aspect-[16/9]",
+  buttonLabel = "Subir imagen",
 }: InicioImageUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -59,12 +64,17 @@ export function InicioImageUpload({
           ) : (
             <ImagePlus className="h-3.5 w-3.5" />
           )}
-          Subir imagen
+          {buttonLabel}
         </button>
       </div>
 
       {currentUrl ? (
-        <div className="relative aspect-[16/9] overflow-hidden rounded-xl border border-tl-gold/10">
+        <div
+          className={cn(
+            "relative mx-auto w-full max-w-[14rem] overflow-hidden rounded-xl border border-tl-gold/10",
+            aspectClass,
+          )}
+        >
           <Image
             src={currentUrl}
             alt={label}
@@ -74,7 +84,12 @@ export function InicioImageUpload({
           />
         </div>
       ) : (
-        <div className="flex aspect-[16/9] items-center justify-center rounded-xl border border-dashed border-tl-gold/20 bg-tl-olive/10">
+        <div
+          className={cn(
+            "mx-auto flex w-full max-w-[14rem] items-center justify-center rounded-xl border border-dashed border-tl-gold/20 bg-tl-olive/10",
+            aspectClass,
+          )}
+        >
           <p className="font-outfit text-xs text-tl-beige/45">Sin imagen</p>
         </div>
       )}

@@ -1,9 +1,10 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
-import { ChevronDown } from "lucide-react";
+import { LanguageMenu } from "@/components/i18n/LanguageMenu";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
+import { useMemo } from "react";
 import { BrandLogoAnimated } from "@/components/layout/BrandLogoAnimated";
-import { MobileNavbarBar } from "@/components/layout/MobileNavbarBar";
+import { CompactNavbarBar } from "@/components/layout/MobileNavbarBar";
 import { StaggeredMenu } from "@/components/layout/StaggeredMenu";
 import {
   NAVBAR_FLOATING_CLASSES,
@@ -11,6 +12,8 @@ import {
   shouldUseOverlayNavbar,
 } from "@/lib/site-nav";
 import { SOCIAL_LINKS } from "@/lib/social-links";
+import { AnimatePresence, motion } from "framer-motion";
+import { ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -18,20 +21,18 @@ import { useEffect, useRef, useState } from "react";
 const SCROLL_TOP_THRESHOLD = 8;
 const SCROLL_DIRECTION_DELTA = 2;
 
-const mobileMenuItems = [
+const menuItems = [
   { label: "Inicio", ariaLabel: "Ir al inicio", link: "/#inicio" },
   { label: "Propiedades", ariaLabel: "Ver propiedades", link: "/#propiedades" },
   {
     label: "Asesoría inmobiliaria",
     ariaLabel: "Ver asesoría inmobiliaria",
-    link: "/#asesoria",
+    link: "/asesoria",
   },
   { label: "Zonas", ariaLabel: "Ver zonas", link: "/zonas" },
   { label: "Nosotros", ariaLabel: "Conócenos", link: "/nosotros" },
   { label: "Contacto", ariaLabel: "Contáctanos", link: "/contacto" },
 ];
-
-const mobileSocialItems = SOCIAL_LINKS;
 
 const propertyLinks = [
   { label: "Propiedades en Venta", href: "/propiedades/venta" },
@@ -48,7 +49,7 @@ function NavLink({ href, label }: NavLinkProps) {
   return (
     <Link
       href={href}
-      className="group relative py-2 font-outfit text-[1.05rem] font-extralight tracking-[0.02em] text-tl-beige/90 transition-colors hover:text-tl-gold lg:text-lg"
+      className="group relative py-2 font-outfit text-[0.95rem] font-extralight tracking-[0.02em] text-tl-beige/90 transition-colors hover:text-tl-gold xl:text-lg"
     >
       {label}
       <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-tl-gold transition-all duration-300 group-hover:w-full" />
@@ -70,11 +71,11 @@ function NavDropdown({ label, links, isOpen, onOpen, onClose }: NavDropdownProps
       <button
         type="button"
         aria-expanded={isOpen}
-        className="group relative inline-flex items-center gap-1 py-2 font-outfit text-[1.05rem] font-extralight tracking-[0.02em] text-tl-beige/90 transition-colors hover:text-tl-gold lg:text-lg"
+        className="group relative inline-flex items-center gap-1 py-2 font-outfit text-[0.95rem] font-extralight tracking-[0.02em] text-tl-beige/90 transition-colors hover:text-tl-gold xl:text-lg"
       >
         {label}
         <ChevronDown
-          className={`h-3.5 w-3.5 transition-transform duration-300 lg:h-4 lg:w-4 ${
+          className={`h-3.5 w-3.5 transition-transform duration-300 xl:h-4 xl:w-4 ${
             isOpen ? "rotate-180 text-tl-gold" : ""
           }`}
           strokeWidth={1.25}
@@ -100,7 +101,7 @@ function NavDropdown({ label, links, isOpen, onOpen, onClose }: NavDropdownProps
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="whitespace-nowrap font-outfit text-[1.05rem] font-extralight tracking-[0.06em] text-tl-beige/70 transition-colors hover:text-tl-gold lg:text-lg"
+                  className="whitespace-nowrap font-outfit text-[1.05rem] font-extralight tracking-[0.06em] text-tl-beige/70 transition-colors hover:text-tl-gold xl:text-lg"
                 >
                   {link.label}
                 </Link>
@@ -114,14 +115,39 @@ function NavDropdown({ label, links, isOpen, onOpen, onClose }: NavDropdownProps
 }
 
 export function Navbar() {
+  const { locale } = useLocale();
   const [propertyOpen, setPropertyOpen] = useState(false);
-  const [languageOpen, setLanguageOpen] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [solid, setSolid] = useState(false);
   const lastScrollY = useRef(0);
   const pathname = usePathname();
   const [routeHash, setRouteHash] = useState("");
   const logoAnimationKey = `${pathname}${routeHash}`;
+  const translatedMenuItems = useMemo(() => {
+    if (locale !== "en") return menuItems;
+    return [
+      { label: "Home", ariaLabel: "Go to home", link: "/#inicio" },
+      { label: "Properties", ariaLabel: "View properties", link: "/#propiedades" },
+      {
+        label: "Real Estate Advisory",
+        ariaLabel: "View real estate advisory",
+        link: "/asesoria",
+      },
+      { label: "Zones", ariaLabel: "View zones", link: "/zonas" },
+      { label: "About Us", ariaLabel: "About us", link: "/nosotros" },
+      { label: "Contact", ariaLabel: "Contact us", link: "/contacto" },
+    ];
+  }, [locale]);
+
+  const translatedPropertyLinks = useMemo(() => {
+    if (locale !== "en") return propertyLinks;
+    return [
+      { label: "Properties for Sale", href: "/propiedades/venta" },
+      { label: "Properties for Rent", href: "/propiedades/renta" },
+      { label: "Developments", href: "/propiedades/desarrollos" },
+    ];
+  }, [locale]);
+
   const isOverlayNav = shouldUseOverlayNavbar(pathname);
 
   useEffect(() => {
@@ -129,6 +155,11 @@ export function Navbar() {
     syncHash();
     window.addEventListener("hashchange", syncHash);
     return () => window.removeEventListener("hashchange", syncHash);
+  }, [pathname]);
+
+  useEffect(() => {
+    // Cierra el menú al cambiar de ruta.
+    setMenuOpen(false);
   }, [pathname]);
 
   useEffect(() => {
@@ -155,98 +186,56 @@ export function Navbar() {
 
   return (
     <>
-      <header className="fixed inset-x-0 top-0 z-[100] hidden md:block">
+      {/* Desktop (lg+ ≥1024): menú completo. Teléfonos e iPads en vertical quedan en compacto. */}
+      <header className="fixed inset-x-0 top-0 z-[100] hidden lg:block">
         <motion.nav
-        animate={{
-          backgroundColor: solid
-            ? "rgba(74, 78, 56, 0.94)"
-            : "rgba(74, 78, 56, 0)",
-          borderColor: solid
-            ? "rgba(214, 181, 133, 0.18)"
-            : "rgba(255, 255, 255, 0.07)",
-        }}
-        transition={{ duration: 0.22, ease: "easeOut" }}
-        className={`mx-auto flex items-center justify-between border ${
-          isOverlayNav ? NAVBAR_OVERLAY_CLASSES : NAVBAR_FLOATING_CLASSES
-        }`}
-      >
-        <Link
-          href="/#inicio"
-          className="flex shrink-0 items-center gap-2.5"
+          animate={{
+            backgroundColor: solid
+              ? "rgba(74, 78, 56, 0.94)"
+              : "rgba(74, 78, 56, 0)",
+            borderColor: solid
+              ? "rgba(214, 181, 133, 0.18)"
+              : "rgba(255, 255, 255, 0.07)",
+          }}
+          transition={{ duration: 0.22, ease: "easeOut" }}
+          className={`mx-auto flex items-center justify-between border ${
+            isOverlayNav ? NAVBAR_OVERLAY_CLASSES : NAVBAR_FLOATING_CLASSES
+          }`}
         >
-          <BrandLogoAnimated
-            animationKey={logoAnimationKey}
-            priority
-          />
-        </Link>
-
-        <div className="flex min-w-0 flex-1 items-center justify-center gap-7 px-6 lg:gap-10">
-          <NavLink href="/" label="Inicio" />
-          <NavDropdown
-            label="Propiedades"
-            links={propertyLinks}
-            isOpen={propertyOpen}
-            onOpen={() => setPropertyOpen(true)}
-            onClose={() => setPropertyOpen(false)}
-          />
-          <NavLink href="/#asesoria" label="Asesoría inmobiliaria" />
-          <NavLink href="/zonas" label="Zonas" />
-          <NavLink href="/nosotros" label="Nosotros" />
-        </div>
-
-        <div className="flex shrink-0 items-center gap-3">
-          <Link
-            href="/contacto"
-            className="rounded-full border border-tl-gold/70 px-5 py-2.5 font-outfit text-sm font-extralight uppercase tracking-[0.14em] text-tl-beige transition-all hover:bg-tl-gold/10 hover:shadow-[0_0_18px_rgba(214,181,133,0.28)] lg:px-6 lg:py-3 lg:text-base"
-          >
-            Contacto
+          <Link href="/#inicio" className="flex shrink-0 items-center gap-2.5">
+            <BrandLogoAnimated animationKey={logoAnimationKey} priority />
           </Link>
-          <div
-            className="relative"
-            onMouseEnter={() => setLanguageOpen(true)}
-            onMouseLeave={() => setLanguageOpen(false)}
-          >
-            <button
-              type="button"
-              className="group relative inline-flex items-center gap-1.5 py-2 font-outfit text-[1.05rem] font-extralight tracking-[0.02em] text-tl-beige/90 transition-colors hover:text-tl-gold lg:text-lg"
-            >
-              Idioma
-              <ChevronDown className="h-4 w-4 lg:h-[1.125rem] lg:w-[1.125rem]" />
-              <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-tl-gold transition-all duration-300 group-hover:w-full" />
-            </button>
-            <AnimatePresence>
-              {languageOpen ? (
-                <motion.div
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 8 }}
-                  transition={{ duration: 0.2 }}
-                  className="absolute right-0 top-11 min-w-32 rounded-xl border border-tl-gold/25 bg-tl-black/95 p-2 shadow-[0_18px_44px_rgba(0,0,0,0.45)] backdrop-blur-md"
-                >
-                  <button
-                    type="button"
-                    className="block w-full rounded-lg px-3 py-2.5 text-left font-outfit text-sm font-extralight tracking-[0.02em] text-tl-gold lg:text-[1.05rem]"
-                  >
-                    ES
-                  </button>
-                  <button
-                    type="button"
-                    className="block w-full rounded-lg px-3 py-2.5 text-left font-outfit text-sm font-extralight tracking-[0.02em] text-tl-beige/90 transition-colors hover:bg-tl-gold/10 hover:text-tl-gold lg:text-[1.05rem]"
-                  >
-                    EN
-                  </button>
-                </motion.div>
-              ) : null}
-            </AnimatePresence>
-          </div>
-        </div>
 
-      </motion.nav>
+          <div className="flex min-w-0 flex-1 items-center justify-center gap-5 px-3 xl:gap-10 xl:px-6">
+            <NavLink href="/" label={locale === "en" ? "Home" : "Inicio"} />
+            <NavDropdown
+              label={locale === "en" ? "Properties" : "Propiedades"}
+              links={translatedPropertyLinks}
+              isOpen={propertyOpen}
+              onOpen={() => setPropertyOpen(true)}
+              onClose={() => setPropertyOpen(false)}
+            />
+            <NavLink href="/asesoria" label={locale === "en" ? "Real Estate Advisory" : "Asesoría inmobiliaria"} />
+            <NavLink href="/zonas" label={locale === "en" ? "Zones" : "Zonas"} />
+            <NavLink href="/nosotros" label={locale === "en" ? "About Us" : "Nosotros"} />
+          </div>
+
+          <div className="flex shrink-0 items-center gap-3">
+            <Link
+              href="/contacto"
+              className="rounded-full border border-tl-gold/70 px-4 py-2.5 font-outfit text-sm font-extralight uppercase tracking-[0.14em] text-tl-beige transition-all hover:bg-tl-gold/10 hover:shadow-[0_0_18px_rgba(214,181,133,0.28)] xl:px-6 xl:py-3 xl:text-base"
+            >
+              {locale === "en" ? "Contact" : "Contacto"}
+            </Link>
+            <LanguageMenu align="right" />
+          </div>
+        </motion.nav>
       </header>
 
-      <MobileNavbarBar
-        open={mobileMenuOpen}
-        onToggle={() => setMobileMenuOpen(true)}
+      {/* Teléfono + iPad/tablet (< xl) */}
+      <CompactNavbarBar
+        open={menuOpen}
+        onOpenMenu={() => setMenuOpen(true)}
         logoAnimationKey={logoAnimationKey}
       />
 
@@ -254,21 +243,21 @@ export function Navbar() {
         position="right"
         logoUrl="/logo-symbol.svg"
         brandTitle="TOTAL LIVING"
-        items={mobileMenuItems}
-        socialItems={mobileSocialItems}
-        propertySubItems={propertyLinks.map((item) => ({
+        items={translatedMenuItems}
+        socialItems={SOCIAL_LINKS}
+        propertySubItems={translatedPropertyLinks.map((item) => ({
           label: item.label,
           link: item.href,
         }))}
         displaySocials
         displayItemNumbering={false}
         showHeader={false}
-        isOpen={mobileMenuOpen}
-        onOpenChange={setMobileMenuOpen}
+        isOpen={menuOpen}
+        onOpenChange={setMenuOpen}
         colors={["#4A4E38", "#D6B585"]}
         accentColor="#D6B585"
-        closeOnClickAway={false}
-        className="md:hidden"
+        closeOnClickAway
+        className="lg:hidden"
       />
     </>
   );

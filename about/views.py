@@ -19,6 +19,7 @@ from .serializers import (
 from .services import (
     ensure_about_page_seeded,
     ensure_team_seeded,
+    resolve_about_payload,
     resolve_image_url,
 )
 
@@ -36,6 +37,14 @@ class AboutPageViewSet(viewsets.ViewSet):
         page = self._get_page()
 
         if request.method == "GET":
+            lang = str(request.query_params.get("lang", "es")).lower()
+            if lang in ("all", "raw", "edit"):
+                return Response(
+                    AboutPageSerializer(page, context={"request": request}).data,
+                )
+            if lang == "en":
+                resolved = resolve_about_payload(page, "en")
+                return Response({**resolved, "content_en": {}})
             return Response(
                 AboutPageSerializer(page, context={"request": request}).data,
             )

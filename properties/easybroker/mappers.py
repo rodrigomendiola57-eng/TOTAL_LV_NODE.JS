@@ -91,8 +91,17 @@ def map_property_fields(detail: dict[str, Any]) -> dict[str, Any]:
     latitude = location.get("latitude")
     longitude = location.get("longitude")
     point = None
+    maps_link = ""
     if latitude is not None and longitude is not None:
-        point = Point(float(longitude), float(latitude), srid=4326)
+        lat = float(latitude)
+        lng = float(longitude)
+        point = Point(lng, lat, srid=4326)
+        # Nunca guardar public_url de EasyBroker aquí: ese campo es el listing,
+        # no un enlace de Google Maps.
+        maps_link = (
+            "https://www.google.com/maps/search/?api=1"
+            f"&query={lat},{lng}"
+        )
 
     bathrooms = detail.get("bathrooms") or 0
     half_bathrooms = detail.get("half_bathrooms") or 0
@@ -109,7 +118,7 @@ def map_property_fields(detail: dict[str, Any]) -> dict[str, Any]:
         "city": parsed_city or "Sin ciudad",
         "postal_code": _normalize(location.get("postal_code")) or "00000",
         "zone": map_zone(),
-        "maps_link": _normalize(detail.get("public_url")),
+        "maps_link": maps_link,
         "location": point,
         "bedrooms": int(detail.get("bedrooms") or 0),
         "full_bathrooms": int(bathrooms),

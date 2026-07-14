@@ -2,7 +2,9 @@ import type { Property } from "@/types/property";
 import { formatPropertyBathrooms, formatPropertyLocation } from "@/types/property";
 import { formatPrice } from "@/lib/format-price";
 import { resolveMediaUrl } from "@/lib/media-url";
+import { getSiteWhatsAppUrl } from "@/lib/whatsapp";
 import { MessageCircle } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 interface PropertyCardProps {
@@ -15,16 +17,19 @@ const FALLBACK_PROPERTY_IMAGE =
 export function PropertyCard({ property }: PropertyCardProps) {
   const imageUrl =
     resolveMediaUrl(property.cover_image_url) || FALLBACK_PROPERTY_IMAGE;
-  const whatsappText = encodeURIComponent(
+  const whatsappUrl = getSiteWhatsAppUrl(
     `Hola, me interesa la propiedad "${property.title}" en ${formatPropertyLocation(property)}.`,
   );
 
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-xl border border-tl-gold/25 bg-black/30 transition-all duration-300 hover:border-tl-gold/55 hover:shadow-[0_12px_40px_rgba(0,0,0,0.35)]">
       <div className="relative aspect-[5/4] overflow-hidden">
-        <div
-          className="h-full w-full scale-100 bg-cover bg-center transition-transform duration-[2000ms] ease-out group-hover:scale-105"
-          style={{ backgroundImage: `url('${imageUrl}')` }}
+        <Image
+          src={imageUrl}
+          alt={property.title}
+          fill
+          sizes="(min-width: 1280px) 400px, (min-width: 640px) 45vw, 92vw"
+          className="scale-100 object-cover object-center transition-transform duration-[2000ms] ease-out group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/15 to-black/10" />
 
@@ -63,9 +68,9 @@ export function PropertyCard({ property }: PropertyCardProps) {
             Ver detalles
           </Link>
           <a
-            href={`https://wa.me/?text=${whatsappText}`}
+            href={whatsappUrl}
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
             aria-label="Contactar por WhatsApp"
             className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-tl-gold/35 text-tl-gold transition-colors active:border-tl-gold active:bg-tl-gold/10 sm:h-8 sm:w-8 sm:hover:border-tl-gold sm:hover:bg-tl-gold/10"
           >

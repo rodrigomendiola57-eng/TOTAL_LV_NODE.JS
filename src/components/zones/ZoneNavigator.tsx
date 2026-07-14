@@ -1,27 +1,37 @@
 "use client";
 
 import { LineSidebar } from "@/components/ui/LineSidebar";
+import { useZoneScrollRoot } from "@/components/zones/zone-scroll-context";
 import type { ZoneCatalogEntry } from "@/types/zone";
 import { cn } from "@/lib/utils";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
+import { motion, useReducedMotion } from "framer-motion";
+import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
+
+const NAV_ENTER_EASE = [0.22, 1, 0.36, 1] as const;
 
 interface ZoneNavigatorProps {
   zones: ZoneCatalogEntry[];
 }
 
 function shortZoneName(name: string): string {
-  // Quita "Zona " y usa el tramo principal (antes de " / ").
   const base = name.replace(/^Zona\s+/i, "").trim();
   const primary = (base.split(" / ")[0] ?? base).trim();
   return primary || name;
 }
 
 export function ZoneNavigator({ zones }: ZoneNavigatorProps) {
+  const { locale } = useLocale();
+  const pathname = usePathname();
+  const scrollRootRef = useZoneScrollRoot();
+  const reducedMotion = useReducedMotion();
   const [activeSlug, setActiveSlug] = useState<string>("intro");
+  const [ready, setReady] = useState(false);
 
   const navItems = useMemo(
     () => [
-      { slug: "intro", label: "Inicio", targetId: "zonas-intro" },
+      { slug: "intro", label: locale === "en" ? "Home" : "Inicio", targetId: "zonas-intro" },
       ...zones.map((zone) => ({
         slug: zone.slug,
         label: shortZoneName(zone.name),
@@ -38,56 +48,97 @@ export function ZoneNavigator({ zones }: ZoneNavigatorProps) {
     return index >= 0 ? index : 0;
   }, [activeSlug, navItems]);
 
+  // Cada visita a /zonas reinicia el índice (animación + estado).
   useEffect(() => {
-    const scrollRoot = document.querySelector("main.snap-y");
-    const sections = [
-      document.getElementById("zonas-intro"),
-      ...zones.map((zone) => document.getElementById(`zona-${zone.slug}`)),
-    ].filter(Boolean) as HTMLElement[];
+    setActiveSlug("intro");
+    setReady(false);
+    const frame = window.requestAnimationFrame(() => setReady(true));
+    return () => window.cancelAnimationFrame(frame);
+  }, [pathname]);
 
-    if (sections.length === 0) return;
+  useEffect(() => {
+    if (!ready) return;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+    let cancelled = false;
+    let observer: IntersectionObserver | null = null;
+    let retryTimer: number | null = null;
+    let attempts = 0;
 
-        if (visible.length === 0) return;
+    const getScrollRoot = () =>
+      scrollRootRef?.current ??
+      document.querySelector<HTMLElement>("main.snap-y");
 
-        const id = visible[0].target.id;
-        if (id === "zonas-intro") {
-          setActiveSlug("intro");
-        } else {
-          setActiveSlug(id.replace("zona-", ""));
+    const collectSections = () =>
+      [
+        document.getElementById("zonas-intro"),
+        ...zones.map((zone) => document.getElementById(`zona-${zone.slug}`)),
+      ].filter(Boolean) as HTMLElement[];
+
+    const attach = () => {
+      if (cancelled) return;
+      const sections = collectSections();
+      if (sections.length === 0) {
+        attempts += 1;
+        if (attempts < 20) {
+          retryTimer = window.setTimeout(attach, 50);
         }
-      },
-      {
-        root: scrollRoot,
-        rootMargin: "-30% 0px -30% 0px",
-        threshold: [0.25, 0.5, 0.75],
-      },
-    );
+        return;
+      }
 
-    for (const section of sections) {
-      observer.observe(section);
-    }
+      const scrollRoot = getScrollRoot();
+      observer = new IntersectionObserver(
+        (entries) => {
+          const visible = entries
+            .filter((entry) => entry.isIntersecting)
+            .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
 
-    return () => observer.disconnect();
-  }, [zones]);
+          if (visible.length === 0) return;
 
-  const scrollTo = useCallback((targetId: string) => {
-    const element = document.getElementById(targetId);
-    const scrollRoot = document.querySelector("main.snap-y");
-    if (element && scrollRoot) {
-      scrollRoot.scrollTo({
-        top: element.offsetTop,
-        behavior: "smooth",
-      });
-    } else {
-      element?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  }, []);
+          const id = visible[0].target.id;
+          if (id === "zonas-intro") {
+            setActiveSlug("intro");
+          } else {
+            setActiveSlug(id.replace("zona-", ""));
+          }
+        },
+        {
+          root: scrollRoot,
+          rootMargin: "-30% 0px -30% 0px",
+          threshold: [0.25, 0.5, 0.75],
+        },
+      );
+
+      for (const section of sections) {
+        observer.observe(section);
+      }
+    };
+
+    attach();
+
+    return () => {
+      cancelled = true;
+      if (retryTimer != null) window.clearTimeout(retryTimer);
+      observer?.disconnect();
+    };
+  }, [ready, zones, scrollRootRef]);
+
+  const scrollTo = useCallback(
+    (targetId: string) => {
+      const element = document.getElementById(targetId);
+      const scrollRoot =
+        scrollRootRef?.current ??
+        document.querySelector<HTMLElement>("main.snap-y");
+      if (element && scrollRoot) {
+        scrollRoot.scrollTo({
+          top: element.offsetTop,
+          behavior: "smooth",
+        });
+      } else {
+        element?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    },
+    [scrollRootRef],
+  );
 
   const handleDesktopClick = useCallback(
     (index: number) => {
@@ -99,12 +150,23 @@ export function ZoneNavigator({ zones }: ZoneNavigatorProps) {
     [navItems, scrollTo],
   );
 
+  if (!ready) return null;
+
   return (
     <>
-      {/* Desktop: LineSidebar en card oscuro — solo lg+ */}
-      <div className="pointer-events-none fixed right-3 top-1/2 z-40 hidden max-h-[min(82dvh,40rem)] w-[min(17.5rem,22vw)] -translate-y-1/2 lg:block xl:right-5 xl:w-[min(19rem,24vw)]">
-        <div className="pointer-events-auto max-h-[min(82dvh,40rem)] overflow-y-auto overscroll-contain rounded-2xl border border-white/12 bg-black/55 px-3.5 py-4 shadow-[0_16px_48px_rgba(0,0,0,0.45)] backdrop-blur-md [scrollbar-width:thin] xl:px-4 xl:py-5">
+      {/* Fuera del main con overflow: fixed a pantalla completa y centrado por
+          flex (sin transform), para que el índice quede siempre a la derecha
+          y su animación de entrada no compita con el centrado vertical. */}
+      <div className="pointer-events-none fixed inset-y-0 right-3 z-40 hidden items-center lg:flex xl:right-5">
+        <motion.div
+          key={`zones-nav-desktop-${pathname}`}
+          initial={reducedMotion ? false : { opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.55, ease: NAV_ENTER_EASE }}
+          className="pointer-events-auto max-h-[min(82dvh,40rem)] w-[min(17.5rem,22vw)] overflow-y-auto overscroll-contain rounded-2xl border border-white/12 bg-black/55 px-3.5 py-4 shadow-[0_16px_48px_rgba(0,0,0,0.45)] backdrop-blur-md [scrollbar-width:thin] xl:w-[min(19rem,24vw)] xl:px-4 xl:py-5"
+        >
           <LineSidebar
+            key={`line-sidebar-${pathname}-${labels.length}`}
             items={labels}
             activeIndex={activeIndex}
             accentColor="#d6b585"
@@ -112,8 +174,8 @@ export function ZoneNavigator({ zones }: ZoneNavigatorProps) {
             markerColor="rgba(214, 181, 133, 0.4)"
             showIndex
             showMarker
-            proximityRadius={90}
-            maxShift={10}
+            proximityRadius={110}
+            maxShift={22}
             falloff="smooth"
             markerLength={36}
             markerGap={6}
@@ -126,11 +188,13 @@ export function ZoneNavigator({ zones }: ZoneNavigatorProps) {
             onItemClick={handleDesktopClick}
             className="tl-zones-line-sidebar w-full"
           />
-        </div>
+        </motion.div>
       </div>
 
-      {/* Móvil: chips horizontales (sin LineSidebar) */}
-      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 border-t border-tl-gold/15 bg-tl-black/92 lg:hidden">
+      <div
+        key={`zones-nav-mobile-${pathname}`}
+        className="pointer-events-none fixed inset-x-0 bottom-0 z-40 border-t border-tl-gold/15 bg-tl-black/92 lg:hidden"
+      >
         <div className="pointer-events-auto flex gap-1 overflow-x-auto px-3 py-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <button
             type="button"

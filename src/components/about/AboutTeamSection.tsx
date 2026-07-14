@@ -118,47 +118,6 @@ export function AboutTeamSection({
           </div>
         </motion.div>
         )}
-
-        {liteMotion ? (
-          <div className="mt-12 sm:mt-16">
-            <div className="mb-6 max-w-2xl sm:mb-8">
-              <p className="font-outfit text-[10px] font-light uppercase tracking-[0.24em] text-tl-gold">
-                {orgEyebrow}
-              </p>
-              <h3 className="mt-2 font-outfit text-2xl font-extralight text-tl-beige sm:text-4xl">
-                {orgTitle}
-              </h3>
-              <p className="mt-3 font-outfit text-sm font-light leading-relaxed text-tl-beige/70">
-                Vista general de la dirección y áreas clave. Los roles y nombres
-                se pueden actualizar conforme crezca el equipo.
-              </p>
-            </div>
-            <AboutOrgChart root={orgChart} />
-          </div>
-        ) : (
-        <motion.div
-          initial={{ opacity: 0, y: 28 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.25 }}
-          transition={{ duration: 0.8, ease: revealEase, delay: 0.05 }}
-          className="mt-12 sm:mt-16"
-        >
-          <div className="mb-6 max-w-2xl sm:mb-8">
-            <p className="font-outfit text-[10px] font-light uppercase tracking-[0.24em] text-tl-gold">
-              {orgEyebrow}
-            </p>
-            <h3 className="mt-2 font-outfit text-2xl font-extralight text-tl-beige sm:text-4xl">
-              {orgTitle}
-            </h3>
-            <p className="mt-3 font-outfit text-sm font-light leading-relaxed text-tl-beige/70">
-              Vista general de la dirección y áreas clave. Los roles y nombres
-              se pueden actualizar conforme crezca el equipo.
-            </p>
-          </div>
-
-          <AboutOrgChart root={orgChart} />
-        </motion.div>
-        )}
       </div>
     </section>
   );

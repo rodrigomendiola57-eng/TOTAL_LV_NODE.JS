@@ -55,13 +55,11 @@ function ContactChannelRow({
   href: string;
   isExternal: boolean;
 }) {
-  return (
-    <Link
-      href={href}
-      target={isExternal ? "_blank" : undefined}
-      rel={isExternal ? "noopener noreferrer" : undefined}
-      className="group grid min-h-[4.75rem] grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border border-white/8 bg-black/20 px-3.5 py-3.5 transition-all hover:border-tl-gold/30 hover:bg-black/30 active:scale-[0.995] sm:min-h-[5.25rem] sm:items-start sm:gap-4 sm:px-5 sm:py-4 md:py-5"
-    >
+  const className =
+    "group grid min-h-[4.75rem] grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border border-white/8 bg-black/20 px-3.5 py-3.5 transition-all hover:border-tl-gold/30 hover:bg-black/30 active:scale-[0.995] sm:min-h-[5.25rem] sm:items-start sm:gap-4 sm:px-5 sm:py-4 md:py-5";
+
+  const body = (
+    <>
       <div className="min-w-0 space-y-1 sm:space-y-1.5">
         <p className={cn(contactLabel, "text-sm tracking-[0.12em] sm:text-[0.9375rem]")}>
           {label}
@@ -85,6 +83,26 @@ function ContactChannelRow({
       </div>
 
       <ArrowUpRight className="h-4 w-4 shrink-0 text-tl-beige/20 transition-colors group-hover:text-tl-gold sm:mt-1 sm:h-5 sm:w-5" />
+    </>
+  );
+
+  // wa.me / mailto: van en <a> nativo; Next Link a veces no abre bien externos.
+  if (isExternal) {
+    return (
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={className}
+      >
+        {body}
+      </a>
+    );
+  }
+
+  return (
+    <Link href={href} className={className}>
+      {body}
     </Link>
   );
 }

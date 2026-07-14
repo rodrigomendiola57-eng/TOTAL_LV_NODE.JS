@@ -7,8 +7,9 @@ import { cn } from "@/lib/utils";
 import type { Development } from "@/types/development";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const FALLBACK_IMAGE =
   "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070&auto=format&fit=crop";
@@ -29,6 +30,8 @@ export function FeaturedDevelopmentsCarousel({
   const reducedMotion = useReducedMotion();
   const [activeIndex, setActiveIndex] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [inView, setInView] = useState(true);
+  const sectionRef = useRef<HTMLElement>(null);
   const count = developments.length;
 
   const goTo = useCallback(
@@ -43,10 +46,22 @@ export function FeaturedDevelopmentsCarousel({
   const goPrev = useCallback(() => goTo(activeIndex - 1), [activeIndex, goTo]);
 
   useEffect(() => {
-    if (count <= 1 || reducedMotion || paused) return;
+    if (count <= 1 || reducedMotion || paused || !inView) return;
     const timer = window.setInterval(goNext, AUTOPLAY_MS);
     return () => window.clearInterval(timer);
-  }, [count, goNext, paused, reducedMotion]);
+  }, [count, goNext, paused, reducedMotion, inView]);
+
+  // Pausa el autoplay fuera de viewport sin tocar la animación Ken Burns.
+  useEffect(() => {
+    const node = sectionRef.current;
+    if (!node) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      { threshold: 0.15 },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
 
   if (count === 0) return null;
 
@@ -58,6 +73,8 @@ export function FeaturedDevelopmentsCarousel({
 
   return (
     <section
+      ref={sectionRef}
+      data-tl-media-hero
       className={cn(
         "relative min-h-[min(72svh,38rem)] overflow-hidden sm:min-h-[min(88dvh,820px)]",
         HERO_CONTENT_OFFSET,
@@ -77,12 +94,20 @@ export function FeaturedDevelopmentsCarousel({
           className="absolute inset-0"
         >
           <motion.div
-            className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: `url('${imageUrl}')` }}
+            className="absolute inset-0"
             initial={{ scale: reducedMotion ? 1 : 1.05 }}
             animate={{ scale: 1 }}
             transition={{ duration: reducedMotion ? 0.2 : 8, ease: "linear" }}
-          />
+          >
+            <Image
+              src={imageUrl}
+              alt={development.name}
+              fill
+              priority={activeIndex === 0}
+              sizes="100vw"
+              className="object-cover object-center"
+            />
+          </motion.div>
           <div className="absolute inset-0 bg-gradient-to-b from-tl-black/50 via-tl-black/35 to-tl-black/75" />
         </motion.div>
       </AnimatePresence>

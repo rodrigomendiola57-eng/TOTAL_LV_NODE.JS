@@ -167,10 +167,17 @@ async function mutateProperty(
 
 export async function getFeaturedProperties(options?: {
   revalidate?: number;
+  /** Filtra el carrusel por operación (Venta / Renta). Sin esto mezcla todas. */
+  operation_type?: Property["operation_type"];
 }): Promise<Property[]> {
+  const { revalidate, operation_type } = options ?? {};
+  const query = buildPropertiesQuery({
+    is_featured: true,
+    ...(operation_type ? { operation_type } : {}),
+  });
   return fetchProperties(
-    `${getApiBaseUrl()}/properties/?is_featured=true`,
-    options,
+    `${getApiBaseUrl()}/properties/?${query}`,
+    revalidate != null ? { revalidate } : undefined,
   );
 }
 
