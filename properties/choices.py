@@ -60,6 +60,10 @@ class QueretaroZone(models.TextChoices):
         "Zona Juriquilla / Jurica",
     )
     ZIBATA_ZAKIA = "Zona Zibatá / Zakia", "Zona Zibatá / Zakia"
+    INDUSTRIAL_LOGISTICA = (
+        "Zona Industrial / Logística",
+        "Zona Industrial / Logística",
+    )
     OTRA = "Otra / Sin clasificar", "Otra / Sin clasificar"
 
 

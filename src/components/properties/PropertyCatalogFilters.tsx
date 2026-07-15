@@ -363,10 +363,10 @@ function ViewToggle({
 }) {
   const itemClass = (active: boolean) =>
     cn(
-      "inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-full px-4 font-outfit text-[11px] font-light uppercase tracking-[0.14em] transition-all duration-300 sm:flex-none sm:min-w-[6.5rem]",
+      "inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-full px-4 font-outfit text-xs font-light uppercase tracking-[0.14em] transition-all duration-300 sm:flex-none sm:min-w-[6.5rem]",
       active
         ? "bg-tl-gold text-tl-black shadow-[0_0_20px_rgba(214,181,133,0.25)]"
-        : "text-tl-beige/55 hover:text-tl-beige",
+        : "text-white/80 hover:text-white",
     );
 
   const content = (label: string, Icon: typeof List) => (
@@ -380,7 +380,7 @@ function ViewToggle({
     <div
       role="group"
       aria-label="Vista del catálogo"
-      className="inline-flex w-full rounded-full border border-white/12 bg-[#0c0c0b]/80 p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:w-auto"
+      className="inline-flex w-full rounded-full border border-white/10 bg-white/[0.02] p-1 sm:w-auto"
     >
       {onViewChange ? (
         <>
@@ -825,10 +825,10 @@ export function PropertyCatalogFilters({
       aria-expanded={panelOpen}
       aria-controls={panelId}
       className={cn(
-        "inline-flex min-h-10 items-center gap-2 rounded-full border px-4 font-outfit text-[11px] font-light uppercase tracking-[0.14em] transition-all duration-300",
+        "inline-flex min-h-10 items-center gap-2 rounded-full border px-5 font-outfit text-xs font-light uppercase tracking-[0.14em] transition-all duration-300",
         filtersOn || panelOpen
           ? "border-tl-gold/45 bg-tl-gold/10 text-tl-gold"
-          : "border-white/12 bg-white/[0.03] text-tl-beige/70 hover:border-white/25 hover:text-tl-beige",
+          : "border-white/10 bg-transparent text-white/95 hover:border-white/25 hover:text-white",
       )}
     >
       <SlidersHorizontal className="h-3.5 w-3.5" strokeWidth={1.5} />
@@ -843,7 +843,7 @@ export function PropertyCatalogFilters({
 
   return (
     <>
-      <div className="border-b border-white/[0.08] bg-[#161614]/95 backdrop-blur-xl">
+      <div className="border-b border-white/5 bg-transparent">
         <div className="mx-auto max-w-6xl px-3 py-3.5 sm:px-6 sm:py-5">
           <div className="hidden items-center gap-4 lg:flex">
             <ViewToggle
@@ -853,14 +853,14 @@ export function PropertyCatalogFilters({
               mapHref={mapHref}
             />
 
-            <p className="font-outfit text-sm font-extralight tracking-[0.02em] text-tl-beige/50">
-              <span className="text-tl-gold">{count}</span> {operationLabel}
+            <p className="font-outfit text-base font-light tracking-[0.04em] text-white">
+              <span className="font-medium text-white">{count}</span> {operationLabel}
             </p>
 
             <div className="ml-auto flex items-center gap-2.5">
               <div className="relative w-[min(18rem,28vw)]">
                 <Search
-                  className="pointer-events-none absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-tl-gold/60"
+                  className="pointer-events-none absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/60"
                   strokeWidth={1.5}
                 />
                 <input
@@ -868,7 +868,7 @@ export function PropertyCatalogFilters({
                   value={searchDraft}
                   onChange={(event) => setSearchDraft(event.target.value)}
                   placeholder="Buscar…"
-                  className="w-full min-h-10 rounded-full border border-white/10 bg-white/[0.03] py-2 pl-9 pr-4 font-outfit text-sm font-light text-tl-beige outline-none transition-colors placeholder:text-tl-beige/30 focus:border-tl-gold/40"
+                  className="w-full min-h-10 rounded-full border border-white/10 bg-white/[0.03] py-2 pl-9 pr-4 font-outfit text-sm font-light text-white outline-none transition-colors placeholder:text-white/40 focus:border-white/25"
                   aria-label="Buscar propiedades"
                 />
               </div>
@@ -884,13 +884,13 @@ export function PropertyCatalogFilters({
                 listHref={listHref}
                 mapHref={mapHref}
               />
-              <p className="px-0.5 font-outfit text-xs font-light text-tl-beige/55 sm:ml-auto sm:px-0">
-                <span className="text-tl-gold">{count}</span> {operationLabel}
+              <p className="px-0.5 font-outfit text-sm font-light text-white sm:ml-auto sm:px-0">
+                <span className="font-medium text-white">{count}</span> {operationLabel}
               </p>
             </div>
 
             <div className="relative">
-              <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-tl-gold/70" />
+              <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/60" />
               <input
                 type="search"
                 value={searchDraft}
@@ -900,7 +900,7 @@ export function PropertyCatalogFilters({
                     ? "Buscar en el mapa..."
                     : "Buscar por título, zona o dirección..."
                 }
-                className="w-full min-h-12 rounded-xl border border-white/10 bg-tl-black/60 py-3 pl-11 pr-4 font-outfit text-base font-light text-tl-beige outline-none transition-colors placeholder:text-tl-beige/35 focus:border-tl-gold/45 sm:min-h-11 sm:py-2.5 sm:text-sm"
+                className="w-full min-h-12 rounded-xl border border-white/10 bg-white/[0.03] py-3 pl-11 pr-4 font-outfit text-base font-light text-white outline-none transition-colors placeholder:text-white/40 focus:border-white/25 sm:min-h-11 sm:py-2.5 sm:text-sm"
                 aria-label="Buscar propiedades"
               />
             </div>
@@ -909,10 +909,10 @@ export function PropertyCatalogFilters({
               type="button"
               onClick={openPanel}
               className={cn(
-                "inline-flex w-full min-h-12 items-center justify-center gap-2 rounded-full border px-4 font-outfit text-[11px] font-light uppercase tracking-[0.14em] transition-colors sm:w-auto sm:min-h-11 sm:justify-start",
+                "inline-flex w-full min-h-12 items-center justify-center gap-2 rounded-full border px-5 font-outfit text-xs font-light uppercase tracking-[0.14em] transition-colors sm:w-auto sm:min-h-11 sm:justify-start",
                 filtersOn || panelOpen
                   ? "border-tl-gold/40 bg-tl-gold/10 text-tl-gold"
-                  : "border-white/10 text-tl-beige/70",
+                  : "border-white/10 text-white/95 hover:text-white",
               )}
             >
               <SlidersHorizontal className="h-4 w-4" />

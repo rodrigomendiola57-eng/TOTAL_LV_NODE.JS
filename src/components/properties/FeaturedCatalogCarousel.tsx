@@ -69,6 +69,26 @@ export function FeaturedCatalogCarousel({
   const imageUrl =
     resolveMediaUrl(property.cover_image_url) || FALLBACK_IMAGE;
 
+  const touchStartX = useRef<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null) return;
+    if (window.innerWidth >= 1024) return; // Solo móvil/tablet (menos de lg)
+    const touchEndX = e.changedTouches[0].clientX;
+    const diffX = touchStartX.current - touchEndX;
+    const threshold = 40; // 40px de swipe para activar
+    if (diffX > threshold) {
+      goNext();
+    } else if (diffX < -threshold) {
+      goPrev();
+    }
+    touchStartX.current = null;
+  };
+
   return (
     <section
       ref={sectionRef}
@@ -79,6 +99,8 @@ export function FeaturedCatalogCarousel({
       )}
       aria-roledescription="carousel"
       aria-label="Propiedades destacadas"
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
     >
       <AnimatePresence mode="wait">
         <motion.div
@@ -128,7 +150,7 @@ export function FeaturedCatalogCarousel({
         </>
       ) : null}
 
-      <div className="relative z-10 mx-auto flex h-full min-h-[inherit] max-w-6xl flex-col justify-end px-4 pb-5 sm:px-6 sm:pb-12 lg:max-w-none lg:px-10 lg:pb-14 xl:px-14 xl:pb-16">
+      <div className="featured-carousel-content-container relative z-10 mx-auto flex h-full min-h-[inherit] max-w-6xl flex-col justify-end px-4 pb-5 sm:px-6 sm:pb-12 lg:max-w-none lg:pr-10 lg:pb-14 xl:pr-14 xl:pb-16">
         <AnimatePresence mode="wait">
           <motion.div
             key={`content-${property.id}`}

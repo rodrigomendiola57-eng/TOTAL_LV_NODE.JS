@@ -11,6 +11,7 @@ import { ArrowUpRight, Building2, MapPin } from "lucide-react";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import Image from "next/image";
 
 interface ZoneFullscreenSectionProps {
   zone: ZoneCatalogEntry;
@@ -41,14 +42,20 @@ export function ZoneFullscreenSection({
       className="relative flex min-h-dvh snap-start snap-always items-end overflow-hidden"
     >
       {reducedMotion ? (
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url('${zone.image}')` }}
-        />
+        <div className="absolute inset-0">
+          {zone.image && (
+            <Image
+              src={zone.image}
+              alt={zone.name}
+              fill
+              sizes="100vw"
+              className="object-cover object-center"
+            />
+          )}
+        </div>
       ) : (
         <motion.div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url('${zone.image}')` }}
+          className="absolute inset-0"
           initial={{ scale: 1.06 }}
           whileInView={{ scale: 1 }}
           viewport={{
@@ -57,7 +64,17 @@ export function ZoneFullscreenSection({
             ...(viewportRoot ? { root: viewportRoot } : {}),
           }}
           transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-        />
+        >
+          {zone.image && (
+            <Image
+              src={zone.image}
+              alt={zone.name}
+              fill
+              sizes="100vw"
+              className="object-cover object-center"
+            />
+          )}
+        </motion.div>
       )}
       <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/35 to-black/70" />
 

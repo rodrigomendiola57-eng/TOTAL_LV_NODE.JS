@@ -25,6 +25,7 @@ import {
   useId,
   useState,
   useTransition,
+  useMemo,
   type ReactNode,
 } from "react";
 
@@ -59,6 +60,62 @@ export function DashboardShell({ children }: DashboardShellProps) {
   const panelId = useId();
 
   const closeMenu = useCallback(() => setMenuOpen(false), []);
+
+  const [user, setUser] = useState<{
+    is_superuser: boolean;
+    permissions: string[];
+  } | null>(null);
+  const [loadingUser, setLoadingUser] = useState(true);
+
+  useEffect(() => {
+    async function fetchMe() {
+      try {
+        const res = await fetch("/api/auth/me");
+        if (res.ok) {
+          const data = await res.json();
+          setUser(data.user);
+        }
+      } catch {
+        /* ignore */
+      } finally {
+        setLoadingUser(false);
+      }
+    }
+    fetchMe();
+  }, []);
+
+  const filteredNavItems = useMemo(() => {
+    if (loadingUser) return [];
+    if (!user) return [];
+    if (user.is_superuser) return NAV_ITEMS;
+    return NAV_ITEMS.filter((item) => {
+      const allowedPaths = [
+        "/dashboard",
+        "/dashboard/propiedades",
+        "/dashboard/desarrollos",
+        "/dashboard/crm",
+      ];
+      return allowedPaths.includes(item.href);
+    });
+  }, [user, loadingUser]);
+
+  useEffect(() => {
+    if (loadingUser || !user) return;
+    if (user.is_superuser) return;
+    const allowedPaths = [
+      "/dashboard",
+      "/dashboard/propiedades",
+      "/dashboard/desarrollos",
+      "/dashboard/crm",
+    ];
+    const isAllowed = allowedPaths.some(
+      (path) => pathname === path || pathname.startsWith(`${path}/`)
+    );
+    if (!isAllowed && pathname.startsWith("/dashboard")) {
+      router.replace("/dashboard");
+    }
+  }, [user, loadingUser, pathname, router]);
+
 
   async function handleLogout() {
     if (loggingOut) return;
@@ -217,7 +274,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
         </div>
 
         <nav className="flex-1 space-y-1 overflow-y-auto overscroll-contain px-3 py-4">
-          {NAV_ITEMS.map(({ href, label, icon: Icon, exact }) => {
+          {filteredNavItems.map(({ href, label, icon: Icon, exact }) => {
             const isActive = exact
               ? pathname === href
               : pathname === href || pathname.startsWith(`${href}/`);

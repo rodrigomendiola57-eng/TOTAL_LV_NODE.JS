@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { ChevronDown } from "lucide-react";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { useRef } from "react";
+import Image from "next/image";
 
 interface ZonesViewProps {
   zones: ZoneCatalogEntry[];
@@ -37,14 +38,20 @@ export function ZonesView({ zones, page }: ZonesViewProps) {
             id="zonas-intro"
             className="relative flex min-h-dvh snap-start snap-always flex-col justify-end overflow-hidden"
           >
-            <div
-              className="absolute inset-0 bg-cover bg-center"
-              style={
-                heroImage
-                  ? { backgroundImage: `url('${heroImage}')` }
-                  : { backgroundColor: "#1a1a18" }
-              }
-            />
+            {heroImage ? (
+              <div className="absolute inset-0">
+                <Image
+                  src={heroImage}
+                  alt={page.hero_title || "Zonas"}
+                  fill
+                  sizes="100vw"
+                  className="object-cover object-center"
+                  priority
+                />
+              </div>
+            ) : (
+              <div className="absolute inset-0 bg-[#1a1a18]" />
+            )}
             <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/30 to-black/65" />
 
             <div

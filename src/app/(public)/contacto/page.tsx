@@ -7,6 +7,8 @@ import {
 } from "@/lib/i18n/locales";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
+import { BreadcrumbJsonLd } from "@/components/seo/JsonLd";
+import { getSiteOrigin } from "@/lib/site-url";
 
 interface ContactoPageProps {
   searchParams: Promise<{ propiedad?: string }>;
@@ -23,6 +25,9 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: content.seo.title,
     description: content.seo.description,
+    alternates: {
+      canonical: "/contacto",
+    },
   };
 }
 
@@ -46,7 +51,16 @@ export default async function ContactoPage({ searchParams }: ContactoPageProps) 
     }
   }
 
+  const origin = getSiteOrigin();
+  const breadcrumbs = [
+    { name: "Inicio", url: origin },
+    { name: "Contacto", url: `${origin}/contacto` },
+  ];
+
   return (
-    <ContactView content={content} propertyContext={propertyContext} />
+    <>
+      <BreadcrumbJsonLd items={breadcrumbs} />
+      <ContactView content={content} propertyContext={propertyContext} />
+    </>
   );
 }

@@ -110,7 +110,7 @@ function HomeHeroVideo({
           muted
           loop
           playsInline
-          preload="metadata"
+          preload="auto"
           aria-hidden
           onLoadedData={() => void tryPlay()}
           onCanPlay={() => void tryPlay()}

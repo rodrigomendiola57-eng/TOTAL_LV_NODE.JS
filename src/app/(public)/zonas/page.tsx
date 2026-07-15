@@ -5,6 +5,8 @@ import { getZoneCatalogFallback } from "@/lib/data/zones";
 import { LOCALE_COOKIE, normalizeLocale } from "@/lib/i18n/locales";
 import type { ZonesPageContent } from "@/types/zones-page";
 import type { Metadata } from "next";
+import { BreadcrumbJsonLd } from "@/components/seo/JsonLd";
+import { getSiteOrigin } from "@/lib/site-url";
 
 export const revalidate = 30;
 
@@ -24,9 +26,12 @@ const FALLBACK_PAGE: ZonesPageContent = {
 };
 
 export const metadata: Metadata = {
-  title: "Zonas | Total Living",
+  title: "Zonas Inmobiliarias en Querétaro",
   description:
     "Explora las principales zonas de Querétaro: Campanario, Juriquilla, Zibatá, Centro y más. Encuentra propiedades en las ubicaciones más estratégicas.",
+  alternates: {
+    canonical: "/zonas",
+  },
 };
 
 export default async function ZonasPage() {
@@ -46,5 +51,16 @@ export default async function ZonasPage() {
     /* fallback estático */
   }
 
-  return <ZonesView zones={zones} page={page} />;
+  const origin = getSiteOrigin();
+  const breadcrumbs = [
+    { name: "Inicio", url: origin },
+    { name: "Zonas", url: `${origin}/zonas` },
+  ];
+
+  return (
+    <>
+      <BreadcrumbJsonLd items={breadcrumbs} />
+      <ZonesView zones={zones} page={page} />
+    </>
+  );
 }

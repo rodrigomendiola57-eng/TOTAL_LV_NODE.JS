@@ -6,6 +6,8 @@ import type { Metadata } from "next";
 
 import { cookies } from "next/headers";
 import { LOCALE_COOKIE, normalizeLocale } from "@/lib/i18n/locales";
+import { BreadcrumbJsonLd } from "@/components/seo/JsonLd";
+import { getSiteOrigin } from "@/lib/site-url";
 
 /** Revalida con el CMS de asesoría (y fallback visual de Inicio). */
 export const revalidate = 30;
@@ -31,11 +33,20 @@ export default async function AsesoriaPage() {
   const homeHero = resolveHeroBackgroundUrl(homeContent);
   const heroBackgroundUrl = heroImageUrl || homeHero;
 
+  const origin = getSiteOrigin();
+  const breadcrumbs = [
+    { name: "Inicio", url: origin },
+    { name: "Asesoría", url: `${origin}/asesoria` },
+  ];
+
   return (
-    <AsesoriaView
-      content={content}
-      servicesTitle={servicesTitle}
-      heroBackgroundUrl={heroBackgroundUrl}
-    />
+    <>
+      <BreadcrumbJsonLd items={breadcrumbs} />
+      <AsesoriaView
+        content={content}
+        servicesTitle={servicesTitle}
+        heroBackgroundUrl={heroBackgroundUrl}
+      />
+    </>
   );
 }

@@ -139,3 +139,17 @@ body {
   box-shadow: 0 0 0 1000px rgba(26, 26, 22, 0.55) inset;
   transition: background-color 99999s ease-in-out 0s;
 }
+
+/* Carrusel de propiedades destacadas: Desplazar textos a la derecha en escritorio */
+@media (min-width: 1024px) {
+  .featured-carousel-content-container {
+    max-width: none !important;
+    padding-left: 96px !important; /* Desplazamiento sutil a la derecha */
+  }
+}
+
+@media (min-width: 1280px) {
+  .featured-carousel-content-container {
+    padding-left: 128px !important; /* Mayor holgura equilibrada */
+  }
+}

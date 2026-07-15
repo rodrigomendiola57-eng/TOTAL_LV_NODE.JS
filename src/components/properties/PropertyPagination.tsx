@@ -17,10 +17,13 @@ interface PropertyPaginationProps {
 }
 
 const navButtonClassName =
-  "inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-white/10 bg-tl-black/60 px-3 font-outfit font-light text-xs uppercase tracking-[0.12em] text-tl-beige/85 transition-colors hover:border-tl-gold/40 hover:text-tl-gold disabled:pointer-events-none disabled:opacity-35";
+  "inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/5 bg-transparent text-tl-beige/65 transition-all duration-300 hover:border-tl-gold/45 hover:text-tl-gold disabled:pointer-events-none disabled:opacity-20";
+
+const mobileNavButtonClassName =
+  "inline-flex h-12 items-center justify-center rounded-full border border-white/10 bg-transparent px-5 font-outfit font-light text-sm uppercase tracking-[0.14em] text-tl-beige/85 transition-all duration-300 hover:border-tl-gold/40 hover:text-tl-gold disabled:pointer-events-none disabled:opacity-25";
 
 const pageButtonClassName =
-  "inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border font-outfit font-light text-sm transition-colors";
+  "inline-flex h-12 w-12 items-center justify-center rounded-full border font-outfit font-light text-base tracking-[0.02em] transition-all duration-300";
 
 export function PropertyPagination({
   basePath,
@@ -46,7 +49,7 @@ export function PropertyPagination({
       className="mt-12 border-t border-white/10 pt-8"
       aria-label="Paginación de propiedades"
     >
-      <p className="mb-5 text-center font-outfit font-light text-xs text-tl-beige/55">
+      <p className="mb-6 text-center font-outfit font-light text-sm tracking-[0.08em] text-tl-beige/70 uppercase">
         Mostrando {rangeStart}–{rangeEnd} de {totalCount} propiedades
       </p>
 
@@ -55,14 +58,14 @@ export function PropertyPagination({
           {page > 1 ? (
             <Link
               href={buildCatalogHref(basePath, previousState)}
-              className={navButtonClassName}
+              className={mobileNavButtonClassName}
               aria-label="Página anterior"
             >
               <ChevronLeft className="h-4 w-4" />
               Anterior
             </Link>
           ) : (
-            <span className={navButtonClassName} aria-disabled="true">
+            <span className={mobileNavButtonClassName} aria-disabled="true">
               <ChevronLeft className="h-4 w-4" />
               Anterior
             </span>
@@ -75,14 +78,14 @@ export function PropertyPagination({
           {page < totalPages ? (
             <Link
               href={buildCatalogHref(basePath, nextState)}
-              className={navButtonClassName}
+              className={mobileNavButtonClassName}
               aria-label="Página siguiente"
             >
               Siguiente
               <ChevronRight className="h-4 w-4" />
             </Link>
           ) : (
-            <span className={navButtonClassName} aria-disabled="true">
+            <span className={mobileNavButtonClassName} aria-disabled="true">
               Siguiente
               <ChevronRight className="h-4 w-4" />
             </span>
@@ -121,8 +124,8 @@ export function PropertyPagination({
                 aria-current={item === page ? "page" : undefined}
                 className={`${pageButtonClassName} ${
                   item === page
-                    ? "border-tl-gold bg-tl-gold text-tl-black"
-                    : "border-white/10 bg-tl-black/60 text-tl-beige/85 hover:border-tl-gold/40 hover:text-tl-gold"
+                    ? "border-tl-gold text-tl-gold bg-transparent shadow-[0_0_14px_rgba(214,181,133,0.15)] font-normal"
+                    : "border-transparent bg-transparent text-tl-beige/60 hover:text-tl-gold"
                 }`}
               >
                 {item}

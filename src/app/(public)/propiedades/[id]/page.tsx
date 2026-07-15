@@ -36,15 +36,21 @@ export async function generateMetadata({
   const price = formatPrice(property.price, property.currency);
   const operation = property.operation_type || "Propiedad";
   const pageUrl = absoluteSiteUrl(`/propiedades/${property.id}`);
-  const title = `${property.title} | Total Living`;
-  const description = [
-    `Mira esta propiedad en Total Living.`,
+  const title = `${property.title} — ${operation} en ${location}`;
+  const descriptionParts = [
+    `${property.title}.`,
     `${operation} en ${location}.`,
-    price,
+    price ? `Precio: ${price}.` : null,
     property.bedrooms > 0 ? `${property.bedrooms} recámaras.` : null,
-  ]
-    .filter(Boolean)
-    .join(" ");
+    property.full_bathrooms > 0
+      ? `${property.full_bathrooms} baños.`
+      : null,
+    property.build_area_m2 && parseFloat(property.build_area_m2) > 0
+      ? `${property.build_area_m2} m² de construcción.`
+      : null,
+    property.property_type ? `Tipo: ${property.property_type}.` : null,
+  ];
+  const description = descriptionParts.filter(Boolean).join(" ");
 
   return {
     metadataBase: new URL(getSiteOrigin()),
@@ -56,16 +62,18 @@ export async function generateMetadata({
       locale: "es_MX",
       siteName: "Total Living",
       url: pageUrl,
-      title: "Mira esta propiedad en Total Living",
-      description: `${property.title} · ${operation} · ${location} · ${price}`,
+      title: `${property.title} — ${price} | ${operation} en ${location}`,
+      description,
     },
     twitter: {
       card: "summary_large_image",
-      title: "Mira esta propiedad en Total Living",
-      description: `${property.title} · ${location} · ${price}`,
+      title: `${property.title} — ${price}`,
+      description: `${operation} en ${location}. ${price}`,
     },
   };
 }
+
+import { PropertyJsonLd, BreadcrumbJsonLd } from "@/components/seo/JsonLd";
 
 export default async function PropertyDetailPage({
   params,
@@ -80,11 +88,25 @@ export default async function PropertyDetailPage({
   const photos = await getPropertyPhotos(property.id).catch(() => []);
   const similarProperties = await getSimilarProperties(property.id);
 
+  const origin = getSiteOrigin();
+  const catalogLabel = property.operation_type === "Renta" ? "Propiedades en Renta" : "Propiedades en Venta";
+  const catalogPath = property.operation_type === "Renta" ? "/propiedades/renta" : "/propiedades/venta";
+
+  const breadcrumbs = [
+    { name: "Inicio", url: origin },
+    { name: catalogLabel, url: `${origin}${catalogPath}` },
+    { name: property.title, url: `${origin}/propiedades/${property.id}` },
+  ];
+
   return (
-    <PropertyDetailView
-      property={property}
-      photos={photos}
-      similarProperties={similarProperties}
-    />
+    <>
+      <PropertyJsonLd property={property} />
+      <BreadcrumbJsonLd items={breadcrumbs} />
+      <PropertyDetailView
+        property={property}
+        photos={photos}
+        similarProperties={similarProperties}
+      />
+    </>
   );
 }

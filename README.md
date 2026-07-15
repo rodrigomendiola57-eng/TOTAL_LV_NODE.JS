@@ -63,6 +63,7 @@ El panel nativo de Django (propiedades, amenidades, fotos, sync EasyBroker) est√
 
 **http://localhost:8000/admin/**
 
+
 Si es la primera vez, crea un usuario administrador:
 
 ```powershell

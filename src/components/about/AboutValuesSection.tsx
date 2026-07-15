@@ -26,31 +26,15 @@ const contentSpring = {
   mass: 0.95,
 } as const;
 
-const LOGO_FABRIC_STYLE: CSSProperties = {
-  backgroundImage: "url('/logo-symbol-pattern.svg')",
-  backgroundSize: "88px 71px",
-  backgroundRepeat: "repeat",
-};
-
 function ValueCardBackdrop({ isActive }: { isActive: boolean }) {
   return (
     <div aria-hidden className="pointer-events-none absolute inset-0">
       <div className="absolute inset-0 bg-[#161614]" />
-
       <div
         className={cn(
-          "absolute inset-[-36%] rotate-[14deg] mix-blend-screen transition-opacity duration-700 ease-out",
-          isActive ? "opacity-[0.28]" : "opacity-[0.22]",
+          "absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(214,181,133,0.08),transparent_60%)] transition-opacity duration-700 ease-out",
+          isActive ? "opacity-100" : "opacity-40",
         )}
-        style={LOGO_FABRIC_STYLE}
-      />
-      <div
-        className={cn(
-          "absolute inset-[-36%] rotate-[14deg] mix-blend-screen transition-opacity duration-700 ease-out",
-          "translate-x-[44px] translate-y-[36px]",
-          isActive ? "opacity-[0.18]" : "opacity-[0.14]",
-        )}
-        style={LOGO_FABRIC_STYLE}
       />
     </div>
   );
@@ -90,10 +74,10 @@ function ValueMobileCarouselCard({
       aria-roledescription="slide"
       aria-label={`${number}. ${value.title}`}
       className={cn(
-        "@container relative flex h-full min-h-[19.5rem] w-[min(84vw,20.5rem)] shrink-0 snap-center flex-col justify-end overflow-hidden rounded-[1.35rem] border bg-[#161614] p-6 transition-[transform,opacity,box-shadow,border-color] duration-500 ease-out",
+        "@container relative flex h-full min-h-[19.5rem] w-[min(84vw,20.5rem)] shrink-0 snap-center flex-col justify-end overflow-hidden rounded-[1.35rem] border bg-[#161614] p-6 transition-all duration-300 ease-out",
         isActive
-          ? "scale-100 border-tl-gold/45 shadow-[0_28px_64px_-28px_rgba(214,181,133,0.45)]"
-          : "scale-[0.94] border-white/10",
+          ? "scale-100 border-tl-gold/45 shadow-[0_20px_50px_-20px_rgba(214,181,133,0.35)] opacity-100"
+          : "scale-[0.97] border-white/10 opacity-70",
       )}
     >
       <ValueCardBackdrop isActive={isActive} />
@@ -192,7 +176,7 @@ function ValuesMobileCarousel({ values }: { values: CompanyValue[] }) {
 
       <div
         ref={scrollRef}
-        className="flex gap-4 overflow-x-auto overscroll-x-contain scroll-smooth px-[8vw] pb-1 pt-1 [-ms-overflow-style:none] [scrollbar-width:none] snap-x snap-proximity [&::-webkit-scrollbar]:hidden"
+        className="flex gap-4 overflow-x-auto overscroll-x-contain px-[8vw] pb-1 pt-1 [-ms-overflow-style:none] [scrollbar-width:none] snap-x snap-mandatory [&::-webkit-scrollbar]:hidden"
       >
         {values.map((value, index) => (
           <div key={value.id} data-value-slide className="snap-center">

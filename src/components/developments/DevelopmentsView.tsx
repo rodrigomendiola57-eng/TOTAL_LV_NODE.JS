@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import type { Development } from "@/types/development";
 import type { DevelopmentsPageContent } from "@/types/developments-page";
 import Link from "next/link";
+import { AboutSilkBackdrop } from "@/components/about/AboutSilkBackdrop";
 
 interface DevelopmentsViewProps {
   developments: Development[];
@@ -96,48 +97,52 @@ export function DevelopmentsView({
         </section>
       )}
 
-      <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 sm:py-16">
-        {developments.length === 0 ? (
-          <div className="rounded-2xl border border-tl-gold/25 bg-white/[0.03] px-6 py-16 text-center">
-            <p className="mx-auto max-w-2xl font-outfit text-sm font-light leading-relaxed text-tl-beige/75 sm:text-base">
-              {emptyMessage}
-            </p>
-            <Link
-              href={emptyCtaUrl}
-              className="mt-8 inline-flex min-h-12 items-center rounded-full border border-tl-gold px-6 py-3 font-outfit text-xs font-light uppercase tracking-[0.16em] text-tl-gold transition-colors active:bg-tl-gold active:text-tl-black sm:hover:bg-tl-gold sm:hover:text-tl-black"
-            >
-              {emptyCtaLabel}
-            </Link>
-          </div>
-        ) : (
-          <div>
-            <div className="mb-6 flex items-end justify-between gap-4 sm:mb-8">
-              <div>
-                <p className="font-outfit text-[10px] font-light uppercase tracking-[0.24em] text-tl-gold/90">
-                  Portafolio
-                </p>
-                <h2 className="mt-1.5 font-cormorant text-3xl font-light text-tl-beige sm:text-4xl">
-                  Explora todos los desarrollos
-                </h2>
-              </div>
-              <p className="hidden font-outfit text-xs font-light text-tl-beige/45 sm:block">
-                {portfolio.length}{" "}
-                {portfolio.length === 1 ? "proyecto" : "proyectos"}
-              </p>
-            </div>
+      <div className="relative">
+        <AboutSilkBackdrop />
 
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-6 lg:gap-8">
-              {portfolio.map((development, index) => (
-                <Reveal
-                  key={development.id}
-                  delay={Math.min(index, 5) * 0.04}
-                >
-                  <DevelopmentCard development={development} />
-                </Reveal>
-              ))}
+        <div className="relative z-10 mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 sm:py-16">
+          {developments.length === 0 ? (
+            <div className="rounded-2xl border border-tl-gold/25 bg-white/[0.03] px-6 py-16 text-center">
+              <p className="mx-auto max-w-2xl font-outfit text-sm font-light leading-relaxed text-tl-beige/75 sm:text-base">
+                {emptyMessage}
+              </p>
+              <Link
+                href={emptyCtaUrl}
+                className="mt-8 inline-flex min-h-12 items-center rounded-full border border-tl-gold px-6 py-3 font-outfit text-xs font-light uppercase tracking-[0.16em] text-tl-gold transition-colors active:bg-tl-gold active:text-tl-black sm:hover:bg-tl-gold sm:hover:text-tl-black"
+              >
+                {emptyCtaLabel}
+              </Link>
             </div>
-          </div>
-        )}
+          ) : (
+            <div>
+              <div className="mb-6 flex items-end justify-between gap-4 sm:mb-8">
+                <div>
+                  <p className="font-outfit text-[10px] font-light uppercase tracking-[0.24em] text-tl-gold/90">
+                    Portafolio
+                  </p>
+                  <h2 className="mt-1.5 font-cormorant text-3xl font-light text-tl-beige sm:text-4xl">
+                    Explora todos los desarrollos
+                  </h2>
+                </div>
+                <p className="hidden font-outfit text-xs font-light text-tl-beige/45 sm:block">
+                  {portfolio.length}{" "}
+                  {portfolio.length === 1 ? "proyecto" : "proyectos"}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-6 lg:gap-8">
+                {portfolio.map((development, index) => (
+                  <Reveal
+                    key={development.id}
+                    delay={Math.min(index, 5) * 0.04}
+                  >
+                    <DevelopmentCard development={development} />
+                  </Reveal>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </main>
   );

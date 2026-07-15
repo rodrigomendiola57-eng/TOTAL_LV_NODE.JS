@@ -24,6 +24,7 @@ export type QueretaroZone =
   | "Zona El Refugio / Norte de El Marqués"
   | "Zona Juriquilla / Jurica"
   | "Zona Zibatá / Zakia"
+  | "Zona Industrial / Logística"
   | "Otra / Sin clasificar";
 
 export type AmenityCategory =

@@ -5,6 +5,7 @@
 import type { PropertyCatalogConfig } from "@/components/properties/catalog-config";
 import { FeaturedCatalogCarousel } from "@/components/properties/FeaturedCatalogCarousel";
 import { PropertyCatalogFilters } from "@/components/properties/PropertyCatalogFilters";
+import { AboutSilkBackdrop } from "@/components/about/AboutSilkBackdrop";
 
 import { PropertyPagination } from "@/components/properties/PropertyPagination";
 
@@ -229,23 +230,24 @@ export function PropertyListingView({
         </section>
       )}
 
-      {hasFeaturedHero ? (
-        <section className="mx-auto w-full max-w-6xl px-4 py-8 text-center sm:px-6 sm:py-12 lg:py-14">
-          <p className="font-outfit text-[10px] font-light uppercase tracking-[0.28em] text-tl-gold/90 sm:text-xs sm:tracking-[0.32em]">
-            Total Living
-          </p>
-          <h1 className="mt-2 font-outfit text-3xl font-extralight tracking-[0.02em] text-tl-beige sm:mt-3 sm:text-5xl lg:text-6xl">
-            {config.title}
-          </h1>
-          <p className="mx-auto mt-3 max-w-2xl font-outfit text-sm font-light leading-relaxed tracking-[0.02em] text-tl-beige/75 sm:mt-4 sm:text-base">
-            {config.subtitle}
-          </p>
-        </section>
-      ) : null}
+      <div className="relative w-full">
+        <AboutSilkBackdrop />
+        <div className="relative z-10 w-full">
+          {hasFeaturedHero ? (
+            <section className="mx-auto w-full max-w-6xl px-4 py-8 text-center sm:px-6 sm:py-12 lg:py-14">
+              <p className="font-outfit text-[10px] font-light uppercase tracking-[0.28em] text-tl-gold/90 sm:text-xs sm:tracking-[0.32em]">
+                Total Living
+              </p>
+              <h1 className="mt-2 font-outfit text-3xl font-extralight tracking-[0.02em] text-tl-beige sm:mt-3 sm:text-5xl lg:text-6xl">
+                {config.title}
+              </h1>
+              <p className="mx-auto mt-3 max-w-2xl font-outfit text-sm font-light leading-relaxed tracking-[0.02em] text-tl-beige/75 sm:mt-4 sm:text-base">
+                {config.subtitle}
+              </p>
+            </section>
+          ) : null}
 
-
-
-      <PropertyCatalogFilters
+          <PropertyCatalogFilters
 
           catalogState={catalogState}
 
@@ -398,7 +400,8 @@ export function PropertyListingView({
         )}
 
       </section>
-
+        </div>
+      </div>
     </main>
 
   );

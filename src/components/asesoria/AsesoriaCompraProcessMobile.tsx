@@ -1,7 +1,6 @@
 "use client";
 
 import type { AsesoriaProcessStep } from "@/lib/data/asesoria";
-import { LogoFabricBackdrop } from "@/components/ui/LogoFabricBackdrop";
 import { cn } from "@/lib/utils";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -115,7 +114,6 @@ export function AsesoriaCompraProcessMobile({
             style={{ scrollSnapStop: "always" }}
           >
             <div className="relative overflow-hidden rounded-2xl border border-white/12 bg-[#161614] px-6 py-7 sm:px-8">
-              <LogoFabricBackdrop isActive={i === index} />
               <div className="relative z-[1]">
                 <p className="font-outfit text-3xl font-extralight tracking-[0.04em] text-white">
                   {String(i + 1).padStart(2, "0")}

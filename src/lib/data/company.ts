@@ -132,6 +132,19 @@ export const COMPANY_PROFILE: CompanyProfile = {
       ],
     },
     {
+      id: "andrea-torre",
+      name: "Andrea Torre",
+      role: "Jefa de Marketing",
+      department: "Marketing",
+      bio: "Lidera la estrategia de marketing digital, posicionamiento de marca y presentación premium de nuestro portafolio de propiedades.",
+      photo: "/media/about/team/andrea_torre.png",
+      socials: [
+        { platform: "linkedin", url: "https://www.linkedin.com" },
+        { platform: "instagram", url: "https://www.instagram.com" },
+        { platform: "email", url: "mailto:contacto@totalliving.mx" },
+      ],
+    },
+    {
       id: "director-comercial",
       name: "Equipo Comercial",
       role: "Dirección Comercial",

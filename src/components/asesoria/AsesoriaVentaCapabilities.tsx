@@ -1,6 +1,5 @@
 "use client";
 
-import { LogoFabricBackdrop } from "@/components/ui/LogoFabricBackdrop";
 import type { AsesoriaFeature } from "@/lib/data/asesoria";
 import { cn } from "@/lib/utils";
 import { motion, useReducedMotion } from "framer-motion";
@@ -94,7 +93,6 @@ export function AsesoriaVentaCapabilities({
                   : "lg:opacity-70 lg:hover:opacity-100",
               )}
             >
-              <LogoFabricBackdrop isActive={isActive || !loop} />
               <div className="relative z-[1]">
                 <span className="font-outfit text-3xl font-extralight tracking-[0.04em] text-white">
                   {String(index + 1).padStart(2, "0")}

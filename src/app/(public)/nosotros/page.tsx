@@ -7,13 +7,18 @@ import {
 } from "@/lib/about-public";
 import { LOCALE_COOKIE, normalizeLocale } from "@/lib/i18n/locales";
 import type { Metadata } from "next";
+import { BreadcrumbJsonLd } from "@/components/seo/JsonLd";
+import { getSiteOrigin } from "@/lib/site-url";
 
 export const revalidate = 30;
 
 export const metadata: Metadata = {
-  title: "Nosotros | Total Living",
+  title: "Nosotros — Equipo y Filosofía",
   description:
     "Conoce a Total Living: filosofía, valores, misión, visión, equipo y organigrama. Estrategia real detrás de cada propiedad en Querétaro.",
+  alternates: {
+    canonical: "/nosotros",
+  },
 };
 
 export default async function NosotrosPage() {
@@ -31,5 +36,16 @@ export default async function NosotrosPage() {
     /* fallback estático */
   }
 
-  return <AboutView content={content} />;
+  const origin = getSiteOrigin();
+  const breadcrumbs = [
+    { name: "Inicio", url: origin },
+    { name: "Nosotros", url: `${origin}/nosotros` },
+  ];
+
+  return (
+    <>
+      <BreadcrumbJsonLd items={breadcrumbs} />
+      <AboutView content={content} />
+    </>
+  );
 }

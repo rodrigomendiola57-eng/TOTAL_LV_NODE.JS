@@ -3,7 +3,6 @@
 import { AsesoriaCompraForm } from "@/components/asesoria/AsesoriaCompraForm";
 import { AsesoriaCompraProcessMobile } from "@/components/asesoria/AsesoriaCompraProcessMobile";
 import { AsesoriaQueIncluye } from "@/components/asesoria/AsesoriaQueIncluye";
-import { LogoFabricBackdrop } from "@/components/ui/LogoFabricBackdrop";
 import type { AsesoriaTab } from "@/lib/data/asesoria";
 import { cn } from "@/lib/utils";
 import { motion, useReducedMotion } from "framer-motion";
@@ -109,7 +108,6 @@ export function AsesoriaCompraPanel({ tab }: AsesoriaCompraPanelProps) {
                     "hover:border-tl-gold/35 hover:shadow-[0_0_28px_rgba(214,181,133,0.08)]",
                   )}
                 >
-                  <LogoFabricBackdrop />
                   <div className="relative z-[1]">
                     <motion.span
                       className="inline-block font-outfit text-3xl font-extralight tracking-[0.04em] text-white xl:text-4xl"

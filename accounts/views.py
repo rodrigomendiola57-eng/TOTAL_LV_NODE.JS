@@ -19,6 +19,7 @@ def _user_payload(user):
         "email": user.email,
         "is_staff": user.is_staff,
         "is_superuser": user.is_superuser,
+        "permissions": list(user.get_all_permissions()),
     }
 
 
