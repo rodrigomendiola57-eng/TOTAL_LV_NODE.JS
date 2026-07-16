@@ -34,7 +34,7 @@ if DEBUG:
 else:
     SECRET_KEY = env("SECRET_KEY")
 
-ALLOWED_HOSTS = list(env("ALLOWED_HOSTS"))
+ALLOWED_HOSTS = ["*"]
 
 
 def _host_looks_like_ngrok(host: str) -> bool:
