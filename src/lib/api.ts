@@ -637,15 +637,13 @@ export async function getPropertyById(id: string): Promise<Property | null> {
     if (response.status === 404) return null;
 
     if (!response.ok) {
-      if (process.env.GITHUB_PAGES === "true") return null;
-      throw new Error(`No se pudo obtener la propiedad ${id} (${response.status}).`);
+      return null;
     }
 
     const data = (await response.json()) as PropertyFeature;
     return mapFeatureToProperty(data);
   } catch {
-    if (process.env.GITHUB_PAGES === "true") return null;
-    throw new Error(`No se pudo obtener la propiedad ${id}.`);
+    return null;
   }
 }
 
