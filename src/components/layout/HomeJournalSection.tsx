@@ -404,7 +404,7 @@ function SocialFeedCarousel({
       <div
         ref={scrollerRef}
         className={cn(
-          "flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain touch-pan-x",
+          "flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain",
           "pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
           "px-[max(1rem,calc(50%-min(39vw,9rem)))] sm:gap-4 sm:px-[max(1.5rem,calc(50%-8.5rem))]",
           "lg:px-[max(2rem,calc(50%-8.5rem))] lg:[scroll-padding-inline:max(2rem,calc(50%-8.5rem))]",
