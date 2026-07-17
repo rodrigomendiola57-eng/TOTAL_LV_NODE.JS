@@ -31,7 +31,7 @@ export async function generateMetadata({
 }: ModelPageProps): Promise<Metadata> {
   const { slug, modelSlug } = await params;
   const development = await getPublicDevelopmentBySlug(slug);
-  const model = development?.models.find((item) => item.slug === modelSlug);
+  const model = development?.models?.find((item) => item.slug === modelSlug);
 
   if (!development || !model) {
     return { title: "Modelo no encontrado | Total Living" };
@@ -46,7 +46,7 @@ export async function generateMetadata({
 export default async function DevelopmentModelPage({ params }: ModelPageProps) {
   const { slug, modelSlug } = await params;
   const development = await getPublicDevelopmentBySlug(slug);
-  const model = development?.models.find((item) => item.slug === modelSlug);
+  const model = development?.models?.find((item) => item.slug === modelSlug);
 
   if (!development || !model) {
     notFound();
