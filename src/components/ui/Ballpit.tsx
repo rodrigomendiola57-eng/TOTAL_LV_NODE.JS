@@ -273,29 +273,29 @@ function S(e) {
   (function (e, t) {
     if (!b.has(e)) {
       b.set(e, t);
+      e.addEventListener("touchstart", TouchStart, { passive: true });
+      e.addEventListener("touchmove", TouchMove, { passive: true });
+      e.addEventListener("touchend", TouchEnd);
+      e.addEventListener("touchcancel", TouchEnd);
       if (!R) {
         document.body.addEventListener("pointermove", M);
         document.body.addEventListener("pointerleave", L);
         document.body.addEventListener("click", C);
-        document.body.addEventListener("touchstart", TouchStart, { passive: false });
-        document.body.addEventListener("touchmove", TouchMove, { passive: false });
-        document.body.addEventListener("touchend", TouchEnd, { passive: false });
-        document.body.addEventListener("touchcancel", TouchEnd, { passive: false });
         R = true;
       }
     }
   })(e.domElement, t);
   t.dispose = () => {
-    const t = e.domElement;
-    b.delete(t);
+    const canvasEl = e.domElement;
+    b.delete(canvasEl);
+    canvasEl.removeEventListener("touchstart", TouchStart);
+    canvasEl.removeEventListener("touchmove", TouchMove);
+    canvasEl.removeEventListener("touchend", TouchEnd);
+    canvasEl.removeEventListener("touchcancel", TouchEnd);
     if (b.size === 0) {
       document.body.removeEventListener("pointermove", M);
       document.body.removeEventListener("pointerleave", L);
       document.body.removeEventListener("click", C);
-      document.body.removeEventListener("touchstart", TouchStart);
-      document.body.removeEventListener("touchmove", TouchMove);
-      document.body.removeEventListener("touchend", TouchEnd);
-      document.body.removeEventListener("touchcancel", TouchEnd);
       R = false;
     }
   };
@@ -346,7 +346,6 @@ function L() {
 
 function TouchStart(e) {
   if (e.touches.length > 0) {
-    e.preventDefault();
     A.x = e.touches[0].clientX;
     A.y = e.touches[0].clientY;
     for (const [elem, t] of b) {
@@ -366,7 +365,6 @@ function TouchStart(e) {
 
 function TouchMove(e) {
   if (e.touches.length > 0) {
-    e.preventDefault();
     A.x = e.touches[0].clientX;
     A.y = e.touches[0].clientY;
     for (const [elem, t] of b) {
