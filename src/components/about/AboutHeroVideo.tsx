@@ -4,8 +4,8 @@ import { cn } from "@/lib/utils";
 import { Volume2, VolumeX } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-const DESKTOP_VIDEO_SRC = "/videos/hero-total-living.mp4";
-const MOBILE_VIDEO_SRC = "/videos/hero-total-living-mobile.mp4";
+const DESKTOP_VIDEO_SRC = "https://totalliving-media-react-667051771961-us-east-1-an.s3.amazonaws.com/media/home/hero/video/hero-total-living.mp4";
+const MOBILE_VIDEO_SRC = "https://totalliving-media-react-667051771961-us-east-1-an.s3.amazonaws.com/media/home/hero/video/hero-total-living-mobile.mp4";
 const MOBILE_VIDEO_MQ = "(max-width: 1023px)";
 
 function resolveHeroVideoSrc(): string {
