@@ -196,10 +196,10 @@ function LoginBackdrop() {
   const showBallpit = enabled && !failed;
 
   return (
-    <div aria-hidden className="absolute inset-0">
-      <div className="absolute inset-0 bg-[#0c0c0a]" />
+    <div aria-hidden className="pointer-events-none absolute inset-0">
+      <div className="pointer-events-none absolute inset-0 bg-[#0c0c0a]" />
       {showBallpit ? (
-        <div className="absolute inset-0 min-h-dvh w-full">
+        <div className="pointer-events-none absolute inset-0 min-h-dvh w-full">
           <Ballpit
             className="h-full min-h-dvh w-full"
             count={ballCount}
