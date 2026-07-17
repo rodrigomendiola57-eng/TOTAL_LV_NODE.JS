@@ -137,8 +137,8 @@ def ensure_home_content_seeded() -> HomePage:
         HomeCityHighlight.objects.create(
             home_page=home,
             **CITY_HIGHLIGHT_DEFAULTS,
-            external_desktop_url="/images/home/queretaro-desktop.jpg",
-            external_mobile_url="/images/home/queretaro-mobile.jpg",
+            external_desktop_url="/images/home/campanario-queretaro.png",
+            external_mobile_url="/images/home/queretaro-mobile.png",
         )
 
     if not home.expertise_services.exists():
