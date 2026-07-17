@@ -2,7 +2,7 @@ import { ZonesCatalogManager } from "@/components/dashboard/zonas/ZonesCatalogMa
 import { listZonesApi, type ZoneApiModel } from "@/lib/api/zones";
 import Link from "next/link";
 
-export const revalidate = 20;
+export const dynamic = "force-dynamic";
 
 export default async function DashboardZonasCatalogoPage() {
   let initialRows: ZoneApiModel[] = [];

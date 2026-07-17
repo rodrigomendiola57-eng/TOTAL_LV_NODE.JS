@@ -6,7 +6,7 @@ import { Building2, MessagesSquare, Star, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 
-export const revalidate = 20;
+export const dynamic = "force-dynamic";
 
 const CARD_CLASS =
   "group rounded-2xl border border-tl-gold/15 bg-[#0a0a0a] p-4 transition-colors active:border-tl-gold/40 sm:p-5 sm:hover:border-tl-gold/30";
