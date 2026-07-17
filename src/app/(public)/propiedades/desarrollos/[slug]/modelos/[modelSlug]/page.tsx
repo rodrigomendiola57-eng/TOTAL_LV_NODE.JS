@@ -1,8 +1,5 @@
 import { DevelopmentModelView } from "@/components/developments/detail/DevelopmentModelView";
-import {
-  getPublicDevelopmentBySlug,
-  getPublicDevelopments,
-} from "@/lib/api/developments";
+import { getPublicDevelopmentBySlug } from "@/lib/api/developments";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
@@ -10,21 +7,7 @@ interface ModelPageProps {
   params: Promise<{ slug: string; modelSlug: string }>;
 }
 
-export const revalidate = 30;
-
-export async function generateStaticParams() {
-  try {
-    const developments = await getPublicDevelopments();
-    return developments.flatMap((development) =>
-      development.models.map((model) => ({
-        slug: development.slug,
-        modelSlug: model.slug,
-      })),
-    );
-  } catch {
-    return [];
-  }
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
