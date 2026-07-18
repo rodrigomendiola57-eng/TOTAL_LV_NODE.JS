@@ -53,11 +53,15 @@ export function ZoneForm({ initial, onSaved, onCancel, editLocale, setEditLocale
   );
 
   // English states
-  const enPack = (initial?.content_en ?? {}) as Record<string, any>;
+  const enPack = (initial?.content_en ?? {}) as {
+    name?: string;
+    description?: string;
+    sub_zones?: string[];
+  };
   const [enName, setEnName] = useState<string>(enPack.name ?? "");
   const [enDescription, setEnDescription] = useState<string>(enPack.description ?? "");
   const [enSubZonesText, setEnSubZonesText] = useState<string>(
-    ((enPack.sub_zones as string[]) ?? []).join("\n"),
+    (enPack.sub_zones ?? []).join("\n"),
   );
 
   // Computed references depending on locale
@@ -194,7 +198,7 @@ export function ZoneForm({ initial, onSaved, onCancel, editLocale, setEditLocale
             list="zone-name-suggestions"
             value={name}
             onChange={(event) => setName(event.target.value)}
-            placeholder="Ej. Zona Juriquilla / Jurica"
+            placeholder={editLocale === "en" ? esName : "Ej. Zona Juriquilla / Jurica"}
             className={fieldClass}
             required={editLocale === "es"}
           />
@@ -258,6 +262,7 @@ export function ZoneForm({ initial, onSaved, onCancel, editLocale, setEditLocale
             rows={5}
             value={description}
             onChange={(event) => setDescription(event.target.value)}
+            placeholder={editLocale === "en" ? esDescription : "Descripción..."}
             className={cn(fieldClass, "resize-y leading-relaxed")}
             required={editLocale === "es"}
           />
@@ -272,7 +277,7 @@ export function ZoneForm({ initial, onSaved, onCancel, editLocale, setEditLocale
             rows={4}
             value={subZonesText}
             onChange={(event) => setSubZonesText(event.target.value)}
-            placeholder={"Una por línea\nEj. Juriquilla\nJurica"}
+            placeholder={editLocale === "en" ? esSubZonesText : "Una por línea\nEj. Juriquilla\nJurica"}
             className={cn(fieldClass, "resize-y")}
           />
         </div>

@@ -665,8 +665,36 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
             )}
           </ul>
 
+          {displaySocials && socialItems && socialItems.length > 0 && (
+            <div className="sm-socials mt-5" aria-label="Enlaces sociales">
+              <p className="sm-socials-title">Síguenos</p>
+              <ul className="sm-socials-list" role="list">
+                {socialItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <li key={item.label} className="sm-socials-item">
+                      <a
+                        href={item.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="sm-socials-icon"
+                        aria-label={item.label}
+                      >
+                        {Icon ? (
+                          <Icon className="sm-socials-icon-svg" aria-hidden />
+                        ) : (
+                          item.label
+                        )}
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
+
           {/* Selector de idioma móvil/tablet */}
-          <div className="lg:hidden mt-7 mb-4 flex flex-col items-center gap-2">
+          <div className="lg:hidden mt-4 mb-2 flex flex-col items-center gap-1.5">
             <span className="font-outfit text-[9px] font-light uppercase tracking-[0.24em] text-tl-beige/40">
               Idioma / Language
             </span>
@@ -698,34 +726,6 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
               </button>
             </div>
           </div>
-
-          {displaySocials && socialItems && socialItems.length > 0 && (
-            <div className="sm-socials" aria-label="Enlaces sociales">
-              <p className="sm-socials-title">Síguenos</p>
-              <ul className="sm-socials-list" role="list">
-                {socialItems.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <li key={item.label} className="sm-socials-item">
-                      <a
-                        href={item.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="sm-socials-icon"
-                        aria-label={item.label}
-                      >
-                        {Icon ? (
-                          <Icon className="sm-socials-icon-svg" aria-hidden />
-                        ) : (
-                          item.label
-                        )}
-                      </a>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          )}
         </div>
 
         {!showHeader ? (

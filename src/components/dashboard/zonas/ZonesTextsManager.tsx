@@ -50,10 +50,10 @@ export function ZonesTextsManager() {
     const enPack = (content.content_en ?? {}) as Partial<ZonesPageContent>;
     return {
       ...content,
-      hero_eyebrow: enPack.hero_eyebrow ?? content.hero_eyebrow,
-      hero_title: enPack.hero_title ?? content.hero_title,
-      hero_subtitle: enPack.hero_subtitle ?? content.hero_subtitle,
-      scroll_hint: enPack.scroll_hint ?? content.scroll_hint,
+      hero_eyebrow: enPack.hero_eyebrow ?? "",
+      hero_title: enPack.hero_title ?? "",
+      hero_subtitle: enPack.hero_subtitle ?? "",
+      scroll_hint: enPack.scroll_hint ?? "",
     };
   }, [content, editLocale]);
 
@@ -222,6 +222,7 @@ export function ZonesTextsManager() {
             <input
               className={fieldClass}
               value={previewContent.hero_eyebrow}
+              placeholder={editLocale === "en" ? content.hero_eyebrow : "Eyebrow"}
               onChange={(e) => patchContent("hero_eyebrow", e.target.value)}
             />
           </label>
@@ -230,6 +231,7 @@ export function ZonesTextsManager() {
             <input
               className={fieldClass}
               value={previewContent.hero_title}
+              placeholder={editLocale === "en" ? content.hero_title : "Título"}
               onChange={(e) => patchContent("hero_title", e.target.value)}
             />
           </label>
@@ -238,6 +240,7 @@ export function ZonesTextsManager() {
             <textarea
               className={`${fieldClass} min-h-28`}
               value={previewContent.hero_subtitle}
+              placeholder={editLocale === "en" ? content.hero_subtitle : "Párrafo de apoyo"}
               onChange={(e) => patchContent("hero_subtitle", e.target.value)}
             />
           </label>
@@ -246,6 +249,7 @@ export function ZonesTextsManager() {
             <input
               className={fieldClass}
               value={previewContent.scroll_hint}
+              placeholder={editLocale === "en" ? content.scroll_hint : "Desplázate"}
               onChange={(e) => patchContent("scroll_hint", e.target.value)}
             />
           </label>

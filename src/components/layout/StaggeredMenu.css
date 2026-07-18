@@ -491,3 +491,35 @@
 .staggered-menu-wrapper[data-open] .staggered-menu-header {
   z-index: 30;
 }
+
+@media (max-width: 1023px) {
+  .sm-panel-inner {
+    gap: 0.65rem !important;
+  }
+  .sm-panel-list {
+    gap: 0.5rem !important;
+  }
+  .sm-panel-item {
+    font-size: clamp(1.4rem, 6.5vw, 1.85rem) !important;
+    line-height: 1.1 !important;
+  }
+  .sm-submenu {
+    gap: 0.2rem !important;
+  }
+  .sm-submenu-link {
+    font-size: 0.8rem !important;
+    padding: 0.15rem 0 !important;
+  }
+  .sm-socials {
+    margin-top: 0.75rem !important;
+    gap: 0.5rem !important;
+  }
+  .sm-socials-icon {
+    width: 2.25rem !important;
+    height: 2.25rem !important;
+  }
+  .sm-socials-icon-svg {
+    width: 1rem !important;
+    height: 1rem !important;
+  }
+}

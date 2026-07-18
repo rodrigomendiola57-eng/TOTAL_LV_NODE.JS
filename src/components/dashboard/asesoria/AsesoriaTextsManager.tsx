@@ -73,10 +73,14 @@ function FeatureEditor({
   feature,
   onChange,
   onRemove,
+  esFeature,
+  editLocale,
 }: {
   feature: AsesoriaFeatureApi;
   onChange: (next: AsesoriaFeatureApi) => void;
   onRemove: () => void;
+  esFeature?: AsesoriaFeatureApi;
+  editLocale?: "es" | "en";
 }) {
   return (
     <div className={cardClass}>
@@ -116,6 +120,7 @@ function FeatureEditor({
           <input
             className={fieldClass}
             value={feature.title}
+            placeholder={editLocale === "en" ? (esFeature?.title || "") : "Título"}
             onChange={(e) => onChange({ ...feature, title: e.target.value })}
           />
         </Field>
@@ -123,6 +128,7 @@ function FeatureEditor({
           <textarea
             className={cn(fieldClass, "min-h-[4.5rem] resize-y")}
             value={feature.description}
+            placeholder={editLocale === "en" ? (esFeature?.description || "") : "Descripción"}
             onChange={(e) =>
               onChange({ ...feature, description: e.target.value })
             }
@@ -132,10 +138,10 @@ function FeatureEditor({
           <input
             className={fieldClass}
             value={feature.detail ?? ""}
+            placeholder={editLocale === "en" ? (esFeature?.detail || "") : "Ej. Brief · shortlist"}
             onChange={(e) =>
               onChange({ ...feature, detail: e.target.value || undefined })
             }
-            placeholder="Ej. Brief · shortlist"
           />
         </Field>
       </div>
@@ -147,10 +153,14 @@ function ProcessEditor({
   step,
   onChange,
   onRemove,
+  esStep,
+  editLocale,
 }: {
   step: AsesoriaProcessStepApi;
   onChange: (next: AsesoriaProcessStepApi) => void;
   onRemove: () => void;
+  esStep?: AsesoriaProcessStepApi;
+  editLocale?: "es" | "en";
 }) {
   return (
     <div className={cardClass}>
@@ -172,6 +182,7 @@ function ProcessEditor({
           <input
             className={fieldClass}
             value={step.title}
+            placeholder={editLocale === "en" ? (esStep?.title || "") : "Título"}
             onChange={(e) => {
               const title = e.target.value;
               onChange({
@@ -186,6 +197,7 @@ function ProcessEditor({
           <textarea
             className={cn(fieldClass, "min-h-[4rem] resize-y")}
             value={step.description}
+            placeholder={editLocale === "en" ? (esStep?.description || "") : "Descripción"}
             onChange={(e) =>
               onChange({ ...step, description: e.target.value })
             }
@@ -200,10 +212,14 @@ function TabSectionEditor({
   tab,
   onChange,
   showProcess,
+  esTab,
+  editLocale,
 }: {
   tab: AsesoriaTabApi;
   onChange: (next: AsesoriaTabApi) => void;
   showProcess: boolean;
+  esTab?: AsesoriaTabApi;
+  editLocale?: "es" | "en";
 }) {
   const process = tab.process ?? [];
 
@@ -214,6 +230,7 @@ function TabSectionEditor({
           <input
             className={fieldClass}
             value={tab.tabLabel}
+            placeholder={editLocale === "en" ? (esTab?.tabLabel || "") : ""}
             onChange={(e) => onChange({ ...tab, tabLabel: e.target.value })}
           />
         </Field>
@@ -221,6 +238,7 @@ function TabSectionEditor({
           <input
             className={fieldClass}
             value={tab.title}
+            placeholder={editLocale === "en" ? (esTab?.title || "") : ""}
             onChange={(e) => onChange({ ...tab, title: e.target.value })}
           />
         </Field>
@@ -228,6 +246,7 @@ function TabSectionEditor({
           <textarea
             className={cn(fieldClass, "min-h-[5rem] resize-y")}
             value={tab.description}
+            placeholder={editLocale === "en" ? (esTab?.description || "") : ""}
             onChange={(e) =>
               onChange({ ...tab, description: e.target.value })
             }
@@ -237,6 +256,7 @@ function TabSectionEditor({
           <textarea
             className={cn(fieldClass, "min-h-[3.5rem] resize-y")}
             value={tab.whatsappMessage}
+            placeholder={editLocale === "en" ? (esTab?.whatsappMessage || "") : ""}
             onChange={(e) =>
               onChange({ ...tab, whatsappMessage: e.target.value })
             }
@@ -276,6 +296,8 @@ function TabSectionEditor({
               <ProcessEditor
                 key={`${step.id}-${index}`}
                 step={step}
+                esStep={esTab?.process?.[index]}
+                editLocale={editLocale}
                 onChange={(next) => {
                   const nextProcess = [...process];
                   nextProcess[index] = next;
@@ -325,6 +347,8 @@ function TabSectionEditor({
             <FeatureEditor
               key={`${feature.title}-${index}`}
               feature={feature}
+              esFeature={esTab?.features?.[index]}
+              editLocale={editLocale}
               onChange={(next) => {
                 const nextFeatures = [...tab.features];
                 nextFeatures[index] = next;
@@ -377,18 +401,65 @@ export function AsesoriaTextsManager() {
     if (!content) return null;
     if (editLocale === "es") return content;
     const enPack = (content.content_en ?? {}) as Partial<AsesoriaPageApiContent>;
+
+    const tabs = (content.tabs ?? []).map((t, idx) => {
+      const enTabs = enPack.tabs ?? [];
+      const enT = enTabs[idx] || {};
+
+      const process = (t.process ?? []).map((step, sIdx) => {
+        const enProcess = enT.process ?? [];
+        const enStep = enProcess[sIdx] || {};
+        return {
+          ...step,
+          title: enStep.title ?? "",
+          description: enStep.description ?? "",
+        };
+      });
+
+      const features = (t.features ?? []).map((feat, fIdx) => {
+        const enFeatures = enT.features ?? [];
+        const enFeat = enFeatures[fIdx] || {};
+        return {
+          ...feat,
+          title: enFeat.title ?? "",
+          description: enFeat.description ?? "",
+          detail: enFeat.detail ?? "",
+        };
+      });
+
+      return {
+        ...t,
+        tabLabel: enT.tabLabel ?? "",
+        title: enT.title ?? "",
+        description: enT.description ?? "",
+        whatsappMessage: enT.whatsappMessage ?? "",
+        process,
+        features,
+      };
+    });
+
+    const pillars = (content.pillars ?? []).map((p, idx) => {
+      const enPillars = enPack.pillars ?? [];
+      const enP = enPillars[idx] || {};
+      return {
+        ...p,
+        title: enP.title ?? "",
+        description: enP.description ?? "",
+      };
+    });
+
     return {
       ...content,
-      hero_eyebrow: enPack.hero_eyebrow ?? content.hero_eyebrow,
-      hero_title: enPack.hero_title ?? content.hero_title,
-      hero_subtitle: enPack.hero_subtitle ?? content.hero_subtitle,
-      services_title: enPack.services_title ?? content.services_title,
-      tabs: enPack.tabs ?? content.tabs,
-      pillars: enPack.pillars ?? content.pillars,
-      cta_title: enPack.cta_title ?? content.cta_title,
-      cta_subtitle: enPack.cta_subtitle ?? content.cta_subtitle,
-      cta_label: enPack.cta_label ?? content.cta_label,
-      cta_whatsapp_message: enPack.cta_whatsapp_message ?? content.cta_whatsapp_message,
+      hero_eyebrow: enPack.hero_eyebrow ?? "",
+      hero_title: enPack.hero_title ?? "",
+      hero_subtitle: enPack.hero_subtitle ?? "",
+      services_title: enPack.services_title ?? "",
+      tabs,
+      pillars,
+      cta_title: enPack.cta_title ?? "",
+      cta_subtitle: enPack.cta_subtitle ?? "",
+      cta_label: enPack.cta_label ?? "",
+      cta_whatsapp_message: enPack.cta_whatsapp_message ?? "",
     };
   }, [content, editLocale]);
 
@@ -576,6 +647,7 @@ export function AsesoriaTextsManager() {
                 <input
                   className={fieldClass}
                   value={previewContent.hero_eyebrow}
+                  placeholder={editLocale === "en" ? content.hero_eyebrow : "Eyebrow"}
                   onChange={(e) => setField("hero_eyebrow", e.target.value)}
                 />
               </Field>
@@ -583,6 +655,7 @@ export function AsesoriaTextsManager() {
                 <input
                   className={fieldClass}
                   value={previewContent.hero_title}
+                  placeholder={editLocale === "en" ? content.hero_title : "Título hero"}
                   onChange={(e) => setField("hero_title", e.target.value)}
                 />
               </Field>
@@ -590,6 +663,7 @@ export function AsesoriaTextsManager() {
                 <textarea
                   className={cn(fieldClass, "min-h-[5rem] resize-y")}
                   value={previewContent.hero_subtitle}
+                  placeholder={editLocale === "en" ? content.hero_subtitle : "Subtítulo"}
                   onChange={(e) => setField("hero_subtitle", e.target.value)}
                 />
               </Field>
@@ -597,6 +671,7 @@ export function AsesoriaTextsManager() {
                 <input
                   className={fieldClass}
                   value={previewContent.services_title}
+                  placeholder={editLocale === "en" ? content.services_title : "Título sección servicios"}
                   onChange={(e) => setField("services_title", e.target.value)}
                 />
               </Field>
@@ -645,6 +720,8 @@ export function AsesoriaTextsManager() {
           <TabSectionEditor
             tab={activeTab}
             showProcess={section === "compra" || section === "venta"}
+            esTab={content.tabs.find((t) => t.id === activeTab.id)}
+            editLocale={editLocale}
             onChange={(next) => updateTab(activeTab.id, next)}
           />
         ) : null}
@@ -696,6 +773,7 @@ export function AsesoriaTextsManager() {
                       <input
                         className={fieldClass}
                         value={pillar.title}
+                        placeholder={editLocale === "en" ? (content.pillars[index]?.title || "") : "Título"}
                         onChange={(e) => {
                           const next = [...previewContent.pillars];
                           next[index] = {
@@ -711,6 +789,7 @@ export function AsesoriaTextsManager() {
                       <textarea
                         className={cn(fieldClass, "min-h-[4rem] resize-y")}
                         value={pillar.description}
+                        placeholder={editLocale === "en" ? (content.pillars[index]?.description || "") : "Descripción"}
                         onChange={(e) => {
                           const next = [...previewContent.pillars];
                           next[index] = {
@@ -734,6 +813,7 @@ export function AsesoriaTextsManager() {
               <input
                 className={fieldClass}
                 value={previewContent.cta_title}
+                placeholder={editLocale === "en" ? content.cta_title : "Título CTA"}
                 onChange={(e) => setField("cta_title", e.target.value)}
               />
             </Field>
@@ -741,6 +821,7 @@ export function AsesoriaTextsManager() {
               <textarea
                 className={cn(fieldClass, "min-h-[4.5rem] resize-y")}
                 value={previewContent.cta_subtitle}
+                placeholder={editLocale === "en" ? content.cta_subtitle : "Subtítulo"}
                 onChange={(e) => setField("cta_subtitle", e.target.value)}
               />
             </Field>
@@ -748,6 +829,7 @@ export function AsesoriaTextsManager() {
               <input
                 className={fieldClass}
                 value={previewContent.cta_label}
+                placeholder={editLocale === "en" ? content.cta_label : "Texto del botón"}
                 onChange={(e) => setField("cta_label", e.target.value)}
               />
             </Field>
@@ -755,6 +837,7 @@ export function AsesoriaTextsManager() {
               <textarea
                 className={cn(fieldClass, "min-h-[3.5rem] resize-y")}
                 value={previewContent.cta_whatsapp_message}
+                placeholder={editLocale === "en" ? content.cta_whatsapp_message : "Mensaje WhatsApp"}
                 onChange={(e) =>
                   setField("cta_whatsapp_message", e.target.value)
                 }
