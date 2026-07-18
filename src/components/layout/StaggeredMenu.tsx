@@ -11,6 +11,10 @@ import React, {
   useState,
 } from "react";
 import type { ComponentType, SVGProps } from "react";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
+import type { Locale } from "@/lib/i18n/locales";
+import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 import "./StaggeredMenu.css";
 
 export interface StaggeredMenuItem {
@@ -79,6 +83,14 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
   isOpen: isOpenProp,
   onOpenChange,
 }) => {
+  const { locale, setLocale } = useLocale();
+  const router = useRouter();
+
+  const selectLocale = useCallback((next: Locale) => {
+    setLocale(next);
+    router.refresh();
+  }, [setLocale, router]);
+
   const [open, setOpen] = useState(false);
   const [overlayLogoAnimKey, setOverlayLogoAnimKey] = useState(0);
   const [propertyExpanded, setPropertyExpanded] = useState(false);
@@ -652,6 +664,40 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
               </li>
             )}
           </ul>
+
+          {/* Selector de idioma móvil/tablet */}
+          <div className="lg:hidden mt-7 mb-4 flex flex-col items-center gap-2">
+            <span className="font-outfit text-[9px] font-light uppercase tracking-[0.24em] text-tl-beige/40">
+              Idioma / Language
+            </span>
+            <div className="flex items-center gap-4">
+              <button
+                type="button"
+                onClick={() => selectLocale("es")}
+                className={cn(
+                  "font-outfit text-xs font-light uppercase tracking-[0.16em] transition-colors py-1.5 px-3.5 rounded-md",
+                  locale === "es"
+                    ? "text-tl-gold font-medium bg-white/[0.03] border border-tl-gold/20"
+                    : "text-tl-beige/60 hover:text-tl-beige border border-transparent"
+                )}
+              >
+                ES
+              </button>
+              <span className="text-tl-beige/10 text-xs">|</span>
+              <button
+                type="button"
+                onClick={() => selectLocale("en")}
+                className={cn(
+                  "font-outfit text-xs font-light uppercase tracking-[0.16em] transition-colors py-1.5 px-3.5 rounded-md",
+                  locale === "en"
+                    ? "text-tl-gold font-medium bg-white/[0.03] border border-tl-gold/20"
+                    : "text-tl-beige/60 hover:text-tl-beige border border-transparent"
+                )}
+              >
+                EN
+              </button>
+            </div>
+          </div>
 
           {displaySocials && socialItems && socialItems.length > 0 && (
             <div className="sm-socials" aria-label="Enlaces sociales">

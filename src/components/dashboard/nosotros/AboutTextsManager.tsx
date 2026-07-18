@@ -49,27 +49,48 @@ export function AboutTextsManager() {
     if (!content) return null;
     if (editLocale === "es") return content;
     const enPack = (content.content_en ?? {}) as Partial<AboutPageContent>;
+
+    const philosophy_pillars = (content.philosophy_pillars ?? []).map((p, idx) => {
+      const enPillars = enPack.philosophy_pillars ?? [];
+      const enP = enPillars[idx] || {};
+      return {
+        ...p,
+        title: enP.title ?? "",
+        description: enP.description ?? "",
+      };
+    });
+
+    const values = (content.values ?? []).map((v, idx) => {
+      const enValues = enPack.values ?? [];
+      const enV = enValues[idx] || {};
+      return {
+        ...v,
+        title: enV.title ?? "",
+        description: enV.description ?? "",
+      };
+    });
+
     return {
       ...content,
-      philosophy_title: enPack.philosophy_title ?? content.philosophy_title,
-      philosophy_subtitle: enPack.philosophy_subtitle ?? content.philosophy_subtitle,
-      philosophy_intro_lines: enPack.philosophy_intro_lines ?? content.philosophy_intro_lines,
-      philosophy_method_closing: enPack.philosophy_method_closing ?? content.philosophy_method_closing,
-      philosophy_pillars: enPack.philosophy_pillars ?? content.philosophy_pillars,
-      values: enPack.values ?? content.values,
-      mission_title: enPack.mission_title ?? content.mission_title,
-      mission_statement: enPack.mission_statement ?? content.mission_statement,
-      vision_title: enPack.vision_title ?? content.vision_title,
-      vision_statement: enPack.vision_statement ?? content.vision_statement,
-      team_eyebrow: enPack.team_eyebrow ?? content.team_eyebrow,
-      team_title: enPack.team_title ?? content.team_title,
-      org_eyebrow: enPack.org_eyebrow ?? content.org_eyebrow,
-      org_title: enPack.org_title ?? content.org_title,
-      cta_eyebrow: enPack.cta_eyebrow ?? content.cta_eyebrow,
-      cta_title: enPack.cta_title ?? content.cta_title,
-      cta_body: enPack.cta_body ?? content.cta_body,
-      cta_primary_label: enPack.cta_primary_label ?? content.cta_primary_label,
-      cta_secondary_label: enPack.cta_secondary_label ?? content.cta_secondary_label,
+      philosophy_title: enPack.philosophy_title ?? "",
+      philosophy_subtitle: enPack.philosophy_subtitle ?? "",
+      philosophy_intro_lines: enPack.philosophy_intro_lines ?? [],
+      philosophy_method_closing: enPack.philosophy_method_closing ?? "",
+      philosophy_pillars,
+      values,
+      mission_title: enPack.mission_title ?? "",
+      mission_statement: enPack.mission_statement ?? "",
+      vision_title: enPack.vision_title ?? "",
+      vision_statement: enPack.vision_statement ?? "",
+      team_eyebrow: enPack.team_eyebrow ?? "",
+      team_title: enPack.team_title ?? "",
+      org_eyebrow: enPack.org_eyebrow ?? "",
+      org_title: enPack.org_title ?? "",
+      cta_eyebrow: enPack.cta_eyebrow ?? "",
+      cta_title: enPack.cta_title ?? "",
+      cta_body: enPack.cta_body ?? "",
+      cta_primary_label: enPack.cta_primary_label ?? "",
+      cta_secondary_label: enPack.cta_secondary_label ?? "",
     };
   }, [content, editLocale]);
 
@@ -82,8 +103,6 @@ export function AboutTextsManager() {
 
       const alwaysRootKeys: Array<keyof AboutPageContent> = [
         "is_published",
-        "philosophy_pillars",
-        "values",
         "section_nav",
         "org_chart",
         "cta_primary_url",
@@ -277,6 +296,7 @@ export function AboutTextsManager() {
             <input
               className={fieldClass}
               value={previewContent.philosophy_title}
+              placeholder={editLocale === "en" ? content.philosophy_title : "Título"}
               onChange={(e) => patchContent("philosophy_title", e.target.value)}
             />
           </label>
@@ -285,6 +305,7 @@ export function AboutTextsManager() {
             <input
               className={fieldClass}
               value={previewContent.philosophy_subtitle}
+              placeholder={editLocale === "en" ? content.philosophy_subtitle : "Subtítulo"}
               onChange={(e) => patchContent("philosophy_subtitle", e.target.value)}
             />
           </label>
@@ -293,6 +314,7 @@ export function AboutTextsManager() {
             <textarea
               className={`${fieldClass} min-h-24`}
               value={previewContent.philosophy_intro_lines.join("\n")}
+              placeholder={editLocale === "en" ? content.philosophy_intro_lines.join("\n") : "Intro"}
               onChange={(e) =>
                 patchContent(
                   "philosophy_intro_lines",
@@ -309,6 +331,7 @@ export function AboutTextsManager() {
             <input
               className={fieldClass}
               value={previewContent.philosophy_method_closing}
+              placeholder={editLocale === "en" ? content.philosophy_method_closing : "Cierre del método"}
               onChange={(e) =>
                 patchContent("philosophy_method_closing", e.target.value)
               }
@@ -336,22 +359,22 @@ export function AboutTextsManager() {
               <input
                 className={fieldClass}
                 value={pillar.title}
+                placeholder={editLocale === "en" ? (content.philosophy_pillars[index]?.title || "") : "Título"}
                 onChange={(e) => {
                   const next = [...previewContent.philosophy_pillars];
                   next[index] = { ...pillar, title: e.target.value };
                   patchContent("philosophy_pillars", next);
                 }}
-                placeholder="Título"
               />
               <input
                 className={fieldClass}
                 value={pillar.description}
+                placeholder={editLocale === "en" ? (content.philosophy_pillars[index]?.description || "") : "Descripción"}
                 onChange={(e) => {
                   const next = [...previewContent.philosophy_pillars];
                   next[index] = { ...pillar, description: e.target.value };
                   patchContent("philosophy_pillars", next);
                 }}
-                placeholder="Descripción"
               />
             </div>
           ))}
@@ -372,6 +395,7 @@ export function AboutTextsManager() {
               <input
                 className={fieldClass}
                 value={value.title}
+                placeholder={editLocale === "en" ? (content.values[index]?.title || "") : "Título"}
                 onChange={(e) => {
                   const next = [...previewContent.values];
                   next[index] = { ...value, title: e.target.value };
@@ -384,6 +408,7 @@ export function AboutTextsManager() {
               <textarea
                 className={`${fieldClass} min-h-20`}
                 value={value.description}
+                placeholder={editLocale === "en" ? (content.values[index]?.description || "") : "Descripción"}
                 onChange={(e) => {
                   const next = [...previewContent.values];
                   next[index] = { ...value, description: e.target.value };
@@ -406,6 +431,7 @@ export function AboutTextsManager() {
               <input
                 className={fieldClass}
                 value={previewContent.mission_title}
+                placeholder={editLocale === "en" ? content.mission_title : "Misión"}
                 onChange={(e) => patchContent("mission_title", e.target.value)}
               />
             </label>
@@ -414,6 +440,7 @@ export function AboutTextsManager() {
               <textarea
                 className={`${fieldClass} min-h-28`}
                 value={previewContent.mission_statement}
+                placeholder={editLocale === "en" ? content.mission_statement : "Texto misión"}
                 onChange={(e) => patchContent("mission_statement", e.target.value)}
               />
             </label>
@@ -431,6 +458,7 @@ export function AboutTextsManager() {
               <input
                 className={fieldClass}
                 value={previewContent.vision_title}
+                placeholder={editLocale === "en" ? content.vision_title : "Visión"}
                 onChange={(e) => patchContent("vision_title", e.target.value)}
               />
             </label>
@@ -439,6 +467,7 @@ export function AboutTextsManager() {
               <textarea
                 className={`${fieldClass} min-h-28`}
                 value={previewContent.vision_statement}
+                placeholder={editLocale === "en" ? content.vision_statement : "Texto visión"}
                 onChange={(e) => patchContent("vision_statement", e.target.value)}
               />
             </label>
@@ -463,6 +492,7 @@ export function AboutTextsManager() {
             <input
               className={fieldClass}
               value={previewContent.team_eyebrow}
+              placeholder={editLocale === "en" ? content.team_eyebrow : "Eyebrow"}
               onChange={(e) => patchContent("team_eyebrow", e.target.value)}
             />
           </label>
@@ -471,6 +501,7 @@ export function AboutTextsManager() {
             <input
               className={fieldClass}
               value={previewContent.team_title}
+              placeholder={editLocale === "en" ? content.team_title : "Título"}
               onChange={(e) => patchContent("team_title", e.target.value)}
             />
           </label>
@@ -479,6 +510,7 @@ export function AboutTextsManager() {
             <input
               className={fieldClass}
               value={previewContent.org_eyebrow}
+              placeholder={editLocale === "en" ? content.org_eyebrow : "Eyebrow"}
               onChange={(e) => patchContent("org_eyebrow", e.target.value)}
             />
           </label>
@@ -487,6 +519,7 @@ export function AboutTextsManager() {
             <input
               className={fieldClass}
               value={previewContent.org_title}
+              placeholder={editLocale === "en" ? content.org_title : "Título"}
               onChange={(e) => patchContent("org_title", e.target.value)}
             />
           </label>
@@ -503,6 +536,7 @@ export function AboutTextsManager() {
             <input
               className={fieldClass}
               value={previewContent.cta_eyebrow}
+              placeholder={editLocale === "en" ? content.cta_eyebrow : "Eyebrow"}
               onChange={(e) => patchContent("cta_eyebrow", e.target.value)}
             />
           </label>
@@ -511,6 +545,7 @@ export function AboutTextsManager() {
             <input
               className={fieldClass}
               value={previewContent.cta_title}
+              placeholder={editLocale === "en" ? content.cta_title : "Título"}
               onChange={(e) => patchContent("cta_title", e.target.value)}
             />
           </label>
@@ -519,6 +554,7 @@ export function AboutTextsManager() {
             <textarea
               className={`${fieldClass} min-h-24`}
               value={previewContent.cta_body}
+              placeholder={editLocale === "en" ? content.cta_body : "Texto"}
               onChange={(e) => patchContent("cta_body", e.target.value)}
             />
           </label>
@@ -527,6 +563,7 @@ export function AboutTextsManager() {
             <input
               className={fieldClass}
               value={previewContent.cta_primary_label}
+              placeholder={editLocale === "en" ? content.cta_primary_label : "Botón primario"}
               onChange={(e) => patchContent("cta_primary_label", e.target.value)}
             />
           </label>
@@ -543,6 +580,7 @@ export function AboutTextsManager() {
             <input
               className={fieldClass}
               value={previewContent.cta_secondary_label}
+              placeholder={editLocale === "en" ? content.cta_secondary_label : "Botón secundario"}
               onChange={(e) => patchContent("cta_secondary_label", e.target.value)}
             />
           </label>
