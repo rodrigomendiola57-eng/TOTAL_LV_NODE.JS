@@ -509,12 +509,12 @@ export function PropertyForm({ property, onClose, onSuccess }: PropertyFormProps
 
                 <FormField
                   label="Descripción"
-                  hint={`${description.length}/600 caracteres — destaca amenidades y plusvalía.`}
+                  hint={`${description.length}/2500 caracteres — destaca amenidades y plusvalía.`}
                   className="sm:col-span-2 xl:col-span-3"
                 >
                   <textarea
                     rows={5}
-                    maxLength={600}
+                    maxLength={2500}
                     {...register("description")}
                     placeholder="Describe acabados, amenidades del desarrollo, seguridad, cercanía a zonas clave..."
                     className={cn(formInputClass, "resize-y leading-relaxed")}
