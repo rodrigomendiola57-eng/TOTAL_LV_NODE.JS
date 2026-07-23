@@ -100,10 +100,11 @@ const DEFAULT_VALUES: PropertyFormValues = {
   maintenance_fee: "",
   amenities: [],
   is_featured: false,
+  easybroker_id: "",
 };
 
 const STEP_FIELDS: Record<FormStepId, (keyof PropertyFormValues)[]> = {
-  basic: ["title", "price", "property_type", "operation_type"],
+  basic: ["title", "price", "property_type", "operation_type", "easybroker_id"],
   amenities: [],
   location: ["address", "state", "city", "postal_code", "zone", "latitude", "longitude"],
   features: [],
@@ -132,6 +133,7 @@ export function PropertyForm({ property, onClose, onSuccess }: PropertyFormProps
   const router = useRouter();
   const publishLockedUntilRef = useRef(0);
   const isEditing = Boolean(property);
+  const isManualProperty = !property || !property.easybroker_synced_at;
   const initialValues = property ? propertyToFormValues(property) : DEFAULT_VALUES;
   const [currentStep, setCurrentStep] = useState<FormStepId>("basic");
   const [completedSteps, setCompletedSteps] = useState<FormStepId[]>([]);
@@ -458,44 +460,51 @@ export function PropertyForm({ property, onClose, onSuccess }: PropertyFormProps
                   />
                 </FormField>
 
-                <PropertyTypeSelector
-                  value={propertyType}
-                  onChange={(value) => setValue("property_type", value)}
-                />
-
-                <OperationTypeSelector
-                  value={operationType}
-                  onChange={(value) => setValue("operation_type", value)}
-                />
-
-                <FormField
-                  label="Precio (MXN) *"
-                  hint="Valor de venta o renta mensual según el tipo de operación."
-                  error={errors.price?.message}
-                >
-                  <div className="relative">
-                    <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 font-outfit font-light text-sm text-tl-gold/70">
-                      $
-                    </span>
-                    <input
-                      type="number"
-                      min="0"
-                      step="1000"
-                      {...register("price", {
-                        required: "El precio es obligatorio",
-                        min: { value: 1, message: "Ingresa un precio válido" },
-                      })}
-                      placeholder="8500000"
-                      className={cn(formInputClass, "pl-8")}
-                    />
+                {isManualProperty ? (
+                  <FormField
+                    label="ID EasyBroker (Manual / Opcional)"
+                    hint="Ingresa la clave o ID asignado en EasyBroker si la propiedad fue capturada manualmente."
+                    className="sm:col-span-2 xl:col-span-3"
+                    error={errors.easybroker_id?.message}
+                  >
+                    <div className="relative">
+                      <input
+                        {...register("easybroker_id")}
+                        placeholder="Ej. EB-C1234 o EB-98765"
+                        className={cn(
+                          formInputClass,
+                          "font-mono uppercase tracking-wide placeholder:font-sans placeholder:normal-case placeholder:tracking-normal"
+                        )}
+                      />
+                      {watch("easybroker_id") ? (
+                        <span className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 rounded-md border border-tl-gold/25 bg-tl-gold/10 px-2.5 py-1 font-outfit text-[11px] font-medium text-tl-gold backdrop-blur-sm">
+                          ID Manual Capturado
+                        </span>
+                      ) : null}
+                    </div>
+                  </FormField>
+                ) : (
+                  <div className="sm:col-span-2 xl:col-span-3 rounded-2xl border border-tl-gold/20 bg-gradient-to-r from-[#121212] via-[#0d0d0d] to-[#121212] p-4 shadow-lg backdrop-blur-md">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-tl-gold/10 text-tl-gold border border-tl-gold/25">
+                          <Sparkles className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <p className="font-outfit font-light text-[11px] uppercase tracking-[0.18em] text-tl-gold">
+                            Propiedad Sincronizada vía EasyBroker API
+                          </p>
+                          <p className="mt-0.5 font-mono text-sm font-semibold text-tl-beige">
+                            ID: <span className="text-tl-gold">{property?.easybroker_id || "Sin ID asignado"}</span>
+                          </p>
+                        </div>
+                      </div>
+                      <span className="rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1 font-outfit text-xs font-light text-emerald-400">
+                        Sincronizado
+                      </span>
+                    </div>
                   </div>
-                  <p className="mt-2 font-outfit font-light text-xs text-tl-gold/80">
-                    Vista previa:{" "}
-                    <span className="font-medium text-tl-gold">
-                      {formatPricePreview(price)}
-                    </span>
-                  </p>
-                </FormField>
+                )}
 
                 <div className="rounded-xl border border-tl-gold/15 bg-[#0a0a0a]/60 px-4 py-3 sm:col-span-2">
                   <p className="font-outfit font-light text-[10px] uppercase tracking-[0.14em] text-tl-beige/45">

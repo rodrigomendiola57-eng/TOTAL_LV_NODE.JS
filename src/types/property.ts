@@ -110,6 +110,7 @@ export interface PropertyFormValues {
   maintenance_fee: string;
   amenities: number[];
   is_featured: boolean;
+  easybroker_id: string;
 }
 
 export interface PropertyCreatePayload {
@@ -141,6 +142,7 @@ export interface PropertyCreatePayload {
   maintenance_fee: number | null;
   amenities: number[];
   is_featured: boolean;
+  easybroker_id?: string | null;
 }
 
 export interface GeoJsonPoint {

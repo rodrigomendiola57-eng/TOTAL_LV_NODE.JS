@@ -30,6 +30,7 @@ export function propertyToFormValues(property: Property): PropertyFormValues {
     maintenance_fee: property.maintenance_fee ?? "",
     amenities: property.amenities ?? [],
     is_featured: property.is_featured,
+    easybroker_id: property.easybroker_id ?? "",
   };
 }
 
@@ -63,5 +64,6 @@ export function formValuesToPayload(values: PropertyFormValues): PropertyCreateP
     maintenance_fee: values.maintenance_fee ? Number(values.maintenance_fee) : null,
     amenities: values.amenities ?? [],
     is_featured: values.is_featured,
+    easybroker_id: values.easybroker_id.trim() || null,
   };
 }

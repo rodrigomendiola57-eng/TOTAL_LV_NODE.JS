@@ -94,9 +94,19 @@ class PropertySerializer(GeoFeatureModelSerializer):
             "updated_at",
             "cover_image_url",
             "technical_sheet_url",
-            "easybroker_id",
             "easybroker_synced_at",
         )
+
+    def validate_easybroker_id(self, value: str | None) -> str | None:
+        if self.instance and getattr(self.instance, "easybroker_synced_at", None):
+            # Propiedad sincronizada desde EasyBroker: mantener su ID original intacto
+            return self.instance.easybroker_id
+
+        if value is not None:
+            value = value.strip()
+            if not value:
+                return None
+        return value
 
     def get_cover_image_url(self, obj: Property) -> str | None:
         photos = getattr(obj, "_prefetched_objects_cache", {}).get("photos")
