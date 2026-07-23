@@ -65,6 +65,7 @@ function buildGeoJsonBody(payload: PropertyCreatePayload) {
       maintenance_fee: payload.maintenance_fee,
       amenities: payload.amenities,
       is_featured: payload.is_featured,
+      easybroker_id: payload.easybroker_id,
     },
   };
 }

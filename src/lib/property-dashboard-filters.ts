@@ -41,11 +41,11 @@ export function filterDashboardProperties(
       return false;
     }
 
-    if (filters.source === "easybroker" && !property.easybroker_id) {
+    if (filters.source === "easybroker" && !property.easybroker_synced_at) {
       return false;
     }
 
-    if (filters.source === "manual" && property.easybroker_id) {
+    if (filters.source === "manual" && Boolean(property.easybroker_synced_at)) {
       return false;
     }
 
