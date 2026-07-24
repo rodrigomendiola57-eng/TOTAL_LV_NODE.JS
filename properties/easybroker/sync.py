@@ -82,6 +82,9 @@ def _upsert_property(public_id: str, detail: dict) -> tuple[Property, bool, int,
     try:
         property_obj = Property.objects.get(easybroker_id=public_id)
         created = False
+        # Preservar título y precio modificados en el dashboard al resincronizar
+        fields.pop("title", None)
+        fields.pop("price", None)
     except Property.DoesNotExist:
         property_obj = Property(easybroker_id=public_id)
         created = True

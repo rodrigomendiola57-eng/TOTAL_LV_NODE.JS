@@ -69,17 +69,16 @@ export function PropertiesManager({
 
   async function openEditForm(property: Property) {
     setEditError(null);
-    setLoadingEdit(true);
+    setEditingProperty(property);
     setFormOpen(true);
-    setEditingProperty(null);
+    setLoadingEdit(true);
     try {
       const full = await getPropertyById(String(property.id));
-      setEditingProperty(full ?? property);
+      if (full) {
+        setEditingProperty(full);
+      }
     } catch {
-      setEditingProperty(property);
-      setEditError(
-        "No se pudo cargar el detalle completo; se abrirá con datos del listado.",
-      );
+      // Si falla la precarga completa, se conservan los datos de la propiedad del listado.
     } finally {
       setLoadingEdit(false);
     }
@@ -163,26 +162,17 @@ export function PropertiesManager({
       />
 
       <PropertyFormModal open={formOpen} onClose={closeForm}>
-        {loadingEdit ? (
-          <div className="flex h-64 items-center justify-center font-outfit text-sm text-tl-beige/50">
-            <Loader2 className="mr-2 h-5 w-5 animate-spin text-tl-gold" />
-            Cargando propiedad…
-          </div>
-        ) : (
-          <>
-            {editError ? (
-              <p className="mb-4 rounded-xl border border-tl-gold/25 bg-tl-gold/5 px-4 py-3 font-outfit text-xs text-tl-beige/70">
-                {editError}
-              </p>
-            ) : null}
-            <PropertyForm
-              key={editingProperty?.id ?? "new"}
-              property={editingProperty ?? undefined}
-              onClose={closeForm}
-              onSuccess={closeForm}
-            />
-          </>
-        )}
+        {editError ? (
+          <p className="mb-4 rounded-xl border border-tl-gold/25 bg-tl-gold/5 px-4 py-3 font-outfit text-xs text-tl-beige/70">
+            {editError}
+          </p>
+        ) : null}
+        <PropertyForm
+          key={editingProperty?.id ?? "new"}
+          property={editingProperty ?? undefined}
+          onClose={closeForm}
+          onSuccess={closeForm}
+        />
       </PropertyFormModal>
 
       <ConfirmDialog

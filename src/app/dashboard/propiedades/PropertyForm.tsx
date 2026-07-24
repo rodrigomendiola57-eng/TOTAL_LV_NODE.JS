@@ -223,6 +223,14 @@ export function PropertyForm({ property, onClose, onSuccess }: PropertyFormProps
   }, []);
 
   useEffect(() => {
+    if (property) {
+      reset(propertyToFormValues(property));
+    } else {
+      reset(DEFAULT_VALUES);
+    }
+  }, [property, reset]);
+
+  useEffect(() => {
     if (!selectedState) {
       setValue("city", "");
       return;
