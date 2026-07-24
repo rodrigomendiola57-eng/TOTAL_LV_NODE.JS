@@ -514,6 +514,45 @@ export function PropertyForm({ property, onClose, onSuccess }: PropertyFormProps
                   </div>
                 )}
 
+                <PropertyTypeSelector
+                  value={propertyType}
+                  onChange={(value) => setValue("property_type", value)}
+                />
+
+                <OperationTypeSelector
+                  value={operationType}
+                  onChange={(value) => setValue("operation_type", value)}
+                />
+
+                <FormField
+                  label="Precio (MXN) *"
+                  hint="Valor de venta o renta mensual según el tipo de operación."
+                  error={errors.price?.message}
+                >
+                  <div className="relative">
+                    <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 font-outfit font-light text-sm text-tl-gold/70">
+                      $
+                    </span>
+                    <input
+                      type="number"
+                      min="0"
+                      step="1000"
+                      {...register("price", {
+                        required: "El precio es obligatorio",
+                        min: { value: 1, message: "Ingresa un precio válido" },
+                      })}
+                      placeholder="8500000"
+                      className={cn(formInputClass, "pl-8")}
+                    />
+                  </div>
+                  <p className="mt-2 font-outfit font-light text-xs text-tl-gold/80">
+                    Vista previa:{" "}
+                    <span className="font-medium text-tl-gold">
+                      {formatPricePreview(price)}
+                    </span>
+                  </p>
+                </FormField>
+
                 <div className="rounded-xl border border-tl-gold/15 bg-[#0a0a0a]/60 px-4 py-3 sm:col-span-2">
                   <p className="font-outfit font-light text-[10px] uppercase tracking-[0.14em] text-tl-beige/45">
                     Resumen rápido
