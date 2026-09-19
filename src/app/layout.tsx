@@ -69,12 +69,21 @@ export const metadata: Metadata = {
     title: "Total Living | Inmobiliaria Premium en Querétaro",
     description:
       "Casas, departamentos y terrenos en las zonas más exclusivas de Querétaro. Venta, renta, desarrollos e inversión con asesoría estratégica.",
+    images: [
+      {
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: "Total Living | Inmobiliaria Premium en Querétaro",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Total Living | Inmobiliaria Premium en Querétaro",
     description:
       "Propiedades premium en Querétaro: Juriquilla, Zibatá, Campanario y más. Estrategia real detrás de cada propiedad.",
+    images: ["/opengraph-image"],
   },
 };
 
