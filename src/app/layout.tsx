@@ -3,6 +3,7 @@ import { Cormorant_Garamond, Montserrat, Outfit } from "next/font/google";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "./globals.css";
 import { OrganizationJsonLd, WebSiteJsonLd } from "@/components/seo/JsonLd";
+import { getSiteOrigin } from "@/lib/site-url";
 
 /** Tipografía primaria — títulos y encabezados de marca. */
 const cormorant = Cormorant_Garamond({
@@ -35,12 +36,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
-      (process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL.replace(/\/$/, "")}`
-        : "http://localhost:3000"),
-  ),
+  metadataBase: new URL(getSiteOrigin()),
   title: {
     default: "Total Living | Inmobiliaria Premium en Querétaro — Venta, Renta e Inversión",
     template: "%s | Total Living",
@@ -69,11 +65,13 @@ export const metadata: Metadata = {
     title: "Total Living | Inmobiliaria Premium en Querétaro",
     description:
       "Casas, departamentos y terrenos en las zonas más exclusivas de Querétaro. Venta, renta, desarrollos e inversión con asesoría estratégica.",
+    url: "/",
     images: [
       {
-        url: "/opengraph-image",
+        url: "/og/home.png",
         width: 1200,
         height: 630,
+        type: "image/png",
         alt: "Total Living | Inmobiliaria Premium en Querétaro",
       },
     ],
@@ -83,7 +81,7 @@ export const metadata: Metadata = {
     title: "Total Living | Inmobiliaria Premium en Querétaro",
     description:
       "Propiedades premium en Querétaro: Juriquilla, Zibatá, Campanario y más. Estrategia real detrás de cada propiedad.",
-    images: ["/opengraph-image"],
+    images: ["/og/home.png"],
   },
 };
 

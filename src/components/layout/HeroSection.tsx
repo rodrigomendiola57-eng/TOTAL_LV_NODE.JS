@@ -2,8 +2,13 @@
 
 import { HeroPropertySearch } from "@/components/layout/HeroPropertySearch";
 import { Reveal } from "@/components/ui/Reveal";
+import {
+  playBackgroundVideo,
+  prepareBackgroundVideo,
+} from "@/lib/background-video";
 import { ASESORIA_HERO_IMAGE, HOME_HERO_VIDEO } from "@/lib/hero-media";
 import { HERO_CONTENT_OFFSET } from "@/lib/site-nav";
+import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -26,12 +31,23 @@ function HomeHeroVideo({
   const videoRef = useRef<HTMLVideoElement>(null);
   const [activeSrc, setActiveSrc] = useState(primaryVideoUrl);
   const [showVideo, setShowVideo] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [isInView, setIsInView] = useState(true);
+  const [allowMotion, setAllowMotion] = useState(true);
 
   useEffect(() => {
     setActiveSrc(primaryVideoUrl);
     setShowVideo(true);
+    setIsPlaying(false);
   }, [primaryVideoUrl]);
+
+  useEffect(() => {
+    const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const syncMotion = () => setAllowMotion(!motionQuery.matches);
+    syncMotion();
+    motionQuery.addEventListener("change", syncMotion);
+    return () => motionQuery.removeEventListener("change", syncMotion);
+  }, []);
 
   useEffect(() => {
     const node = containerRef.current;
@@ -52,25 +68,22 @@ function HomeHeroVideo({
     const video = videoRef.current;
     if (!video) return;
 
-    const prefersReducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
-
-    if (prefersReducedMotion || document.hidden || !isInView) {
+    if (!allowMotion || document.hidden || !isInView) {
       video.pause();
+      setIsPlaying(false);
       return;
     }
 
-    try {
-      await video.play();
-    } catch {
-      /* autoplay bloqueado */
+    const playing = await playBackgroundVideo(video);
+    setIsPlaying(playing);
+    if (!playing && video.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA) {
+      setShowVideo(false);
     }
-  }, [isInView]);
+  }, [allowMotion, isInView]);
 
   useEffect(() => {
     void tryPlay();
-  }, [isInView, tryPlay, activeSrc]);
+  }, [isInView, tryPlay, activeSrc, allowMotion]);
 
   useEffect(() => {
     const onVisibility = () => {
@@ -86,7 +99,13 @@ function HomeHeroVideo({
       return;
     }
     setShowVideo(false);
+    setIsPlaying(false);
   }
+
+  const bindVideo = useCallback((node: HTMLVideoElement | null) => {
+    videoRef.current = node;
+    if (node) prepareBackgroundVideo(node);
+  }, []);
 
   return (
     <div ref={containerRef} className="absolute inset-0 min-h-full w-full">
@@ -100,22 +119,28 @@ function HomeHeroVideo({
         className="object-cover object-center"
       />
 
-      {showVideo ? (
+      {showVideo && allowMotion ? (
         <video
           key={activeSrc}
-          ref={videoRef}
+          ref={bindVideo}
           src={activeSrc}
-          poster={posterUrl}
           autoPlay
           muted
           loop
           playsInline
-          preload="auto"
+          controls={false}
+          disablePictureInPicture
+          disableRemotePlayback
+          preload="metadata"
           aria-hidden
           onLoadedData={() => void tryPlay()}
           onCanPlay={() => void tryPlay()}
+          onPlaying={() => setIsPlaying(true)}
           onError={handleError}
-          className="absolute inset-0 z-[1] h-full w-full object-cover object-center"
+          className={cn(
+            "tl-background-video pointer-events-none absolute inset-0 z-[1] h-full w-full object-cover object-center transition-opacity duration-500",
+            isPlaying ? "opacity-100" : "opacity-0",
+          )}
         />
       ) : null}
     </div>

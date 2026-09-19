@@ -1,10 +1,15 @@
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 import { ImageResponse } from "next/og";
 
 export const alt = "Total Living | Inmobiliaria Premium en Querétaro";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-export default function Image() {
+export default async function Image() {
+  const icon = await readFile(join(process.cwd(), "src/app/icon.svg"));
+  const iconSrc = `data:image/svg+xml;base64,${icon.toString("base64")}`;
+
   return new ImageResponse(
     (
       <div
@@ -47,20 +52,29 @@ export default function Image() {
             justifyContent: "space-between",
             width: "100%",
             height: "100%",
-            padding: "64px 72px",
+            padding: "56px 72px",
           }}
         >
-          <div
-            style={{
-              display: "flex",
-              color: "#D6B585",
-              fontSize: 22,
-              letterSpacing: "0.34em",
-              textTransform: "uppercase",
-              fontWeight: 300,
-            }}
-          >
-            Total Living
+          <div style={{ display: "flex", alignItems: "center", gap: 22 }}>
+            <img
+              src={iconSrc}
+              alt=""
+              width={88}
+              height={88}
+              style={{ borderRadius: 88 }}
+            />
+            <div
+              style={{
+                display: "flex",
+                color: "#D6B585",
+                fontSize: 22,
+                letterSpacing: "0.34em",
+                textTransform: "uppercase",
+                fontWeight: 300,
+              }}
+            >
+              Total Living
+            </div>
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 22, maxWidth: 860 }}>

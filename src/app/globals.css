@@ -153,3 +153,16 @@ body {
     padding-left: 128px !important; /* Mayor holgura equilibrada */
   }
 }
+
+/* Hero de fondo: iOS pinta un play nativo si el video está pausado */
+[data-tl-media-hero] video.tl-background-video::-webkit-media-controls,
+[data-tl-media-hero] video.tl-background-video::-webkit-media-controls-enclosure,
+[data-tl-media-hero] video.tl-background-video::-webkit-media-controls-start-playback-button,
+[data-tl-media-hero] video.tl-background-video::-webkit-media-controls-overlay-play-button {
+  display: none !important;
+  -webkit-appearance: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
