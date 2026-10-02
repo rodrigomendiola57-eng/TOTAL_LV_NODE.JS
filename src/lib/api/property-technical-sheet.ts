@@ -29,17 +29,41 @@ export async function getTechnicalSheet(
   };
 }
 
+/**
+ * URL pública del backend Django para uploads directos.
+ * Evita pasar por el proxy Next.js en Vercel, que tiene un límite
+ * de ~4.5 MB en funciones serverless (FUNCTION_PAYLOAD_TOO_LARGE).
+ */
+const DJANGO_UPLOAD_ORIGIN =
+  process.env.NEXT_PUBLIC_DJANGO_UPLOAD_ORIGIN?.replace(/\/$/, "") ??
+  "https://total-living.onrender.com";
+
 export async function uploadTechnicalSheet(
   propertyId: number,
   file: File,
 ): Promise<TechnicalSheetInfo> {
+  // 1. Obtener token de autenticación de la cookie httpOnly
+  //    (no accesible desde JS, se lee vía API route liviana).
+  const tokenRes = await fetch("/api/upload-token");
+  if (!tokenRes.ok) {
+    throw new Error(
+      `No se pudo autenticar para subir la ficha técnica (${tokenRes.status}).`,
+    );
+  }
+  const { token } = (await tokenRes.json()) as { token: string };
+
+  // 2. Subir directamente al backend Django (Render), evitando
+  //    el proxy de Vercel y su límite de 4.5 MB.
   const formData = new FormData();
   formData.append("file", file);
 
   const response = await fetch(
-    `${getApiBaseUrl()}/properties/${propertyId}/technical-sheet/`,
+    `${DJANGO_UPLOAD_ORIGIN}/api/properties/${propertyId}/technical-sheet/`,
     {
       method: "POST",
+      headers: {
+        Authorization: `Token ${token}`,
+      },
       body: formData,
     },
   );
@@ -55,6 +79,9 @@ export async function uploadTechnicalSheet(
     url: resolveMediaUrl(data.url) ?? data.url,
   };
 }
+
+
+
 
 export async function deleteTechnicalSheet(propertyId: number): Promise<void> {
   const response = await fetch(
